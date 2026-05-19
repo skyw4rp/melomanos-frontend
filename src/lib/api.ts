@@ -1,13 +1,17 @@
+import { dispatchAuthChange } from "@/lib/auth-events";
 import type {
   Listing,
+  ListingCreate,
   ListingsResponse,
   LoginResponse,
   MessageCreate,
+  User,
 } from "@/types";
 
 export const API_BASE = "http://127.0.0.1:8000";
 
 const TOKEN_KEY = "access_token";
+const USER_KEY = "melomanos_user";
 
 export interface ListingsFilters {
   skip?: number;
@@ -57,14 +61,54 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+export function getStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as User;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredUser(user: User): void {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+export function clearStoredUser(): void {
+  localStorage.removeItem(USER_KEY);
+}
+
+export function clearAuth(): void {
+  clearToken();
+  clearStoredUser();
+}
+
 export function isLoggedIn(): boolean {
   return Boolean(getToken());
+}
+
+export function logout(): void {
+  clearAuth();
+  dispatchAuthChange();
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(text || `Request failed (${res.status})`);
+    let message = text || `Request failed (${res.status})`;
+    try {
+      const json = JSON.parse(text) as { detail?: string | { msg?: string }[] };
+      if (typeof json.detail === "string") {
+        message = json.detail;
+      } else if (Array.isArray(json.detail) && json.detail[0]?.msg) {
+        message = json.detail[0].msg;
+      }
+    } catch {
+      // keep raw message
+    }
+    throw new Error(message);
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
@@ -91,6 +135,16 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return handleResponse<LoginResponse>(res);
 }
 
+export async function getMe(): Promise<User> {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    headers: {
+      ...authHeaders(),
+    },
+    cache: "no-store",
+  });
+  return handleResponse<User>(res);
+}
+
 export async function getListings(
   filters: ListingsFilters = {},
 ): Promise<ListingsResponse> {
@@ -103,6 +157,18 @@ export async function getListings(
 
 export async function getListing(id: number | string): Promise<Listing> {
   const res = await fetch(`${API_BASE}/listings/${id}`, { cache: "no-store" });
+  return handleResponse<Listing>(res);
+}
+
+export async function createListing(data: ListingCreate): Promise<Listing> {
+  const res = await fetch(`${API_BASE}/listings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
   return handleResponse<Listing>(res);
 }
 

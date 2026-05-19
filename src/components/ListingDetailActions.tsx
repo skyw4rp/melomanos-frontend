@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import MessageForm from "@/components/MessageForm";
-import { addFavorite, getToken, reserveListing } from "@/lib/api";
+import { isOwnListing } from "@/lib/auth";
+import { addFavorite, getStoredUser, getToken, reserveListing } from "@/lib/api";
 
 interface ListingDetailActionsProps {
   listingId: number;
   status: string;
+  sellerId?: number;
 }
 
 type ActionState = "idle" | "loading" | "done" | "error";
@@ -16,8 +18,12 @@ type ActionState = "idle" | "loading" | "done" | "error";
 export default function ListingDetailActions({
   listingId,
   status,
+  sellerId,
 }: ListingDetailActionsProps) {
   const router = useRouter();
+  const currentUser = getStoredUser();
+  const isOwner = isOwnListing({ seller_id: sellerId }, currentUser);
+
   const [showMessage, setShowMessage] = useState(false);
   const [favState, setFavState] = useState<ActionState>("idle");
   const [reserveState, setReserveState] = useState<ActionState>("idle");
@@ -58,6 +64,26 @@ export default function ListingDetailActions({
         err instanceof Error ? err.message : "No se pudo reservar este vinilo",
       );
     }
+  }
+
+  if (isOwner) {
+    return (
+      <div className="rounded-2xl border border-fuchsia-500/25 bg-gradient-to-br from-violet-950/40 to-[#0d0a14] px-5 py-5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-fuchsia-300/90">
+          Tu publicación
+        </p>
+        <p className="mt-2 text-lg font-semibold text-white">Esta es tu publicación</p>
+        <p className="mt-2 text-sm text-zinc-400">
+          Puedes gestionarla desde tu perfil próximamente.
+        </p>
+        <Link
+          href="/profile"
+          className="mt-4 inline-block text-sm font-medium text-violet-300 hover:text-violet-200"
+        >
+          Ir a tu perfil →
+        </Link>
+      </div>
+    );
   }
 
   return (

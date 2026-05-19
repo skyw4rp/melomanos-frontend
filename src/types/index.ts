@@ -13,6 +13,7 @@ export interface Listing {
   year?: number;
   condition_media?: string;
   condition_sleeve?: string;
+  seller_id?: number;
   seller_name?: string;
   seller_city?: string;
 }
@@ -27,7 +28,28 @@ export interface LoginResponse {
   token_type?: string;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  name?: string;
+  full_name?: string;
+}
+
 export interface MessageCreate {
   listing_id: number;
   message_text: string;
+}
+
+export interface ListingCreate {
+  title: string;
+  artist: string;
+  label?: string;
+  genre?: string;
+  subgenre?: string;
+  year?: number;
+  condition_media?: string;
+  condition_sleeve?: string;
+  price_clp: number;
+  description?: string;
+  city: string;
 }
