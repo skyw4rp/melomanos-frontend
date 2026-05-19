@@ -1,5 +1,6 @@
 import { dispatchAuthChange } from "@/lib/auth-events";
 import type {
+  Conversation,
   Listing,
   ListingCreate,
   ListingsResponse,
@@ -180,6 +181,33 @@ export async function getMyFavorites(): Promise<Listing[]> {
     cache: "no-store",
   });
   return handleResponse<Listing[]>(res);
+}
+
+export async function getMySales(): Promise<Listing[]> {
+  const res = await fetch(`${API_BASE}/users/me/sales`, {
+    headers: { ...authHeaders() },
+    cache: "no-store",
+  });
+  return handleResponse<Listing[]>(res);
+}
+
+export async function getMyPurchases(): Promise<Listing[]> {
+  const res = await fetch(`${API_BASE}/users/me/purchases`, {
+    headers: { ...authHeaders() },
+    cache: "no-store",
+  });
+  return handleResponse<Listing[]>(res);
+}
+
+export async function getConversations(): Promise<Conversation[]> {
+  const res = await fetch(`${API_BASE}/messages/conversations`, {
+    headers: { ...authHeaders() },
+    cache: "no-store",
+  });
+  const data = await handleResponse<Conversation[] | { items: Conversation[] }>(
+    res,
+  );
+  return Array.isArray(data) ? data : (data.items ?? []);
 }
 
 export async function addFavorite(listingId: number): Promise<void> {

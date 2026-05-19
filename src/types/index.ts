@@ -33,6 +33,17 @@ export interface User {
   email: string;
   name?: string;
   full_name?: string;
+  city?: string;
+}
+
+export interface Conversation {
+  id: number;
+  listing_id?: number;
+  listing_title?: string;
+  other_user_name?: string;
+  last_message?: string;
+  unread_count?: number;
+  updated_at?: string;
 }
 
 export interface MessageCreate {
