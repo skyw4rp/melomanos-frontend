@@ -5,7 +5,7 @@ export interface Listing {
   price_clp: number;
   city: string;
   genre: string;
-  status: string;
+  status?: string;
   description?: string;
   created_at?: string;
   label?: string;
@@ -44,6 +44,14 @@ export interface Conversation {
   last_message?: string;
   unread_count?: number;
   updated_at?: string;
+}
+
+export interface FavoriteWithListing {
+  id: number;
+  user_id?: number;
+  listing_id: number;
+  created_at?: string;
+  listing?: Partial<Listing> | null;
 }
 
 export interface MessageCreate {

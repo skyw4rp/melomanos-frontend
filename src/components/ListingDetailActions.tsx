@@ -9,7 +9,7 @@ import { addFavorite, getStoredUser, getToken, reserveListing } from "@/lib/api"
 
 interface ListingDetailActionsProps {
   listingId: number;
-  status: string;
+  status?: string;
   sellerId?: number;
 }
 
@@ -29,8 +29,9 @@ export default function ListingDetailActions({
   const [reserveState, setReserveState] = useState<ActionState>("idle");
   const [reserveError, setReserveError] = useState("");
 
-  const isReserved = status.toLowerCase() === "reserved";
-  const isSold = status.toLowerCase() === "sold";
+  const safeStatus = (status ?? "available").toLowerCase();
+  const isReserved = safeStatus === "reserved";
+  const isSold = safeStatus === "sold";
 
   function requireAuth(): boolean {
     if (getToken()) return true;

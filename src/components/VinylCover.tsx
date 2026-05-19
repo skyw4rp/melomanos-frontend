@@ -1,8 +1,8 @@
 import { labelGrooves, recordGrooves } from "@/lib/vinyl-styles";
 
 interface VinylCoverProps {
-  title: string;
-  artist: string;
+  title?: string | null;
+  artist?: string | null;
   size?: "card" | "hero";
 }
 
@@ -11,7 +11,10 @@ export default function VinylCover({
   artist,
   size = "card",
 }: VinylCoverProps) {
-  const initials = `${title.charAt(0) || "?"}${artist.charAt(0) || "?"}`.toUpperCase();
+  const safeTitle = title ?? "?";
+  const safeArtist = artist ?? "?";
+  const initials =
+    `${safeTitle.charAt(0)}${safeArtist.charAt(0)}`.toUpperCase();
   const isHero = size === "hero";
 
   return (

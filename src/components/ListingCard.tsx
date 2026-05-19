@@ -6,7 +6,7 @@ import { useState } from "react";
 import VinylCover from "@/components/VinylCover";
 import { isOwnListing } from "@/lib/auth";
 import { addFavorite, getStoredUser, getToken } from "@/lib/api";
-import { formatPriceCLP, statusLabel } from "@/lib/format";
+import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
 import type { Listing } from "@/types";
 
 interface ListingCardProps {
@@ -20,9 +20,10 @@ const statusStyles: Record<string, string> = {
   reserved: "bg-amber-500/25 text-amber-200 ring-amber-400/35",
 };
 
-function statusClass(status: string): string {
+function statusClass(status?: string | null): string {
+  const safeStatus = normalizeListingStatus(status);
   return (
-    statusStyles[status.toLowerCase()] ??
+    statusStyles[safeStatus] ??
     "bg-violet-500/25 text-violet-200 ring-violet-400/35"
   );
 }
@@ -31,6 +32,14 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
   const currentUser = getStoredUser();
   const isOwner = isOwnListing(listing, currentUser);
+
+  const title = listing.title ?? "Unknown";
+  const artist = listing.artist ?? "Unknown";
+  const city = listing.city ?? "Unknown";
+  const genre = listing.genre ?? "Unknown";
+  const safeStatus = normalizeListingStatus(listing.status);
+  const listingHref = listing.id ? `/listings/${listing.id}` : "/";
+
   const [favState, setFavState] = useState<"idle" | "loading" | "done" | "error">(
     "idle",
   );
@@ -38,6 +47,8 @@ export default function ListingCard({ listing }: ListingCardProps) {
   async function handleFavorite(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!listing.id) return;
 
     if (!getToken()) {
       router.push("/login");
@@ -55,31 +66,29 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0a14] shadow-md shadow-black/40 transition duration-300 ease-out hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-[0_0_40px_-8px_rgba(139,92,246,0.55)]">
-      <VinylCover title={listing.title} artist={listing.artist} size="card" />
+      <VinylCover title={title} artist={artist} size="card" />
 
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h3 className="line-clamp-2 font-semibold leading-snug text-white transition group-hover:text-violet-100">
-              {listing.title}
+              {title}
             </h3>
             <p className="mt-1 truncate font-mono text-xs uppercase tracking-wide text-fuchsia-300/90">
-              {listing.artist}
+              {artist}
             </p>
           </div>
           <span
             className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${statusClass(listing.status)}`}
           >
-            {statusLabel(listing.status)}
+            {statusLabel(safeStatus)}
           </span>
         </div>
 
         <div className="mb-4 flex flex-wrap gap-1.5 text-[11px]">
-          <span className="rounded bg-white/5 px-2 py-0.5 text-zinc-300">
-            {listing.city}
-          </span>
+          <span className="rounded bg-white/5 px-2 py-0.5 text-zinc-300">{city}</span>
           <span className="rounded bg-violet-500/20 px-2 py-0.5 font-medium text-violet-200">
-            {listing.genre}
+            {genre}
           </span>
           {isOwner && (
             <span className="rounded bg-fuchsia-500/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-fuchsia-200/90">
@@ -97,12 +106,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
         className={`border-t border-white/10 bg-black/30 p-3 ${isOwner ? "" : "grid grid-cols-2 gap-2"}`}
       >
         <Link
-          href={`/listings/${listing.id}`}
+          href={listingHref}
           className={`flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-white transition hover:from-violet-500 hover:to-fuchsia-500 ${isOwner ? "w-full" : ""}`}
         >
           Ver detalle
         </Link>
-        {!isOwner && (
+        {!isOwner && listing.id > 0 && (
           <button
             type="button"
             onClick={handleFavorite}

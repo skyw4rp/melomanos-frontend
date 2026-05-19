@@ -1,6 +1,7 @@
 import { dispatchAuthChange } from "@/lib/auth-events";
 import type {
   Conversation,
+  FavoriteWithListing,
   Listing,
   ListingCreate,
   ListingsResponse,
@@ -173,14 +174,14 @@ export async function createListing(data: ListingCreate): Promise<Listing> {
   return handleResponse<Listing>(res);
 }
 
-export async function getMyFavorites(): Promise<Listing[]> {
+export async function getMyFavorites(): Promise<FavoriteWithListing[]> {
   const res = await fetch(`${API_BASE}/favorites/me`, {
     headers: {
       ...authHeaders(),
     },
     cache: "no-store",
   });
-  return handleResponse<Listing[]>(res);
+  return handleResponse<FavoriteWithListing[]>(res);
 }
 
 export async function getMySales(): Promise<Listing[]> {
@@ -211,13 +212,21 @@ export async function getConversations(): Promise<Conversation[]> {
 }
 
 export async function addFavorite(listingId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/favorites`, {
+  const res = await fetch(`${API_BASE}/favorites/${listingId}`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       ...authHeaders(),
     },
-    body: JSON.stringify({ listing_id: listingId }),
+  });
+  return handleResponse<void>(res);
+}
+
+export async function removeFavorite(listingId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/favorites/${listingId}`, {
+    method: "DELETE",
+    headers: {
+      ...authHeaders(),
+    },
   });
   return handleResponse<void>(res);
 }

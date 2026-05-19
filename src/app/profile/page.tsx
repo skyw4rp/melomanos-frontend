@@ -15,7 +15,8 @@ import {
   logout,
   setStoredUser,
 } from "@/lib/api";
-import { formatPriceCLP, statusLabel } from "@/lib/format";
+import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
+import { listingsFromFavorites } from "@/lib/listing-normalize";
 import type { Conversation, Listing, User } from "@/types";
 
 type TabId = "sales" | "purchases" | "favorites" | "messages";
@@ -151,7 +152,7 @@ export default function ProfilePage() {
       setUser(me);
       setSales(salesData);
       setPurchases(purchasesData);
-      setFavorites(favoritesData);
+      setFavorites(listingsFromFavorites(favoritesData));
       setConversations(convData);
     } catch (err) {
       setError(
@@ -172,7 +173,7 @@ export default function ProfilePage() {
 
   const stats = useMemo(() => {
     const activeListings = sales.filter(
-      (l) => l.status.toLowerCase() === "available",
+      (l) => normalizeListingStatus(l.status) === "available",
     ).length;
     const unreadMessages = conversations.reduce(
       (sum, c) => sum + (c.unread_count ?? 0),

@@ -6,7 +6,7 @@ import ListingDetailActions from "@/components/ListingDetailActions";
 import SellerCard from "@/components/SellerCard";
 import VinylCover from "@/components/VinylCover";
 import { API_BASE } from "@/lib/api";
-import { formatPriceCLP, statusLabel } from "@/lib/format";
+import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
 import type { Listing, ListingsResponse } from "@/types";
 
 interface PageProps {
@@ -38,9 +38,10 @@ const statusStyles: Record<string, string> = {
   reserved: "bg-amber-500/20 text-amber-200 ring-amber-400/30",
 };
 
-function statusBadgeClass(status: string): string {
+function statusBadgeClass(status?: string | null): string {
+  const safeStatus = normalizeListingStatus(status);
   return (
-    statusStyles[status.toLowerCase()] ??
+    statusStyles[safeStatus] ??
     "bg-violet-500/20 text-violet-200 ring-violet-400/30"
   );
 }
