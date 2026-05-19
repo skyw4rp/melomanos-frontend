@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import VinylCover from "@/components/VinylCover";
 import { addFavorite, getToken } from "@/lib/api";
 import { formatPriceCLP, statusLabel } from "@/lib/format";
 import type { Listing } from "@/types";
@@ -18,64 +19,10 @@ const statusStyles: Record<string, string> = {
   reserved: "bg-amber-500/25 text-amber-200 ring-amber-400/35",
 };
 
-const recordGrooves: React.CSSProperties = {
-  backgroundImage: `repeating-radial-gradient(
-    circle at 50% 50%,
-    transparent 0px,
-    transparent 3px,
-    rgba(255,255,255,0.45) 3px,
-    rgba(255,255,255,0.45) 4px
-  )`,
-};
-
-const labelGrooves: React.CSSProperties = {
-  backgroundImage: `repeating-radial-gradient(
-    circle at center,
-    transparent 0,
-    transparent 2px,
-    rgba(255,255,255,0.5) 2px,
-    rgba(255,255,255,0.5) 3px
-  )`,
-};
-
 function statusClass(status: string): string {
   return (
     statusStyles[status.toLowerCase()] ??
     "bg-violet-500/25 text-violet-200 ring-violet-400/35"
-  );
-}
-
-function VinylCover({ title, artist }: { title: string; artist: string }) {
-  const initials = `${title.charAt(0)}${artist.charAt(0)}`.toUpperCase();
-
-  return (
-    <div className="relative aspect-square w-full overflow-hidden">
-      <div
-        className="absolute inset-0 bg-gradient-to-br from-violet-950 via-[#1a0f2e] to-fuchsia-950"
-        aria-hidden
-      />
-      <div className="absolute inset-0 opacity-[0.14]" style={recordGrooves} aria-hidden />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(167,139,250,0.35),transparent_55%)]"
-        aria-hidden
-      />
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-        <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-black/50 shadow-inner shadow-black/60 ring-2 ring-violet-400/30">
-          <div
-            className="absolute inset-1 rounded-full opacity-30"
-            style={labelGrooves}
-            aria-hidden
-          />
-          <span className="relative text-lg font-bold tracking-wider text-violet-100">
-            {initials}
-          </span>
-        </div>
-        <span className="mt-3 rounded border border-white/10 bg-black/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-violet-300/80">
-          12&quot; · LP
-        </span>
-      </div>
-      <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 opacity-80" />
-    </div>
   );
 }
 
@@ -105,7 +52,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0a14] shadow-md shadow-black/40 transition duration-300 ease-out hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-[0_0_40px_-8px_rgba(139,92,246,0.55)]">
-      <VinylCover title={listing.title} artist={listing.artist} />
+      <VinylCover title={listing.title} artist={listing.artist} size="card" />
 
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-3 flex items-start justify-between gap-3">

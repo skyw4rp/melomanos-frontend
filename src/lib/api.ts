@@ -139,3 +139,13 @@ export async function sendMessage(data: MessageCreate): Promise<void> {
   });
   return handleResponse<void>(res);
 }
+
+export async function reserveListing(listingId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/listings/${listingId}/reserve`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+    },
+  });
+  return handleResponse<void>(res);
+}

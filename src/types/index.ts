@@ -8,6 +8,13 @@ export interface Listing {
   status: string;
   description?: string;
   created_at?: string;
+  label?: string;
+  subgenre?: string;
+  year?: number;
+  condition_media?: string;
+  condition_sleeve?: string;
+  seller_name?: string;
+  seller_city?: string;
 }
 
 export interface ListingsResponse {
