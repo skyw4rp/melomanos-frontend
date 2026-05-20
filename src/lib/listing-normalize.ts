@@ -1,5 +1,37 @@
 import type { FavoriteWithListing, Listing } from "@/types";
 
+export interface SellerDisplay {
+  name: string;
+  role: string;
+  city: string;
+}
+
+/** Resolve seller label/city from listing API fields (name/city or seller_id fallback). */
+export function resolveSellerDisplay(listing: Listing): SellerDisplay {
+  const name = listing.seller_name?.trim();
+  if (name) {
+    return {
+      name,
+      role: "Collector",
+      city: listing.seller_city?.trim() || listing.city?.trim() || "—",
+    };
+  }
+
+  if (listing.seller_id != null) {
+    return {
+      name: `Seller #${listing.seller_id}`,
+      role: "Collector",
+      city: listing.city?.trim() || "—",
+    };
+  }
+
+  return {
+    name: "Unknown seller",
+    role: "Collector",
+    city: listing.city?.trim() || "—",
+  };
+}
+
 /** Coerce partial API listing payloads into safe display values. */
 export function normalizeListing(raw: Partial<Listing> & { id?: number }): Listing {
   return {

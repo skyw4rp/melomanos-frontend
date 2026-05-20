@@ -13,8 +13,11 @@ export interface Listing {
   year?: number;
   condition_media?: string;
   condition_sleeve?: string;
+  /** Seller user id when embedded seller profile is not included */
   seller_id?: number;
+  /** Seller display name when returned by GET /listings/{id} */
   seller_name?: string;
+  /** Seller city when returned by the API; otherwise use listing.city */
   seller_city?: string;
 }
 
@@ -38,12 +41,31 @@ export interface User {
 
 export interface Conversation {
   id: number;
-  listing_id?: number;
+  listing_id: number;
   listing_title?: string;
+  other_user_id?: number;
   other_user_name?: string;
+  listing_seller_id?: number;
+  /** @deprecated use listing_seller_id */
+  seller_id?: number;
+  /** @deprecated use last_message_text */
   last_message?: string;
+  last_message_text?: string;
+  last_message_at?: string;
   unread_count?: number;
   updated_at?: string;
+}
+
+export interface Message {
+  id: number;
+  listing_id: number;
+  sender_id: number;
+  receiver_id: number;
+  message_text: string;
+  is_read?: boolean;
+  read?: boolean;
+  is_deleted?: boolean;
+  created_at?: string;
 }
 
 export interface FavoriteWithListing {
@@ -56,6 +78,12 @@ export interface FavoriteWithListing {
 
 export interface MessageCreate {
   listing_id: number;
+  message_text: string;
+}
+
+export interface MessageReplyCreate {
+  listing_id: number;
+  receiver_id: number;
   message_text: string;
 }
 

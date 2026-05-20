@@ -6,12 +6,14 @@ import { useCallback, useEffect, useState } from "react";
 import { AUTH_CHANGED_EVENT } from "@/lib/auth-events";
 import { formatProfileName, getUserInitials } from "@/lib/auth";
 import {
+  getConversations,
   getMe,
   getStoredUser,
   getToken,
   logout,
   setStoredUser,
 } from "@/lib/api";
+import { MESSAGES_UPDATED_EVENT, totalUnreadCount } from "@/lib/messages";
 import type { User } from "@/types";
 
 const navLinkClass =
@@ -51,11 +53,10 @@ function ProfileChip({ user }: { user: User }) {
   );
 }
 
-function MessagesLink() {
+function MessagesLink({ unread }: { unread: number }) {
   const pathname = usePathname();
   const active =
     pathname === "/messages" || pathname.startsWith("/messages/");
-  const unread = 0;
 
   return (
     <Link
@@ -81,6 +82,7 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const loadSession = useCallback(async () => {
     const token = getToken();
@@ -120,6 +122,25 @@ export default function Navbar() {
     window.addEventListener(AUTH_CHANGED_EVENT, onAuthChange);
     return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChange);
   }, [loadSession]);
+
+  const refreshUnread = useCallback(() => {
+    if (!user || !getToken()) {
+      setUnreadMessages(0);
+      return;
+    }
+    getConversations()
+      .then((convs) => setUnreadMessages(totalUnreadCount(convs)))
+      .catch(() => setUnreadMessages(0));
+  }, [user]);
+
+  useEffect(() => {
+    refreshUnread();
+  }, [refreshUnread, pathname]);
+
+  useEffect(() => {
+    window.addEventListener(MESSAGES_UPDATED_EVENT, refreshUnread);
+    return () => window.removeEventListener(MESSAGES_UPDATED_EVENT, refreshUnread);
+  }, [refreshUnread]);
 
   function handleLogout() {
     logout();
@@ -173,7 +194,7 @@ export default function Navbar() {
                   </span>
                 </Link>
 
-                <MessagesLink />
+                <MessagesLink unread={unreadMessages} />
 
                 <ProfileChip user={user} />
 

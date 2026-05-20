@@ -6,7 +6,9 @@ import type {
   ListingCreate,
   ListingsResponse,
   LoginResponse,
+  Message,
   MessageCreate,
+  MessageReplyCreate,
   User,
 } from "@/types";
 
@@ -96,6 +98,20 @@ export function logout(): void {
   dispatchAuthChange();
 }
 
+export function extractItems<T>(
+  response: T[] | { items?: T[] } | unknown,
+): T[] {
+  if (Array.isArray(response)) return response;
+  if (
+    response &&
+    typeof response === "object" &&
+    Array.isArray((response as { items?: T[] }).items)
+  ) {
+    return (response as { items: T[] }).items;
+  }
+  return [];
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -181,7 +197,10 @@ export async function getMyFavorites(): Promise<FavoriteWithListing[]> {
     },
     cache: "no-store",
   });
-  return handleResponse<FavoriteWithListing[]>(res);
+  const data = await handleResponse<FavoriteWithListing[] | { items?: FavoriteWithListing[] }>(
+    res,
+  );
+  return extractItems(data);
 }
 
 export async function getMySales(): Promise<Listing[]> {
@@ -189,7 +208,8 @@ export async function getMySales(): Promise<Listing[]> {
     headers: { ...authHeaders() },
     cache: "no-store",
   });
-  return handleResponse<Listing[]>(res);
+  const data = await handleResponse<Listing[] | { items?: Listing[] }>(res);
+  return extractItems(data);
 }
 
 export async function getMyPurchases(): Promise<Listing[]> {
@@ -197,7 +217,8 @@ export async function getMyPurchases(): Promise<Listing[]> {
     headers: { ...authHeaders() },
     cache: "no-store",
   });
-  return handleResponse<Listing[]>(res);
+  const data = await handleResponse<Listing[] | { items?: Listing[] }>(res);
+  return extractItems(data);
 }
 
 export async function getConversations(): Promise<Conversation[]> {
@@ -205,10 +226,56 @@ export async function getConversations(): Promise<Conversation[]> {
     headers: { ...authHeaders() },
     cache: "no-store",
   });
-  const data = await handleResponse<Conversation[] | { items: Conversation[] }>(
+  const data = await handleResponse<Conversation[] | { items?: Conversation[] }>(
     res,
   );
-  return Array.isArray(data) ? data : (data.items ?? []);
+  return extractItems(data);
+}
+
+export async function getMessagesForListing(listingId: number): Promise<Message[]> {
+  const res = await fetch(`${API_BASE}/messages/listing/${listingId}`, {
+    headers: { ...authHeaders() },
+    cache: "no-store",
+  });
+  const data = await handleResponse<Message[] | { items?: Message[] }>(res);
+  return extractItems(data);
+}
+
+export async function markMessageRead(messageId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/messages/${messageId}/read`, {
+    method: "PATCH",
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<void>(res);
+}
+
+export async function markMessageUnread(messageId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/messages/${messageId}/unread`, {
+    method: "PATCH",
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<void>(res);
+}
+
+export async function deleteMessage(messageId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/messages/${messageId}`, {
+    method: "DELETE",
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<void>(res);
+}
+
+/** Reply inside an existing conversation (not for starting a new thread). */
+export async function replyToMessage(data: MessageReplyCreate): Promise<void> {
+  const res = await fetch(`${API_BASE}/messages/reply`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<void>(res);
 }
 
 export async function addFavorite(listingId: number): Promise<void> {

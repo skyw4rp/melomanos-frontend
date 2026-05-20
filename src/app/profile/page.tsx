@@ -67,7 +67,10 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
   const title =
     conversation.listing_title ||
     (conversation.listing_id ? `Listing #${conversation.listing_id}` : "Conversación");
-  const preview = conversation.last_message || "Sin mensajes aún";
+  const preview =
+    conversation.last_message_text?.trim() ||
+    conversation.last_message ||
+    "Sin mensajes aún";
   const unread = conversation.unread_count ?? 0;
 
   return (
@@ -171,22 +174,27 @@ export default function ProfilePage() {
     loadDashboard();
   }, [router, loadDashboard]);
 
+  const safeSales = Array.isArray(sales) ? sales : [];
+  const safePurchases = Array.isArray(purchases) ? purchases : [];
+  const safeFavorites = Array.isArray(favorites) ? favorites : [];
+  const safeConversations = Array.isArray(conversations) ? conversations : [];
+
   const stats = useMemo(() => {
-    const activeListings = sales.filter(
+    const activeListings = safeSales.filter(
       (l) => normalizeListingStatus(l.status) === "available",
     ).length;
-    const unreadMessages = conversations.reduce(
+    const unreadMessages = safeConversations.reduce(
       (sum, c) => sum + (c.unread_count ?? 0),
       0,
     );
     return {
       activeListings,
-      salesCount: sales.length,
-      purchasesCount: purchases.length,
-      favoritesCount: favorites.length,
+      salesCount: safeSales.length,
+      purchasesCount: safePurchases.length,
+      favoritesCount: safeFavorites.length,
       unreadMessages,
     };
-  }, [sales, purchases, favorites, conversations]);
+  }, [safeSales, safePurchases, safeFavorites, safeConversations]);
 
   if (loading && !user) {
     return (
@@ -293,11 +301,11 @@ export default function ProfilePage() {
         ) : (
           <>
             {activeTab === "sales" &&
-              (sales.length === 0 ? (
+              (safeSales.length === 0 ? (
                 <EmptyState message="Aún no tienes ventas publicadas." />
               ) : (
                 <ul className="space-y-3">
-                  {sales.map((listing) => (
+                  {safeSales.map((listing) => (
                     <li key={listing.id}>
                       <ListingRow listing={listing} />
                     </li>
@@ -306,11 +314,11 @@ export default function ProfilePage() {
               ))}
 
             {activeTab === "purchases" &&
-              (purchases.length === 0 ? (
+              (safePurchases.length === 0 ? (
                 <EmptyState message="Aún no tienes compras." />
               ) : (
                 <ul className="space-y-3">
-                  {purchases.map((listing) => (
+                  {safePurchases.map((listing) => (
                     <li key={listing.id}>
                       <ListingRow listing={listing} />
                     </li>
@@ -319,11 +327,11 @@ export default function ProfilePage() {
               ))}
 
             {activeTab === "favorites" &&
-              (favorites.length === 0 ? (
+              (safeFavorites.length === 0 ? (
                 <EmptyState message="Aún no tienes favoritos." />
               ) : (
                 <ul className="space-y-3">
-                  {favorites.map((listing) => (
+                  {safeFavorites.map((listing) => (
                     <li key={listing.id}>
                       <ListingRow listing={listing} />
                     </li>
@@ -332,11 +340,11 @@ export default function ProfilePage() {
               ))}
 
             {activeTab === "messages" &&
-              (conversations.length === 0 ? (
+              (safeConversations.length === 0 ? (
                 <EmptyState message="Aún no tienes mensajes." />
               ) : (
                 <ul className="space-y-3">
-                  {conversations.map((conversation) => (
+                  {safeConversations.map((conversation) => (
                     <li key={conversation.id}>
                       <ConversationRow conversation={conversation} />
                     </li>

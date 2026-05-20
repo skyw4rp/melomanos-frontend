@@ -18,3 +18,13 @@ export function displayValue(value: string | number | null | undefined): string 
   if (value === null || value === undefined || value === "") return "—";
   return String(value);
 }
+
+export function formatMessageTime(iso?: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}

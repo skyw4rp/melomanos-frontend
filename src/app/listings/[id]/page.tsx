@@ -7,6 +7,7 @@ import SellerCard from "@/components/SellerCard";
 import VinylCover from "@/components/VinylCover";
 import { API_BASE } from "@/lib/api";
 import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
+import { normalizeListing } from "@/lib/listing-normalize";
 import type { Listing, ListingsResponse } from "@/types";
 
 interface PageProps {
@@ -17,7 +18,8 @@ async function fetchListing(id: string): Promise<Listing | null> {
   const res = await fetch(`${API_BASE}/listings/${id}`, { cache: "no-store" });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error("Failed to load listing");
-  return res.json();
+  const data = (await res.json()) as Listing;
+  return normalizeListing(data);
 }
 
 async function fetchRelated(genre: string, excludeId: number): Promise<Listing[]> {
