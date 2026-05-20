@@ -87,6 +87,41 @@ export interface MessageReplyCreate {
   message_text: string;
 }
 
+export type OrderStatus =
+  | "created"
+  | "pending_payment"
+  | "paid"
+  | "pending_shipping"
+  | "shipped"
+  | "delivered"
+  | "completed"
+  | "disputed"
+  | "cancelled";
+
+export interface Order {
+  id: number;
+  listing_id: number;
+  buyer_id: number;
+  seller_id: number;
+  listing_price_clp: number;
+  shipping_price_clp?: number | null;
+  status: OrderStatus | string;
+  carrier?: string | null;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  listing_title?: string;
+  listing_artist?: string;
+}
+
+export interface OrderShippingUpdate {
+  carrier?: string;
+  tracking_number?: string;
+  tracking_url?: string;
+  shipping_price_clp?: number | null;
+}
+
 export interface ListingCreate {
   title: string;
   artist: string;

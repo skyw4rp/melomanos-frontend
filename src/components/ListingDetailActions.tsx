@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import MessageForm from "@/components/MessageForm";
 import { isOwnListing } from "@/lib/auth";
-import { addFavorite, getStoredUser, getToken, reserveListing } from "@/lib/api";
+import { addFavorite, createOrderFromListing, getStoredUser, getToken } from "@/lib/api";
 
 interface ListingDetailActionsProps {
   listingId: number;
@@ -26,8 +26,8 @@ export default function ListingDetailActions({
 
   const [showMessage, setShowMessage] = useState(false);
   const [favState, setFavState] = useState<ActionState>("idle");
-  const [reserveState, setReserveState] = useState<ActionState>("idle");
-  const [reserveError, setReserveError] = useState("");
+  const [buyState, setBuyState] = useState<ActionState>("idle");
+  const [buyError, setBuyError] = useState("");
 
   const safeStatus = (status ?? "available").toLowerCase();
   const isReserved = safeStatus === "reserved";
@@ -50,19 +50,19 @@ export default function ListingDetailActions({
     }
   }
 
-  async function handleReserve() {
+  async function handleBuy() {
     if (!requireAuth()) return;
     if (isReserved || isSold) return;
 
-    setReserveState("loading");
-    setReserveError("");
+    setBuyState("loading");
+    setBuyError("");
     try {
-      await reserveListing(listingId);
-      setReserveState("done");
+      const order = await createOrderFromListing(listingId);
+      router.push(`/orders/${order.id}`);
     } catch (err) {
-      setReserveState("error");
-      setReserveError(
-        err instanceof Error ? err.message : "No se pudo reservar este vinilo",
+      setBuyState("error");
+      setBuyError(
+        err instanceof Error ? err.message : "No se pudo crear el pedido",
       );
     }
   }
@@ -75,13 +75,13 @@ export default function ListingDetailActions({
         </p>
         <p className="mt-2 text-lg font-semibold text-white">Esta es tu publicación</p>
         <p className="mt-2 text-sm text-zinc-400">
-          Puedes gestionarla desde tu perfil próximamente.
+          Gestiona pedidos desde Orders cuando un comprador inicie una compra.
         </p>
         <Link
-          href="/profile"
+          href="/orders"
           className="mt-4 inline-block text-sm font-medium text-violet-300 hover:text-violet-200"
         >
-          Ir a tu perfil →
+          Ver pedidos →
         </Link>
       </div>
     );
@@ -116,32 +116,25 @@ export default function ListingDetailActions({
 
         <button
           type="button"
-          onClick={handleReserve}
-          disabled={
-            reserveState === "loading" ||
-            reserveState === "done" ||
-            isReserved ||
-            isSold
-          }
+          onClick={handleBuy}
+          disabled={buyState === "loading" || isReserved || isSold}
           className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-3 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
         >
-          {reserveState === "done"
-            ? "Reservado"
+          {isSold
+            ? "Vendido"
             : isReserved
-              ? "Ya reservado"
-              : isSold
-                ? "Vendido"
-                : reserveState === "loading"
-                  ? "…"
-                  : "Reservar vinilo"}
+              ? "Reservado"
+              : buyState === "loading"
+                ? "…"
+                : "Comprar"}
         </button>
       </div>
 
       {favState === "error" && (
         <p className="text-xs text-red-400">No se pudo agregar a favoritos.</p>
       )}
-      {reserveState === "error" && (
-        <p className="text-xs text-red-400">{reserveError}</p>
+      {buyState === "error" && (
+        <p className="text-xs text-red-400">{buyError}</p>
       )}
 
       {showMessage && getToken() && (

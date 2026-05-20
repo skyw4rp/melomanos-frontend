@@ -9,6 +9,8 @@ import type {
   Message,
   MessageCreate,
   MessageReplyCreate,
+  Order,
+  OrderShippingUpdate,
   User,
 } from "@/types";
 
@@ -98,6 +100,35 @@ export function logout(): void {
   dispatchAuthChange();
 }
 
+export const SESSION_EXPIRED_MESSAGE = "Session expired. Please login again.";
+
+export function isSessionExpiredError(err: unknown): boolean {
+  return err instanceof Error && err.message === SESSION_EXPIRED_MESSAGE;
+}
+
+function handleUnauthorized(): never {
+  logout();
+  throw new Error(SESSION_EXPIRED_MESSAGE);
+}
+
+async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const hadToken = Boolean(token);
+  const res = await fetch(input, { ...init, headers });
+
+  if (res.status === 401 && hadToken) {
+    handleUnauthorized();
+  }
+
+  return res;
+}
+
 export function extractItems<T>(
   response: T[] | { items?: T[] } | unknown,
 ): T[] {
@@ -132,11 +163,6 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-function authHeaders(): HeadersInit {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const body = new URLSearchParams({
     username: email,
@@ -154,12 +180,7 @@ export async function login(email: string, password: string): Promise<LoginRespo
 }
 
 export async function getMe(): Promise<User> {
-  const res = await fetch(`${API_BASE}/auth/me`, {
-    headers: {
-      ...authHeaders(),
-    },
-    cache: "no-store",
-  });
+  const res = await authFetch(`${API_BASE}/auth/me`, { cache: "no-store" });
   return handleResponse<User>(res);
 }
 
@@ -179,24 +200,16 @@ export async function getListing(id: number | string): Promise<Listing> {
 }
 
 export async function createListing(data: ListingCreate): Promise<Listing> {
-  const res = await fetch(`${API_BASE}/listings`, {
+  const res = await authFetch(`${API_BASE}/listings`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   return handleResponse<Listing>(res);
 }
 
 export async function getMyFavorites(): Promise<FavoriteWithListing[]> {
-  const res = await fetch(`${API_BASE}/favorites/me`, {
-    headers: {
-      ...authHeaders(),
-    },
-    cache: "no-store",
-  });
+  const res = await authFetch(`${API_BASE}/favorites/me`, { cache: "no-store" });
   const data = await handleResponse<FavoriteWithListing[] | { items?: FavoriteWithListing[] }>(
     res,
   );
@@ -204,26 +217,19 @@ export async function getMyFavorites(): Promise<FavoriteWithListing[]> {
 }
 
 export async function getMySales(): Promise<Listing[]> {
-  const res = await fetch(`${API_BASE}/users/me/sales`, {
-    headers: { ...authHeaders() },
-    cache: "no-store",
-  });
+  const res = await authFetch(`${API_BASE}/users/me/sales`, { cache: "no-store" });
   const data = await handleResponse<Listing[] | { items?: Listing[] }>(res);
   return extractItems(data);
 }
 
 export async function getMyPurchases(): Promise<Listing[]> {
-  const res = await fetch(`${API_BASE}/users/me/purchases`, {
-    headers: { ...authHeaders() },
-    cache: "no-store",
-  });
+  const res = await authFetch(`${API_BASE}/users/me/purchases`, { cache: "no-store" });
   const data = await handleResponse<Listing[] | { items?: Listing[] }>(res);
   return extractItems(data);
 }
 
 export async function getConversations(): Promise<Conversation[]> {
-  const res = await fetch(`${API_BASE}/messages/conversations`, {
-    headers: { ...authHeaders() },
+  const res = await authFetch(`${API_BASE}/messages/conversations`, {
     cache: "no-store",
   });
   const data = await handleResponse<Conversation[] | { items?: Conversation[] }>(
@@ -233,8 +239,7 @@ export async function getConversations(): Promise<Conversation[]> {
 }
 
 export async function getMessagesForListing(listingId: number): Promise<Message[]> {
-  const res = await fetch(`${API_BASE}/messages/listing/${listingId}`, {
-    headers: { ...authHeaders() },
+  const res = await authFetch(`${API_BASE}/messages/listing/${listingId}`, {
     cache: "no-store",
   });
   const data = await handleResponse<Message[] | { items?: Message[] }>(res);
@@ -242,80 +247,105 @@ export async function getMessagesForListing(listingId: number): Promise<Message[
 }
 
 export async function markMessageRead(messageId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/messages/${messageId}/read`, {
+  const res = await authFetch(`${API_BASE}/messages/${messageId}/read`, {
     method: "PATCH",
-    headers: { ...authHeaders() },
   });
   return handleResponse<void>(res);
 }
 
 export async function markMessageUnread(messageId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/messages/${messageId}/unread`, {
+  const res = await authFetch(`${API_BASE}/messages/${messageId}/unread`, {
     method: "PATCH",
-    headers: { ...authHeaders() },
   });
   return handleResponse<void>(res);
 }
 
 export async function deleteMessage(messageId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/messages/${messageId}`, {
+  const res = await authFetch(`${API_BASE}/messages/${messageId}`, {
     method: "DELETE",
-    headers: { ...authHeaders() },
   });
   return handleResponse<void>(res);
 }
 
 /** Reply inside an existing conversation (not for starting a new thread). */
 export async function replyToMessage(data: MessageReplyCreate): Promise<void> {
-  const res = await fetch(`${API_BASE}/messages/reply`, {
+  const res = await authFetch(`${API_BASE}/messages/reply`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   return handleResponse<void>(res);
 }
 
 export async function addFavorite(listingId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/favorites/${listingId}`, {
+  const res = await authFetch(`${API_BASE}/favorites/${listingId}`, {
     method: "POST",
-    headers: {
-      ...authHeaders(),
-    },
   });
   return handleResponse<void>(res);
 }
 
 export async function removeFavorite(listingId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/favorites/${listingId}`, {
+  const res = await authFetch(`${API_BASE}/favorites/${listingId}`, {
     method: "DELETE",
-    headers: {
-      ...authHeaders(),
-    },
   });
   return handleResponse<void>(res);
 }
 
 export async function sendMessage(data: MessageCreate): Promise<void> {
-  const res = await fetch(`${API_BASE}/messages`, {
+  const res = await authFetch(`${API_BASE}/messages`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   return handleResponse<void>(res);
 }
 
-export async function reserveListing(listingId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/listings/${listingId}/reserve`, {
+export async function createOrderFromListing(listingId: number): Promise<Order> {
+  const res = await authFetch(`${API_BASE}/orders/from-listing/${listingId}`, {
     method: "POST",
-    headers: {
-      ...authHeaders(),
-    },
   });
-  return handleResponse<void>(res);
+  return handleResponse<Order>(res);
+}
+
+export async function getBuyingOrders(): Promise<Order[]> {
+  const res = await authFetch(`${API_BASE}/orders/me/buying`, { cache: "no-store" });
+  const data = await handleResponse<Order[] | { items?: Order[] }>(res);
+  return extractItems(data);
+}
+
+export async function getSellingOrders(): Promise<Order[]> {
+  const res = await authFetch(`${API_BASE}/orders/me/selling`, { cache: "no-store" });
+  const data = await handleResponse<Order[] | { items?: Order[] }>(res);
+  return extractItems(data);
+}
+
+export async function getOrder(orderId: number): Promise<Order> {
+  const res = await authFetch(`${API_BASE}/orders/${orderId}`, { cache: "no-store" });
+  return handleResponse<Order>(res);
+}
+
+export async function updateShipping(
+  orderId: number,
+  data: OrderShippingUpdate,
+): Promise<Order> {
+  const res = await authFetch(`${API_BASE}/orders/${orderId}/shipping`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Order>(res);
+}
+
+export async function completeOrder(orderId: number): Promise<Order> {
+  const res = await authFetch(`${API_BASE}/orders/${orderId}/complete`, {
+    method: "PATCH",
+  });
+  return handleResponse<Order>(res);
+}
+
+export async function openDispute(orderId: number): Promise<Order> {
+  const res = await authFetch(`${API_BASE}/orders/${orderId}/dispute`, {
+    method: "PATCH",
+  });
+  return handleResponse<Order>(res);
 }

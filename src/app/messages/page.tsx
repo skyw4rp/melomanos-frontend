@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import MessageBubble from "@/components/MessageBubble";
 import {
   deleteMessage,
   getConversations,
   getMe,
   getMessagesForListing,
-  getStoredUser,
   getToken,
   setStoredUser,
   markMessageRead,
@@ -17,6 +16,7 @@ import {
   replyToMessage,
 } from "@/lib/api";
 import { formatMessageTime } from "@/lib/format";
+import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import {
   dispatchMessagesUpdated,
   filterVisibleMessages,
@@ -42,6 +42,7 @@ function conversationPreview(conv: Conversation): string {
 
 export default function MessagesPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [user, setUser] = useState<User | null>(null);
@@ -106,6 +107,7 @@ export default function MessagesPage() {
         setMessages(sorted);
         await markUnreadInThread(sorted, currentUser.id);
       } catch (err) {
+        if (handleAuthRedirect(err, router, pathname)) return;
         setMessages([]);
         setThreadError(
           err instanceof Error ? err.message : "No se pudo cargar la conversación.",
@@ -119,18 +121,18 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!getToken()) {
-      router.replace("/login");
+      redirectToLogin(router, pathname);
       return;
     }
 
     async function init() {
       try {
-        const stored = getStoredUser();
-        const me = stored ?? (await getMe());
+        const me = await getMe();
         setStoredUser(me);
         setUser(me);
-      } catch {
-        router.replace("/login");
+      } catch (err) {
+        if (handleAuthRedirect(err, router, pathname)) return;
+        redirectToLogin(router, pathname);
         return;
       }
 
@@ -138,6 +140,7 @@ export default function MessagesPage() {
       setError("");
       loadConversations()
         .catch((err) => {
+          if (handleAuthRedirect(err, router, pathname)) return;
           setError(err instanceof Error ? err.message : "No se pudo cargar el inbox.");
         })
         .finally(() => setLoadingInbox(false));
@@ -186,6 +189,7 @@ export default function MessagesPage() {
       await loadConversations();
       dispatchMessagesUpdated();
     } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
       setThreadError(err instanceof Error ? err.message : "No se pudo enviar el mensaje.");
     } finally {
       setSending(false);
@@ -204,6 +208,7 @@ export default function MessagesPage() {
       await loadConversations();
       dispatchMessagesUpdated();
     } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
       setThreadError(err instanceof Error ? err.message : "No se pudo eliminar el mensaje.");
     } finally {
       setActionMessageId(null);
@@ -232,6 +237,7 @@ export default function MessagesPage() {
       );
       dispatchMessagesUpdated();
     } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
       setThreadError(
         err instanceof Error ? err.message : "No se pudo marcar como no leído.",
       );

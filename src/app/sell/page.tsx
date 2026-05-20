@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import VinylCover from "@/components/VinylCover";
 import { createListing, getToken } from "@/lib/api";
+import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import type { ListingCreate } from "@/types";
 
 const inputClass =
@@ -65,6 +66,7 @@ function validate(form: FormState): FieldErrors {
 
 export default function SellPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [form, setForm] = useState<FormState>(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState("");
@@ -75,7 +77,7 @@ export default function SellPage() {
 
   useEffect(() => {
     if (!getToken()) {
-      router.replace("/login");
+      redirectToLogin(router, pathname);
       return;
     }
     setAuthChecked(true);
@@ -110,6 +112,7 @@ export default function SellPage() {
         router.push(`/listings/${listing.id}`);
       }, 1200);
     } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
       setSubmitError(
         err instanceof Error ? err.message : "Could not create listing. Try again.",
       );

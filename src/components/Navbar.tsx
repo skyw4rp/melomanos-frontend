@@ -8,8 +8,8 @@ import { formatProfileName, getUserInitials } from "@/lib/auth";
 import {
   getConversations,
   getMe,
-  getStoredUser,
   getToken,
+  isSessionExpiredError,
   logout,
   setStoredUser,
 } from "@/lib/api";
@@ -88,24 +88,23 @@ export default function Navbar() {
     const token = getToken();
     if (!token) {
       setUser(null);
+      setUnreadMessages(0);
       setHydrated(true);
       return;
     }
 
-    const stored = getStoredUser();
-    if (stored) {
-      setUser(stored);
-      setHydrated(true);
-      return;
-    }
+    setUser(null);
 
     try {
       const me = await getMe();
       setStoredUser(me);
       setUser(me);
-    } catch {
-      logout();
+    } catch (err) {
+      if (!isSessionExpiredError(err)) {
+        logout();
+      }
       setUser(null);
+      setUnreadMessages(0);
     } finally {
       setHydrated(true);
     }
@@ -192,6 +191,10 @@ export default function Navbar() {
                   <span className="sm:hidden" aria-label="Favorites">
                     ♥
                   </span>
+                </Link>
+
+                <Link href="/orders" className={linkClass("/orders")}>
+                  Orders
                 </Link>
 
                 <MessagesLink unread={unreadMessages} />

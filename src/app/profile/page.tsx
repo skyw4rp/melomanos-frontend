@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { formatProfileName, getUserInitials } from "@/lib/auth";
+import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import {
   getConversations,
   getMe,
   getMyFavorites,
   getMyPurchases,
   getMySales,
-  getStoredUser,
   getToken,
   logout,
   setStoredUser,
@@ -125,6 +125,7 @@ function StatCard({
 
 export default function ProfilePage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [sales, setSales] = useState<Listing[]>([]);
   const [purchases, setPurchases] = useState<Listing[]>([]);
@@ -139,9 +140,6 @@ export default function ProfilePage() {
     setError("");
 
     try {
-      const stored = getStoredUser();
-      if (stored) setUser(stored);
-
       const [me, salesData, purchasesData, favoritesData, convData] =
         await Promise.all([
           getMe(),
@@ -158,17 +156,18 @@ export default function ProfilePage() {
       setFavorites(listingsFromFavorites(favoritesData));
       setConversations(convData);
     } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
       setError(
         err instanceof Error ? err.message : "No se pudo cargar tu perfil.",
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!getToken()) {
-      router.replace("/login");
+      redirectToLogin(router, pathname);
       return;
     }
     loadDashboard();

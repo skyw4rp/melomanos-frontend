@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { dispatchAuthChange } from "@/lib/auth-events";
 import { getMe, login, setStoredUser, setToken } from "@/lib/api";
+import {
+  getSafeRedirectPath,
+  SESSION_EXPIRED_UI_MESSAGE,
+} from "@/lib/auth-session";
 
 function formatLoginError(err: unknown): string {
   if (err instanceof Error) {
@@ -17,8 +21,12 @@ function formatLoginError(err: unknown): string {
   return "No se pudo iniciar sesión. Verifica tus datos e intenta otra vez.";
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const redirectAfterLogin = getSafeRedirectPath(nextParam) ?? "/";
+  const sessionExpired = Boolean(nextParam && getSafeRedirectPath(nextParam));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -41,7 +49,7 @@ export default function LoginPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/");
+        router.push(redirectAfterLogin);
         router.refresh();
       }, 900);
     } catch (err) {
@@ -60,6 +68,12 @@ export default function LoginPage() {
         <p className="mt-2 text-sm text-zinc-400">
           Sign in to save favorites, message sellers, and list vinyl.
         </p>
+
+        {sessionExpired && (
+          <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            {SESSION_EXPIRED_UI_MESSAGE}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
@@ -131,5 +145,19 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-md px-4 py-16 text-center text-sm text-zinc-500">
+          Cargando…
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import ListingCard from "@/components/ListingCard";
 import { getMyFavorites, getToken } from "@/lib/api";
+import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import { mapFavoritesToEntries, type FavoriteListingEntry } from "@/lib/listing-normalize";
 
 function FavoriteFallbackCard({
@@ -38,13 +39,14 @@ function FavoriteFallbackCard({
 
 export default function FavoritesPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [entries, setEntries] = useState<FavoriteListingEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!getToken()) {
-      router.replace("/login");
+      redirectToLogin(router, pathname);
       return;
     }
 
@@ -53,9 +55,10 @@ export default function FavoritesPage() {
         const items = Array.isArray(favorites) ? favorites : [];
         setEntries(mapFavoritesToEntries(items));
       })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Failed to load favorites"),
-      )
+      .catch((err) => {
+        if (handleAuthRedirect(err, router, pathname)) return;
+        setError(err instanceof Error ? err.message : "Failed to load favorites");
+      })
       .finally(() => setLoading(false));
   }, [router]);
 
