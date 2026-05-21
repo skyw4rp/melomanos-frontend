@@ -145,3 +145,7 @@ export function timelinePhaseState(
 export function isTerminalOrderStatus(status: OrderStatus): boolean {
   return status === "disputed" || status === "cancelled";
 }
+
+export function orderNeedsPayment(status: OrderStatus): boolean {
+  return status === "created" || status === "pending_payment";
+}

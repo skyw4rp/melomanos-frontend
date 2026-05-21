@@ -10,6 +10,7 @@ import {
   getToken,
   openDispute,
   setStoredUser,
+  simulatePayment,
   updateShipping,
 } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
@@ -20,6 +21,7 @@ import {
   isTerminalOrderStatus,
   normalizeOrderStatus,
   orderHasTracking,
+  orderNeedsPayment,
   orderListingTitle,
   orderStatusBadgeClass,
   orderStatusLabel,
@@ -50,6 +52,20 @@ export default function OrderDetailPage() {
   const [trackingUrl, setTrackingUrl] = useState("");
   const [shippingNotes, setShippingNotes] = useState("");
 
+  const applyOrderState = useCallback((data: Order) => {
+    setOrder(data);
+    setCarrier(data.carrier ?? "");
+    setTrackingNumber(data.tracking_number ?? "");
+    setTrackingUrl(data.tracking_url ?? "");
+    setShippingNotes(data.shipping_notes ?? "");
+  }, []);
+
+  const refreshOrder = useCallback(async () => {
+    const refreshed = await getOrder(orderId);
+    applyOrderState(refreshed);
+    return refreshed;
+  }, [orderId, applyOrderState]);
+
   const loadOrder = useCallback(async () => {
     if (Number.isNaN(orderId)) {
       setError("Pedido no válido.");
@@ -60,12 +76,7 @@ export default function OrderDetailPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await getOrder(orderId);
-      setOrder(data);
-      setCarrier(data.carrier ?? "");
-      setTrackingNumber(data.tracking_number ?? "");
-      setTrackingUrl(data.tracking_url ?? "");
-      setShippingNotes(data.shipping_notes ?? "");
+      await refreshOrder();
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setOrder(null);
@@ -73,7 +84,7 @@ export default function OrderDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [orderId, pathname, router]);
+  }, [orderId, pathname, router, refreshOrder]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -97,6 +108,24 @@ export default function OrderDetailPage() {
     init();
   }, [router, pathname, loadOrder]);
 
+  async function handleConfirmPayment() {
+    if (!order) return;
+
+    setBusy(true);
+    setActionError("");
+    try {
+      await simulatePayment(order.id);
+      await refreshOrder();
+    } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
+      setActionError(
+        err instanceof Error ? err.message : "No se pudo confirmar el pago.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleShippingSubmit(e: FormEvent) {
     e.preventDefault();
     if (!order) return;
@@ -109,17 +138,13 @@ export default function OrderDetailPage() {
     setBusy(true);
     setActionError("");
     try {
-      const updated = await updateShipping(order.id, {
+      await updateShipping(order.id, {
         carrier: carrier.trim(),
         tracking_number: trackingNumber.trim(),
         tracking_url: trackingUrl.trim() || undefined,
         shipping_notes: shippingNotes.trim() || undefined,
       });
-      setOrder(updated);
-      setCarrier(updated.carrier ?? "");
-      setTrackingNumber(updated.tracking_number ?? "");
-      setTrackingUrl(updated.tracking_url ?? "");
-      setShippingNotes(updated.shipping_notes ?? "");
+      await refreshOrder();
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setActionError(
@@ -135,8 +160,8 @@ export default function OrderDetailPage() {
     setBusy(true);
     setActionError("");
     try {
-      const updated = await completeOrder(order.id);
-      setOrder(updated);
+      await completeOrder(order.id);
+      await refreshOrder();
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setActionError(
@@ -152,8 +177,8 @@ export default function OrderDetailPage() {
     setBusy(true);
     setActionError("");
     try {
-      const updated = await openDispute(order.id);
-      setOrder(updated);
+      await openDispute(order.id);
+      await refreshOrder();
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setActionError(
@@ -193,7 +218,9 @@ export default function OrderDetailPage() {
   const terminal = isTerminalOrderStatus(status);
   const phases = orderTimelinePhases();
   const hasTracking = orderHasTracking(order);
+  const showPaymentCard = isBuyer && orderNeedsPayment(status);
   const showShippingForm = isSeller && status === "pending_shipping";
+  const showSellerAwaitingShipping = isSeller && status === "pending_shipping";
   const showBuyerActions = isBuyer && status === "shipped";
 
   return (
@@ -339,6 +366,25 @@ export default function OrderDetailPage() {
             )}
           </section>
 
+          {showPaymentCard && (
+            <section className="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-950/30 via-violet-950/20 to-transparent p-5 sm:p-6">
+              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                Pago pendiente
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                Confirma el pago para que el vendedor pueda preparar el envío.
+              </p>
+              <button
+                type="button"
+                onClick={handleConfirmPayment}
+                disabled={busy}
+                className="mt-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
+              >
+                {busy ? "Confirmando…" : "Confirmar pago"}
+              </button>
+            </section>
+          )}
+
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
             <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
               Seguimiento
@@ -407,6 +453,17 @@ export default function OrderDetailPage() {
             <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
               {actionError}
             </p>
+          )}
+
+          {showSellerAwaitingShipping && (
+            <div className="rounded-2xl border border-emerald-500/25 bg-emerald-950/20 p-5">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/90">
+                Pago confirmado
+              </p>
+              <p className="mt-2 text-sm text-zinc-300">
+                Esperando información de envío.
+              </p>
+            </div>
           )}
 
           {showShippingForm && (

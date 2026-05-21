@@ -324,6 +324,13 @@ export async function getOrder(orderId: number): Promise<Order> {
   return handleResponse<Order>(res);
 }
 
+export async function simulatePayment(orderId: number): Promise<Order> {
+  const res = await authFetch(`${API_BASE}/orders/${orderId}/simulate-payment`, {
+    method: "PATCH",
+  });
+  return handleResponse<Order>(res);
+}
+
 export async function updateShipping(
   orderId: number,
   data: OrderShippingUpdate,
