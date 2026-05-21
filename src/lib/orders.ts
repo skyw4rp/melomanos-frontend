@@ -13,10 +13,10 @@ export const ORDER_STATUSES: OrderStatus[] = [
 ];
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  created: "Creado",
+  created: "Compra iniciada",
   pending_payment: "Pago pendiente",
-  paid: "Pagado",
-  pending_shipping: "Envío pendiente",
+  paid: "Pago confirmado",
+  pending_shipping: "Pendiente de envío",
   shipped: "Enviado",
   delivered: "Entregado",
   completed: "Completado",
@@ -35,6 +35,23 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
   disputed: "bg-red-500/20 text-red-200 ring-red-500/40",
   cancelled: "bg-zinc-500/20 text-zinc-400 ring-zinc-500/30",
 };
+
+const STATUS_FLOW: OrderStatus[] = [
+  "created",
+  "pending_payment",
+  "paid",
+  "pending_shipping",
+  "shipped",
+  "delivered",
+  "completed",
+];
+
+export interface OrderTimelinePhase {
+  key: string;
+  title: string;
+  hint: string;
+  statuses: OrderStatus[];
+}
 
 export function normalizeOrderStatus(status?: string | null): OrderStatus {
   const value = (status ?? "created").toLowerCase() as OrderStatus;
@@ -68,21 +85,63 @@ export function isOrderSeller(order: Order, userId: number): boolean {
   return order.seller_id === userId;
 }
 
-export function orderTimelineSteps(): { status: OrderStatus; label: string }[] {
+export function orderHasTracking(order: Order): boolean {
+  return Boolean(
+    order.carrier?.trim() || order.tracking_number?.trim() || order.tracking_url?.trim(),
+  );
+}
+
+export function orderTimelinePhases(): OrderTimelinePhase[] {
   return [
-    { status: "created", label: "Creado" },
-    { status: "pending_payment", label: "Pago" },
-    { status: "paid", label: "Pagado" },
-    { status: "pending_shipping", label: "Preparar envío" },
-    { status: "shipped", label: "Enviado" },
-    { status: "delivered", label: "Entregado" },
-    { status: "completed", label: "Completado" },
+    {
+      key: "created",
+      title: "Compra iniciada",
+      hint: "Pedido creado",
+      statuses: ["created"],
+    },
+    {
+      key: "payment",
+      title: "Pago y preparación",
+      hint: "Pago pendiente · pago confirmado · pendiente de envío",
+      statuses: ["pending_payment", "paid", "pending_shipping"],
+    },
+    {
+      key: "shipped",
+      title: "Enviado",
+      hint: "Vinilo en camino",
+      statuses: ["shipped"],
+    },
+    {
+      key: "delivery",
+      title: "Entrega",
+      hint: "Entregado · completado",
+      statuses: ["delivered", "completed"],
+    },
   ];
 }
 
-export function timelineStepIndex(status: OrderStatus): number {
-  if (status === "disputed" || status === "cancelled") return -1;
-  const steps = orderTimelineSteps();
-  const idx = steps.findIndex((s) => s.status === status);
-  return idx >= 0 ? idx : 0;
+export type TimelinePhaseState = "done" | "current" | "upcoming";
+
+export function timelinePhaseState(
+  phase: OrderTimelinePhase,
+  status: OrderStatus,
+): TimelinePhaseState {
+  const statusIdx = STATUS_FLOW.indexOf(status);
+  if (statusIdx < 0) return "upcoming";
+
+  const indices = phase.statuses
+    .map((s) => STATUS_FLOW.indexOf(s))
+    .filter((i) => i >= 0);
+  if (indices.length === 0) return "upcoming";
+
+  const min = Math.min(...indices);
+  const max = Math.max(...indices);
+
+  if (statusIdx > max) return "done";
+  if (statusIdx >= min && statusIdx <= max) return "current";
+  return "upcoming";
+}
+
+export function isTerminalOrderStatus(status: OrderStatus): boolean {
+  return status === "disputed" || status === "cancelled";
 }

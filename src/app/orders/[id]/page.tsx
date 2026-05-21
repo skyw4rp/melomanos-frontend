@@ -17,15 +17,20 @@ import { formatMessageTime, formatPriceCLP, displayValue } from "@/lib/format";
 import {
   isOrderBuyer,
   isOrderSeller,
+  isTerminalOrderStatus,
   normalizeOrderStatus,
+  orderHasTracking,
   orderListingTitle,
   orderStatusBadgeClass,
   orderStatusLabel,
-  orderTimelineSteps,
+  orderTimelinePhases,
   orderTotalClp,
-  timelineStepIndex,
+  timelinePhaseState,
 } from "@/lib/orders";
 import type { Order, User } from "@/types";
+
+const inputClass =
+  "mt-1 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60";
 
 export default function OrderDetailPage() {
   const router = useRouter();
@@ -43,6 +48,7 @@ export default function OrderDetailPage() {
   const [carrier, setCarrier] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingUrl, setTrackingUrl] = useState("");
+  const [shippingNotes, setShippingNotes] = useState("");
 
   const loadOrder = useCallback(async () => {
     if (Number.isNaN(orderId)) {
@@ -59,6 +65,7 @@ export default function OrderDetailPage() {
       setCarrier(data.carrier ?? "");
       setTrackingNumber(data.tracking_number ?? "");
       setTrackingUrl(data.tracking_url ?? "");
+      setShippingNotes(data.shipping_notes ?? "");
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setOrder(null);
@@ -66,7 +73,7 @@ export default function OrderDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, pathname, router]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -88,28 +95,35 @@ export default function OrderDetailPage() {
     }
 
     init();
-  }, [router, loadOrder]);
+  }, [router, pathname, loadOrder]);
 
   async function handleShippingSubmit(e: FormEvent) {
     e.preventDefault();
     if (!order) return;
 
+    if (!carrier.trim() || !trackingNumber.trim()) {
+      setActionError("Ingresa transportista y número de seguimiento.");
+      return;
+    }
+
     setBusy(true);
     setActionError("");
     try {
       const updated = await updateShipping(order.id, {
-        carrier: carrier.trim() || undefined,
-        tracking_number: trackingNumber.trim() || undefined,
+        carrier: carrier.trim(),
+        tracking_number: trackingNumber.trim(),
         tracking_url: trackingUrl.trim() || undefined,
+        shipping_notes: shippingNotes.trim() || undefined,
       });
       setOrder(updated);
       setCarrier(updated.carrier ?? "");
       setTrackingNumber(updated.tracking_number ?? "");
       setTrackingUrl(updated.tracking_url ?? "");
+      setShippingNotes(updated.shipping_notes ?? "");
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setActionError(
-        err instanceof Error ? err.message : "No se pudo guardar el tracking.",
+        err instanceof Error ? err.message : "No se pudo confirmar el envío.",
       );
     } finally {
       setBusy(false);
@@ -176,14 +190,11 @@ export default function OrderDetailPage() {
   const status = normalizeOrderStatus(order.status);
   const isBuyer = isOrderBuyer(order, user.id);
   const isSeller = isOrderSeller(order, user.id);
-  const currentStep = timelineStepIndex(status);
-  const steps = orderTimelineSteps();
-  const canComplete =
-    isBuyer &&
-    (status === "shipped" || status === "delivered" || status === "paid");
-  const canDispute =
-    isBuyer && status !== "completed" && status !== "cancelled" && status !== "disputed";
-  const canAddTracking = isSeller && status !== "cancelled" && status !== "completed";
+  const terminal = isTerminalOrderStatus(status);
+  const phases = orderTimelinePhases();
+  const hasTracking = orderHasTracking(order);
+  const showShippingForm = isSeller && status === "pending_shipping";
+  const showBuyerActions = isBuyer && status === "shipped";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -258,23 +269,36 @@ export default function OrderDetailPage() {
 
           <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-950/30 to-transparent p-5 sm:p-6">
             <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
-              Status timeline
+              Estado del pedido
             </h2>
 
-            {status === "disputed" || status === "cancelled" ? (
-              <p className="mt-4 text-sm text-zinc-400">
-                Este pedido está en estado{" "}
-                <span className="font-semibold text-white">{orderStatusLabel(status)}</span>.
-              </p>
+            {terminal ? (
+              <div className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-5">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+                  Estado final
+                </p>
+                <p className="mt-2 text-lg font-semibold text-white">
+                  {orderStatusLabel(status)}
+                </p>
+                <p className="mt-2 text-sm text-zinc-400">
+                  {status === "disputed"
+                    ? "Este pedido está en revisión. Contacta al otro usuario si necesitas más detalles."
+                    : "Este pedido fue cancelado y ya no avanzará en el flujo."}
+                </p>
+              </div>
             ) : (
               <ol className="mt-6 space-y-0">
-                {steps.map((step, index) => {
-                  const done = index <= currentStep;
-                  const active = index === currentStep;
+                {phases.map((phase, index) => {
+                  const phaseState = timelinePhaseState(phase, status);
+                  const done = phaseState === "done";
+                  const active = phaseState === "current";
 
                   return (
-                    <li key={step.status} className="relative flex gap-4 pb-8 last:pb-0">
-                      {index < steps.length - 1 && (
+                    <li
+                      key={phase.key}
+                      className="relative flex gap-4 pb-8 last:pb-0"
+                    >
+                      {index < phases.length - 1 && (
                         <span
                           className={`absolute left-[11px] top-6 h-full w-px ${
                             done ? "bg-violet-500/50" : "bg-white/10"
@@ -293,16 +317,19 @@ export default function OrderDetailPage() {
                       >
                         {done ? "✓" : index + 1}
                       </span>
-                      <div>
+                      <div className="min-w-0">
                         <p
                           className={`text-sm font-semibold ${
                             active || done ? "text-white" : "text-zinc-500"
                           }`}
                         >
-                          {step.label}
+                          {phase.title}
                         </p>
+                        <p className="mt-0.5 text-xs text-zinc-500">{phase.hint}</p>
                         {active && (
-                          <p className="mt-0.5 text-xs text-violet-300/80">Estado actual</p>
+                          <p className="mt-2 inline-block rounded-full bg-fuchsia-500/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-fuchsia-200">
+                            {orderStatusLabel(status)}
+                          </p>
                         )}
                       </div>
                     </li>
@@ -314,37 +341,50 @@ export default function OrderDetailPage() {
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
             <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
-              Tracking
+              Seguimiento
             </h2>
-            <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-zinc-500">Carrier</dt>
-                <dd className="text-white">{displayValue(order.carrier)}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-zinc-500">Tracking #</dt>
-                <dd className="font-mono text-white">
-                  {displayValue(order.tracking_number)}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-zinc-500">Tracking URL</dt>
-                <dd className="text-right">
-                  {order.tracking_url ? (
-                    <a
-                      href={order.tracking_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-violet-300 hover:text-violet-200"
-                    >
-                      Abrir seguimiento
-                    </a>
-                  ) : (
-                    <span className="text-zinc-500">—</span>
-                  )}
-                </dd>
-              </div>
-            </dl>
+
+            {hasTracking ? (
+              <dl className="mt-4 space-y-3 text-sm">
+                <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
+                  <dt className="text-zinc-500">Transportista</dt>
+                  <dd className="font-medium text-white">
+                    {displayValue(order.carrier)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
+                  <dt className="text-zinc-500">Número de seguimiento</dt>
+                  <dd className="font-mono text-white">
+                    {displayValue(order.tracking_number)}
+                  </dd>
+                </div>
+                {order.tracking_url && (
+                  <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
+                    <dt className="text-zinc-500">Enlace</dt>
+                    <dd>
+                      <a
+                        href={order.tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-violet-300 hover:text-violet-200"
+                      >
+                        Ver seguimiento
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {order.shipping_notes?.trim() && (
+                  <div>
+                    <dt className="text-zinc-500">Notas de envío</dt>
+                    <dd className="mt-1 text-zinc-300">{order.shipping_notes}</dd>
+                  </div>
+                )}
+              </dl>
+            ) : (
+              <p className="mt-4 text-sm text-zinc-400">
+                El vendedor aún no ha ingresado el seguimiento.
+              </p>
+            )}
           </section>
         </div>
 
@@ -369,60 +409,82 @@ export default function OrderDetailPage() {
             </p>
           )}
 
-          {canAddTracking && (
+          {showShippingForm && (
             <form
               onSubmit={handleShippingSubmit}
               className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-violet-950/40 to-[#0d0a14] p-5"
             >
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-300/90">
-                Agregar tracking
+                Confirmar envío
               </h2>
+              <p className="mt-2 text-xs text-zinc-400">
+                Ingresa el tracking para marcar el pedido como enviado.
+              </p>
               <label className="mt-4 block text-xs text-zinc-500">
-                Carrier
+                Transportista *
                 <input
                   value={carrier}
                   onChange={(e) => setCarrier(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  required
+                  disabled={busy}
+                  className={inputClass}
                   placeholder="Chilexpress, Starken…"
                 />
               </label>
               <label className="mt-3 block text-xs text-zinc-500">
-                Tracking number
+                Número de seguimiento *
                 <input
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  required
+                  disabled={busy}
+                  className={inputClass}
                 />
               </label>
               <label className="mt-3 block text-xs text-zinc-500">
-                Tracking URL
+                URL de seguimiento (opcional)
                 <input
                   value={trackingUrl}
                   onChange={(e) => setTrackingUrl(e.target.value)}
                   type="url"
-                  className="mt-1 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  disabled={busy}
+                  className={inputClass}
                   placeholder="https://…"
+                />
+              </label>
+              <label className="mt-3 block text-xs text-zinc-500">
+                Notas de envío (opcional)
+                <textarea
+                  value={shippingNotes}
+                  onChange={(e) => setShippingNotes(e.target.value)}
+                  rows={3}
+                  disabled={busy}
+                  className={`${inputClass} resize-y`}
+                  placeholder="Instrucciones o detalles para el comprador…"
                 />
               </label>
               <button
                 type="submit"
                 disabled={busy}
-                className="mt-4 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                className="mt-4 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
               >
-                {busy ? "Guardando…" : "Guardar tracking"}
+                {busy ? "Confirmando…" : "Confirmar envío"}
               </button>
             </form>
           )}
 
-          {isBuyer && (
+          {showBuyerActions && (
             <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
                 Acciones comprador
               </h2>
+              <p className="text-xs text-zinc-500">
+                El vendedor marcó el envío. Confirma cuando recibas el vinilo.
+              </p>
               <button
                 type="button"
                 onClick={handleComplete}
-                disabled={busy || !canComplete}
+                disabled={busy}
                 className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
               >
                 Confirmar recepción
@@ -430,12 +492,18 @@ export default function OrderDetailPage() {
               <button
                 type="button"
                 onClick={handleDispute}
-                disabled={busy || !canDispute}
+                disabled={busy}
                 className="w-full rounded-xl border border-red-500/30 bg-red-500/10 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-50"
               >
                 Reportar problema
               </button>
             </div>
+          )}
+
+          {isSeller && status === "shipped" && (
+            <p className="rounded-xl border border-violet-500/20 bg-violet-950/30 px-4 py-3 text-xs text-violet-200/90">
+              Envío confirmado. Espera a que el comprador confirme la recepción.
+            </p>
           )}
         </aside>
       </div>

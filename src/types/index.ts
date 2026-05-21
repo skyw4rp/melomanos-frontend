@@ -109,6 +109,7 @@ export interface Order {
   carrier?: string | null;
   tracking_number?: string | null;
   tracking_url?: string | null;
+  shipping_notes?: string | null;
   created_at?: string;
   updated_at?: string;
   listing_title?: string;
@@ -119,6 +120,7 @@ export interface OrderShippingUpdate {
   carrier?: string;
   tracking_number?: string;
   tracking_url?: string;
+  shipping_notes?: string;
   shipping_price_clp?: number | null;
 }
 
