@@ -1,4 +1,13 @@
 import { expect, type Page } from "@playwright/test";
+import { BUYER_EMAIL, E2E_PASSWORD, SELLER_EMAIL } from "./constants";
+
+export async function loginAsBuyer(page: Page): Promise<void> {
+  await login(page, BUYER_EMAIL, E2E_PASSWORD);
+}
+
+export async function loginAsSeller(page: Page): Promise<void> {
+  await login(page, SELLER_EMAIL, E2E_PASSWORD);
+}
 
 export async function login(
   page: Page,

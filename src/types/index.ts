@@ -124,6 +124,23 @@ export interface OrderShippingUpdate {
   shipping_price_clp?: number | null;
 }
 
+export interface ReviewCreate {
+  listing_id: number;
+  rating: number;
+  comment?: string | null;
+}
+
+export interface Review {
+  id: number;
+  listing_id: number;
+  seller_id: number;
+  reviewer_id: number;
+  rating: number;
+  comment?: string | null;
+  created_at?: string;
+  reviewer_name?: string;
+}
+
 export interface ListingCreate {
   title: string;
   artist: string;

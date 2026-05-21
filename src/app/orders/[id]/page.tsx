@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import {
   completeOrder,
+  createReview,
   getMe,
   getOrder,
   getToken,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import { formatMessageTime, formatPriceCLP, displayValue } from "@/lib/format";
+import { formatReviewSubmitError } from "@/lib/reviews";
 import {
   isOrderBuyer,
   isOrderSeller,
@@ -51,6 +53,11 @@ export default function OrderDetailPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingUrl, setTrackingUrl] = useState("");
   const [shippingNotes, setShippingNotes] = useState("");
+  const [rating, setRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSent, setReviewSent] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const [reviewSuccess, setReviewSuccess] = useState("");
 
   const applyOrderState = useCallback((data: Order) => {
     setOrder(data);
@@ -172,6 +179,37 @@ export default function OrderDetailPage() {
     }
   }
 
+  async function handleReviewSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!order) return;
+
+    if (rating < 1 || rating > 5) {
+      setReviewError("Selecciona una calificación de 1 a 5 estrellas.");
+      return;
+    }
+
+    setBusy(true);
+    setReviewError("");
+    setReviewSuccess("");
+
+    try {
+      await createReview({
+        listing_id: order.listing_id,
+        rating,
+        comment: reviewComment.trim() || undefined,
+      });
+      setReviewSent(true);
+      setReviewSuccess(
+        "Review enviada. Gracias por fortalecer la comunidad Melómanos.",
+      );
+    } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
+      setReviewError(formatReviewSubmitError(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleDispute() {
     if (!order) return;
     setBusy(true);
@@ -222,6 +260,7 @@ export default function OrderDetailPage() {
   const showShippingForm = isSeller && status === "pending_shipping";
   const showBuyerPreparing = isBuyer && status === "pending_shipping";
   const showBuyerActions = isBuyer && status === "shipped";
+  const showReviewForm = isBuyer && status === "completed" && !reviewSent;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -247,6 +286,7 @@ export default function OrderDetailPage() {
           )}
         </div>
         <span
+          data-testid="order-status"
           className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${orderStatusBadgeClass(status)}`}
         >
           {orderStatusLabel(status)}
@@ -376,6 +416,7 @@ export default function OrderDetailPage() {
               </p>
               <button
                 type="button"
+                data-testid="order-confirm-payment"
                 onClick={handleConfirmPayment}
                 disabled={busy}
                 className="mt-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
@@ -387,6 +428,7 @@ export default function OrderDetailPage() {
 
           {showShippingForm && (
             <form
+              data-testid="order-shipping-form"
               onSubmit={handleShippingSubmit}
               className="rounded-2xl border-2 border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-violet-950/50 to-[#0d0a14] p-5 shadow-xl shadow-fuchsia-950/30 sm:p-6"
             >
@@ -401,6 +443,7 @@ export default function OrderDetailPage() {
                 <label className="block text-xs text-zinc-500 sm:col-span-1">
                   Empresa *
                   <input
+                    data-testid="order-shipping-carrier"
                     value={carrier}
                     onChange={(e) => setCarrier(e.target.value)}
                     required
@@ -412,6 +455,7 @@ export default function OrderDetailPage() {
                 <label className="block text-xs text-zinc-500 sm:col-span-1">
                   Código de seguimiento *
                   <input
+                    data-testid="order-shipping-tracking"
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}
                     required
@@ -423,6 +467,7 @@ export default function OrderDetailPage() {
                 <label className="block text-xs text-zinc-500 sm:col-span-2">
                   URL de seguimiento (opcional)
                   <input
+                    data-testid="order-shipping-url"
                     value={trackingUrl}
                     onChange={(e) => setTrackingUrl(e.target.value)}
                     type="url"
@@ -434,6 +479,7 @@ export default function OrderDetailPage() {
                 <label className="block text-xs text-zinc-500 sm:col-span-2">
                   Notas de envío (opcional)
                   <textarea
+                    data-testid="order-shipping-notes"
                     value={shippingNotes}
                     onChange={(e) => setShippingNotes(e.target.value)}
                     rows={3}
@@ -445,6 +491,7 @@ export default function OrderDetailPage() {
               </div>
               <button
                 type="submit"
+                data-testid="order-confirm-shipping"
                 disabled={busy}
                 className="mt-5 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50 sm:w-auto sm:px-10"
               >
@@ -473,6 +520,7 @@ export default function OrderDetailPage() {
               <div className="mt-5 flex flex-wrap gap-2">
                 <button
                   type="button"
+                  data-testid="order-confirm-reception"
                   onClick={handleComplete}
                   disabled={busy}
                   className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
@@ -491,7 +539,97 @@ export default function OrderDetailPage() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
+          {showReviewForm && (
+            <form
+              data-testid="order-review-form"
+              onSubmit={handleReviewSubmit}
+              className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-950/50 via-fuchsia-950/20 to-[#0d0a14] p-5 shadow-lg shadow-violet-950/30 sm:p-6"
+            >
+              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
+                Califica al vendedor
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                Tu compra fue completada. Ayuda a otros coleccionistas compartiendo tu
+                experiencia.
+              </p>
+
+              <fieldset className="mt-5">
+                <legend className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  Calificación *
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[1, 2, 3, 4, 5].map((value) => {
+                    const selected = rating >= value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        data-testid={`order-review-star-${value}`}
+                        onClick={() => {
+                          setRating(value);
+                          setReviewError("");
+                        }}
+                        disabled={busy}
+                        aria-label={`${value} estrella${value > 1 ? "s" : ""}`}
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl border text-xl transition ${
+                          selected
+                            ? "border-amber-400/60 bg-amber-500/20 text-amber-300 shadow-[0_0_16px_-4px_rgba(251,191,36,0.5)]"
+                            : "border-white/15 bg-black/30 text-zinc-600 hover:border-violet-400/40 hover:text-zinc-400"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    );
+                  })}
+                  <span className="self-center font-mono text-sm text-zinc-400">
+                    {rating > 0 ? `${rating}/5` : "Elige 1–5"}
+                  </span>
+                </div>
+              </fieldset>
+
+              <label className="mt-5 block text-xs text-zinc-500">
+                Comentario (opcional)
+                <textarea
+                  data-testid="order-review-comment"
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  rows={4}
+                  disabled={busy}
+                  className={`${inputClass} resize-y`}
+                  placeholder="¿Cómo fue el empaque, la comunicación, el estado del disco?"
+                />
+              </label>
+
+              {reviewError && (
+                <p className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {reviewError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                data-testid="order-review-submit"
+                disabled={busy}
+                className="mt-5 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50 sm:w-auto sm:px-10"
+              >
+                {busy ? "Enviando…" : "Enviar review"}
+              </button>
+            </form>
+          )}
+
+          {reviewSuccess && (
+            <p
+              data-testid="order-review-success"
+              className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
+            >
+              {reviewSuccess}
+            </p>
+          )}
+
+          <section
+            data-testid="order-tracking-section"
+            className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6"
+          >
             <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
               Seguimiento
             </h2>
@@ -506,7 +644,10 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
                   <dt className="text-zinc-500">Código seguimiento</dt>
-                  <dd className="font-mono text-white">
+                  <dd
+                    data-testid="order-tracking-number"
+                    className="font-mono text-white"
+                  >
                     {displayValue(order.tracking_number)}
                   </dd>
                 </div>

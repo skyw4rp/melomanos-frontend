@@ -1,7 +1,18 @@
 import { expect, test } from "@playwright/test";
-import { login, logoutViaStorage } from "./helpers/auth";
+import {
+  login,
+  loginAsBuyer,
+  loginAsSeller,
+  logoutViaStorage,
+} from "./helpers/auth";
 import { findBuyableListingId } from "./helpers/api";
 import { BUYER_EMAIL, E2E_PASSWORD, SELLER_EMAIL } from "./helpers/constants";
+import { createListingViaUi } from "./helpers/listing";
+import {
+  expectOrderStatus,
+  openSellingOrderFromList,
+  orderIdFromUrl,
+} from "./helpers/order";
 
 test.describe.configure({ mode: "serial" });
 
@@ -131,4 +142,68 @@ test("messages page loads", async ({ page }) => {
     page.getByRole("heading", { name: "Messages", exact: true }),
   ).toBeVisible();
   await expect(page.getByText("Inbox")).toBeVisible();
+});
+
+test("full order lifecycle with tracking and review", async ({ page }) => {
+  test.setTimeout(120_000);
+
+  const stamp = Date.now();
+  const listingTitle = `E2E Lifecycle ${stamp}`;
+  const reviewComment =
+    "Excelente vendedor, envío rápido y vinilo en buen estado.";
+
+  await logoutViaStorage(page);
+  await loginAsSeller(page);
+  const listingId = await createListingViaUi(page, { title: listingTitle });
+
+  await logoutViaStorage(page);
+  await loginAsBuyer(page);
+  await page.goto(`/listings/${listingId}`);
+  await page.getByRole("button", { name: /^comprar$/i }).click();
+  await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
+
+  const orderId = orderIdFromUrl(page.url());
+  await expect(page.getByText(new RegExp(`order #${orderId}`, "i"))).toBeVisible();
+
+  await page.getByTestId("order-confirm-payment").click();
+  await expectOrderStatus(page, "Pendiente de envío");
+
+  await logoutViaStorage(page);
+  await loginAsSeller(page);
+  await openSellingOrderFromList(page, orderId);
+
+  await expect(page.getByTestId("order-shipping-form")).toBeVisible();
+  await page.getByTestId("order-shipping-carrier").fill("Chilexpress");
+  await page.getByTestId("order-shipping-tracking").fill("TEST123456");
+  await page
+    .getByTestId("order-shipping-url")
+    .fill("https://www.chilexpress.cl");
+  await page
+    .getByTestId("order-shipping-notes")
+    .fill("Enviado desde Santiago");
+  await page.getByTestId("order-confirm-shipping").click();
+  await expectOrderStatus(page, "Enviado");
+
+  await expect(page.getByTestId("order-tracking-section")).toBeVisible();
+  await expect(page.getByTestId("order-tracking-number")).toHaveText(
+    "TEST123456",
+  );
+  await expect(page.getByText("Chilexpress")).toBeVisible();
+  await expect(page.getByText("Enviado desde Santiago")).toBeVisible();
+
+  await logoutViaStorage(page);
+  await loginAsBuyer(page);
+  await page.goto(`/orders/${orderId}`);
+  await page.getByTestId("order-confirm-reception").click();
+  await expectOrderStatus(page, "Completado");
+
+  await expect(page.getByTestId("order-review-form")).toBeVisible();
+  await page.getByTestId("order-review-star-5").click();
+  await page.getByTestId("order-review-comment").fill(reviewComment);
+  await page.getByTestId("order-review-submit").click();
+
+  await expect(page.getByTestId("order-review-success")).toContainText(
+    /Review enviada\. Gracias por fortalecer la comunidad Melómanos\./i,
+    { timeout: 20_000 },
+  );
 });

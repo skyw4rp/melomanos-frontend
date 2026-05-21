@@ -11,6 +11,8 @@ import type {
   MessageReplyCreate,
   Order,
   OrderShippingUpdate,
+  Review,
+  ReviewCreate,
   User,
 } from "@/types";
 
@@ -355,4 +357,17 @@ export async function openDispute(orderId: number): Promise<Order> {
     method: "PATCH",
   });
   return handleResponse<Order>(res);
+}
+
+export async function createReview(payload: ReviewCreate): Promise<Review> {
+  const res = await authFetch(`${API_BASE}/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      listing_id: payload.listing_id,
+      rating: payload.rating,
+      comment: payload.comment?.trim() || null,
+    }),
+  });
+  return handleResponse<Review>(res);
 }
