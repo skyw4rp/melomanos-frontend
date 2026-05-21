@@ -39,6 +39,16 @@ export interface User {
   city?: string;
 }
 
+export interface SellerReputation {
+  user_id: number;
+  average_rating: number | null;
+  total_reviews: number;
+  completed_sales: number;
+  protected_trades: number;
+  disputed_orders: number;
+  trust_level: string;
+}
+
 export interface Conversation {
   id: number;
   listing_id: number;

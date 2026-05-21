@@ -11,13 +11,15 @@ import {
   getMyFavorites,
   getMyPurchases,
   getMySales,
+  getSellerReputation,
   getToken,
   logout,
   setStoredUser,
 } from "@/lib/api";
+import { formatAverageRating, trustLevelLabel } from "@/lib/reputation";
 import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
 import { listingsFromFavorites } from "@/lib/listing-normalize";
-import type { Conversation, Listing, User } from "@/types";
+import type { Conversation, Listing, SellerReputation, User } from "@/types";
 
 type TabId = "sales" | "purchases" | "favorites" | "messages";
 
@@ -131,6 +133,7 @@ export default function ProfilePage() {
   const [purchases, setPurchases] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<Listing[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [reputation, setReputation] = useState<SellerReputation | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("sales");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -149,12 +152,20 @@ export default function ProfilePage() {
           getConversations(),
         ]);
 
+      let reputationData: SellerReputation | null = null;
+      try {
+        reputationData = await getSellerReputation(me.id);
+      } catch {
+        reputationData = null;
+      }
+
       setStoredUser(me);
       setUser(me);
       setSales(salesData);
       setPurchases(purchasesData);
       setFavorites(listingsFromFavorites(favoritesData));
       setConversations(convData);
+      setReputation(reputationData);
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setError(
@@ -271,6 +282,56 @@ export default function ProfilePage() {
           accent={stats.unreadMessages > 0}
         />
       </div>
+
+      {reputation && (
+        <section className="mt-8 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-[#120a1f] to-fuchsia-950/20 p-6 sm:p-8">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
+            Confianza en el crate
+          </p>
+          <p className="mt-3 inline-block rounded-full bg-fuchsia-500/20 px-3 py-1 text-sm font-semibold uppercase tracking-wide text-fuchsia-200 ring-1 ring-fuchsia-400/30">
+            {trustLevelLabel(reputation.trust_level)}
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+                Calificación
+              </p>
+              <p className="mt-2 text-2xl font-bold text-white">
+                {formatAverageRating(reputation.average_rating)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+                Ventas completadas
+              </p>
+              <p className="mt-2 text-2xl font-bold tabular-nums text-white">
+                {reputation.completed_sales}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+                Intercambios protegidos
+              </p>
+              <p className="mt-2 text-2xl font-bold tabular-nums text-white">
+                {reputation.protected_trades}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+                Reviews
+              </p>
+              <p className="mt-2 text-2xl font-bold tabular-nums text-white">
+                {reputation.total_reviews}
+              </p>
+            </div>
+          </div>
+          {reputation.disputed_orders > 0 && (
+            <p className="mt-4 text-sm text-amber-200/90">
+              Disputas registradas: {reputation.disputed_orders}
+            </p>
+          )}
+        </section>
+      )}
 
       <div className="mt-10 flex flex-wrap gap-2 border-b border-white/10 pb-px">
         {tabs.map((tab) => (

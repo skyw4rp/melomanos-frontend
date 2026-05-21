@@ -144,7 +144,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="mt-8">
-                  <SellerCard listing={listing} />
+                  <SellerCard listing={listing} sellerId={listing.seller_id} />
                 </div>
               </div>
             </div>

@@ -13,6 +13,7 @@ import type {
   OrderShippingUpdate,
   Review,
   ReviewCreate,
+  SellerReputation,
   User,
 } from "@/types";
 
@@ -357,6 +358,13 @@ export async function openDispute(orderId: number): Promise<Order> {
     method: "PATCH",
   });
   return handleResponse<Order>(res);
+}
+
+export async function getSellerReputation(userId: number): Promise<SellerReputation> {
+  const res = await fetch(`${API_BASE}/users/${userId}/reputation`, {
+    cache: "no-store",
+  });
+  return handleResponse<SellerReputation>(res);
 }
 
 export async function createReview(payload: ReviewCreate): Promise<Review> {
