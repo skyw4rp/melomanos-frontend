@@ -1,3 +1,4 @@
+import TrustBadgePills from "@/components/TrustBadgePills";
 import { formatAverageRating, trustLevelLabel } from "@/lib/reputation";
 import type { SellerReputation } from "@/types";
 
@@ -53,6 +54,8 @@ export default function SellerReputationPanel({
           <StatRow label="Disputas" value={reputation.disputed_orders} />
         )}
       </dl>
+
+      <TrustBadgePills badges={reputation.badges} />
     </div>
   );
 }

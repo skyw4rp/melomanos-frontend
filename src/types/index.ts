@@ -47,6 +47,7 @@ export interface SellerReputation {
   protected_trades: number;
   disputed_orders: number;
   trust_level: string;
+  badges?: string[];
 }
 
 export interface Conversation {

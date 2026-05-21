@@ -16,6 +16,7 @@ import {
   logout,
   setStoredUser,
 } from "@/lib/api";
+import TrustBadgesPanel from "@/components/TrustBadgesPanel";
 import { formatAverageRating, trustLevelLabel } from "@/lib/reputation";
 import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
 import { listingsFromFavorites } from "@/lib/listing-normalize";
@@ -332,6 +333,8 @@ export default function ProfilePage() {
           )}
         </section>
       )}
+
+      {reputation && <TrustBadgesPanel badges={reputation.badges} />}
 
       <div className="mt-10 flex flex-wrap gap-2 border-b border-white/10 pb-px">
         {tabs.map((tab) => (

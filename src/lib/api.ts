@@ -1,4 +1,5 @@
 import { dispatchAuthChange } from "@/lib/auth-events";
+import { normalizeReputationBadges } from "@/lib/trust-badges";
 import type {
   Conversation,
   FavoriteWithListing,
@@ -364,7 +365,8 @@ export async function getSellerReputation(userId: number): Promise<SellerReputat
   const res = await fetch(`${API_BASE}/users/${userId}/reputation`, {
     cache: "no-store",
   });
-  return handleResponse<SellerReputation>(res);
+  const data = await handleResponse<SellerReputation>(res);
+  return { ...data, badges: normalizeReputationBadges(data.badges) };
 }
 
 export async function createReview(payload: ReviewCreate): Promise<Review> {
