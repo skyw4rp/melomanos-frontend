@@ -86,9 +86,7 @@ export function isOrderSeller(order: Order, userId: number): boolean {
 }
 
 export function orderHasTracking(order: Order): boolean {
-  return Boolean(
-    order.carrier?.trim() || order.tracking_number?.trim() || order.tracking_url?.trim(),
-  );
+  return Boolean(order.carrier?.trim() && order.tracking_number?.trim());
 }
 
 export function orderTimelinePhases(): OrderTimelinePhase[] {

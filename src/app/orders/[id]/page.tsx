@@ -131,7 +131,7 @@ export default function OrderDetailPage() {
     if (!order) return;
 
     if (!carrier.trim() || !trackingNumber.trim()) {
-      setActionError("Ingresa transportista y número de seguimiento.");
+      setActionError("Empresa y código de seguimiento son obligatorios.");
       return;
     }
 
@@ -220,7 +220,7 @@ export default function OrderDetailPage() {
   const hasTracking = orderHasTracking(order);
   const showPaymentCard = isBuyer && orderNeedsPayment(status);
   const showShippingForm = isSeller && status === "pending_shipping";
-  const showSellerAwaitingShipping = isSeller && status === "pending_shipping";
+  const showBuyerPreparing = isBuyer && status === "pending_shipping";
   const showBuyerActions = isBuyer && status === "shipped";
 
   return (
@@ -385,6 +385,112 @@ export default function OrderDetailPage() {
             </section>
           )}
 
+          {showShippingForm && (
+            <form
+              onSubmit={handleShippingSubmit}
+              className="rounded-2xl border-2 border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-violet-950/50 to-[#0d0a14] p-5 shadow-xl shadow-fuchsia-950/30 sm:p-6"
+            >
+              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-300">
+                Agregar seguimiento
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                El comprador ya confirmó el pago. Ingresa los datos de envío para
+                continuar.
+              </p>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <label className="block text-xs text-zinc-500 sm:col-span-1">
+                  Empresa *
+                  <input
+                    value={carrier}
+                    onChange={(e) => setCarrier(e.target.value)}
+                    required
+                    disabled={busy}
+                    className={inputClass}
+                    placeholder="Chilexpress, Starken…"
+                  />
+                </label>
+                <label className="block text-xs text-zinc-500 sm:col-span-1">
+                  Código de seguimiento *
+                  <input
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                    required
+                    disabled={busy}
+                    className={inputClass}
+                    placeholder="ABC123456789"
+                  />
+                </label>
+                <label className="block text-xs text-zinc-500 sm:col-span-2">
+                  URL de seguimiento (opcional)
+                  <input
+                    value={trackingUrl}
+                    onChange={(e) => setTrackingUrl(e.target.value)}
+                    type="url"
+                    disabled={busy}
+                    className={inputClass}
+                    placeholder="https://…"
+                  />
+                </label>
+                <label className="block text-xs text-zinc-500 sm:col-span-2">
+                  Notas de envío (opcional)
+                  <textarea
+                    value={shippingNotes}
+                    onChange={(e) => setShippingNotes(e.target.value)}
+                    rows={3}
+                    disabled={busy}
+                    className={`${inputClass} resize-y`}
+                    placeholder="Instrucciones o detalles para el comprador…"
+                  />
+                </label>
+              </div>
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-5 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50 sm:w-auto sm:px-10"
+              >
+                {busy ? "Confirmando…" : "Confirmar envío"}
+              </button>
+            </form>
+          )}
+
+          {showBuyerPreparing && (
+            <section className="rounded-2xl border border-violet-500/25 bg-violet-950/30 p-5 sm:p-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-300/90">
+                En preparación
+              </p>
+              <p className="mt-2 text-sm text-zinc-200">
+                El vendedor está preparando el envío.
+              </p>
+            </section>
+          )}
+
+          {showBuyerActions && (
+            <section className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-violet-950/40 to-transparent p-5 sm:p-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-fuchsia-300/90">
+                En camino
+              </p>
+              <p className="mt-2 text-sm text-zinc-200">Tu vinilo va en camino.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  disabled={busy}
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                >
+                  Confirmar recepción
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDispute}
+                  disabled={busy}
+                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-50"
+                >
+                  Reportar problema
+                </button>
+              </div>
+            </section>
+          )}
+
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
             <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
               Seguimiento
@@ -393,18 +499,18 @@ export default function OrderDetailPage() {
             {hasTracking ? (
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
-                  <dt className="text-zinc-500">Transportista</dt>
+                  <dt className="text-zinc-500">Empresa</dt>
                   <dd className="font-medium text-white">
                     {displayValue(order.carrier)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
-                  <dt className="text-zinc-500">Número de seguimiento</dt>
+                  <dt className="text-zinc-500">Código seguimiento</dt>
                   <dd className="font-mono text-white">
                     {displayValue(order.tracking_number)}
                   </dd>
                 </div>
-                {order.tracking_url && (
+                {order.tracking_url?.trim() && (
                   <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
                     <dt className="text-zinc-500">Enlace</dt>
                     <dd>
@@ -428,7 +534,9 @@ export default function OrderDetailPage() {
               </dl>
             ) : (
               <p className="mt-4 text-sm text-zinc-400">
-                El vendedor aún no ha ingresado el seguimiento.
+                {isSeller && status === "pending_shipping"
+                  ? "Completa el formulario de arriba para registrar el envío."
+                  : "El vendedor aún no ha ingresado el seguimiento."}
               </p>
             )}
           </section>
@@ -453,108 +561,6 @@ export default function OrderDetailPage() {
             <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
               {actionError}
             </p>
-          )}
-
-          {showSellerAwaitingShipping && (
-            <div className="rounded-2xl border border-emerald-500/25 bg-emerald-950/20 p-5">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-300/90">
-                Pago confirmado
-              </p>
-              <p className="mt-2 text-sm text-zinc-300">
-                Esperando información de envío.
-              </p>
-            </div>
-          )}
-
-          {showShippingForm && (
-            <form
-              onSubmit={handleShippingSubmit}
-              className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-violet-950/40 to-[#0d0a14] p-5"
-            >
-              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-300/90">
-                Confirmar envío
-              </h2>
-              <p className="mt-2 text-xs text-zinc-400">
-                Ingresa el tracking para marcar el pedido como enviado.
-              </p>
-              <label className="mt-4 block text-xs text-zinc-500">
-                Transportista *
-                <input
-                  value={carrier}
-                  onChange={(e) => setCarrier(e.target.value)}
-                  required
-                  disabled={busy}
-                  className={inputClass}
-                  placeholder="Chilexpress, Starken…"
-                />
-              </label>
-              <label className="mt-3 block text-xs text-zinc-500">
-                Número de seguimiento *
-                <input
-                  value={trackingNumber}
-                  onChange={(e) => setTrackingNumber(e.target.value)}
-                  required
-                  disabled={busy}
-                  className={inputClass}
-                />
-              </label>
-              <label className="mt-3 block text-xs text-zinc-500">
-                URL de seguimiento (opcional)
-                <input
-                  value={trackingUrl}
-                  onChange={(e) => setTrackingUrl(e.target.value)}
-                  type="url"
-                  disabled={busy}
-                  className={inputClass}
-                  placeholder="https://…"
-                />
-              </label>
-              <label className="mt-3 block text-xs text-zinc-500">
-                Notas de envío (opcional)
-                <textarea
-                  value={shippingNotes}
-                  onChange={(e) => setShippingNotes(e.target.value)}
-                  rows={3}
-                  disabled={busy}
-                  className={`${inputClass} resize-y`}
-                  placeholder="Instrucciones o detalles para el comprador…"
-                />
-              </label>
-              <button
-                type="submit"
-                disabled={busy}
-                className="mt-4 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
-              >
-                {busy ? "Confirmando…" : "Confirmar envío"}
-              </button>
-            </form>
-          )}
-
-          {showBuyerActions && (
-            <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
-                Acciones comprador
-              </h2>
-              <p className="text-xs text-zinc-500">
-                El vendedor marcó el envío. Confirma cuando recibas el vinilo.
-              </p>
-              <button
-                type="button"
-                onClick={handleComplete}
-                disabled={busy}
-                className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
-              >
-                Confirmar recepción
-              </button>
-              <button
-                type="button"
-                onClick={handleDispute}
-                disabled={busy}
-                className="w-full rounded-xl border border-red-500/30 bg-red-500/10 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-50"
-              >
-                Reportar problema
-              </button>
-            </div>
           )}
 
           {isSeller && status === "shipped" && (
