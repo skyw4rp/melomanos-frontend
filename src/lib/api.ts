@@ -1,4 +1,5 @@
 import { dispatchAuthChange } from "@/lib/auth-events";
+import { normalizePreferredCouriers } from "@/lib/shipping-profile";
 import { normalizeReputationBadges } from "@/lib/trust-badges";
 import type {
   Conversation,
@@ -15,6 +16,8 @@ import type {
   Review,
   ReviewCreate,
   SellerReputation,
+  SellerShippingProfile,
+  SellerShippingProfileUpdate,
   SubscriptionStatus,
   User,
 } from "@/types";
@@ -194,6 +197,42 @@ export async function getMySubscription(): Promise<SubscriptionStatus> {
     cache: "no-store",
   });
   return handleResponse<SubscriptionStatus>(res);
+}
+
+function normalizeShippingProfile(data: SellerShippingProfile): SellerShippingProfile {
+  return {
+    origin_city: data.origin_city ?? null,
+    dispatch_time_hours: data.dispatch_time_hours ?? null,
+    preferred_couriers: normalizePreferredCouriers(data.preferred_couriers),
+    shipping_notes: data.shipping_notes ?? null,
+  };
+}
+
+export async function getMyShippingProfile(): Promise<SellerShippingProfile> {
+  const res = await authFetch(`${API_BASE}/users/me/shipping-profile`, {
+    cache: "no-store",
+  });
+  return normalizeShippingProfile(await handleResponse<SellerShippingProfile>(res));
+}
+
+export async function updateMyShippingProfile(
+  payload: SellerShippingProfileUpdate,
+): Promise<SellerShippingProfile> {
+  const res = await authFetch(`${API_BASE}/users/me/shipping-profile`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      origin_city: payload.origin_city?.trim() || null,
+      dispatch_time_hours:
+        payload.dispatch_time_hours != null &&
+        !Number.isNaN(payload.dispatch_time_hours)
+          ? payload.dispatch_time_hours
+          : null,
+      preferred_couriers: payload.preferred_couriers ?? [],
+      shipping_notes: payload.shipping_notes?.trim() || null,
+    }),
+  });
+  return normalizeShippingProfile(await handleResponse<SellerShippingProfile>(res));
 }
 
 export async function getListings(

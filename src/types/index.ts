@@ -174,6 +174,20 @@ export interface Review {
   reviewer_name?: string;
 }
 
+export interface SellerShippingProfile {
+  origin_city: string | null;
+  dispatch_time_hours: number | null;
+  preferred_couriers: string[];
+  shipping_notes: string | null;
+}
+
+export interface SellerShippingProfileUpdate {
+  origin_city?: string | null;
+  dispatch_time_hours?: number | null;
+  preferred_couriers?: string[];
+  shipping_notes?: string | null;
+}
+
 export interface ListingCreate {
   title: string;
   artist: string;

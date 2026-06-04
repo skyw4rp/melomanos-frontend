@@ -178,6 +178,28 @@ test("profile shows subscription card", async ({ page }) => {
   await expect(page.getByText(/PRO: publicaciones ilimitadas/i)).toBeVisible();
 });
 
+test("seller can update shipping profile", async ({ page }) => {
+  await login(page, SELLER_EMAIL, E2E_PASSWORD);
+  await page.goto("/profile");
+  await expect(page.getByTestId("shipping-profile-section")).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page.getByTestId("shipping-profile-origin-city").fill("Santiago");
+  await page.getByTestId("shipping-profile-dispatch-hours").fill("24");
+  await page.getByTestId("shipping-profile-courier-Chilexpress").check();
+  await page.getByTestId("shipping-profile-courier-Starken").check();
+  await page.getByTestId("shipping-profile-notes").fill(
+    "Despacho de lunes a viernes",
+  );
+
+  await page.getByTestId("shipping-profile-save").click();
+  await expect(page.getByTestId("shipping-profile-success")).toContainText(
+    "Perfil de despacho actualizado.",
+    { timeout: 15_000 },
+  );
+});
+
 test("sell page shows subscription usage", async ({ page }) => {
   await login(page, SELLER_EMAIL, E2E_PASSWORD);
   await page.goto("/sell");

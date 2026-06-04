@@ -7,6 +7,7 @@ import {
   completeOrder,
   createReview,
   getMe,
+  getMyShippingProfile,
   getOrder,
   getToken,
   openDispute,
@@ -32,7 +33,8 @@ import {
   orderTotalClp,
   timelinePhaseState,
 } from "@/lib/orders";
-import type { Order, User } from "@/types";
+import { formatShippingProfileHint } from "@/lib/shipping-profile";
+import type { Order, SellerShippingProfile, User } from "@/types";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60";
@@ -59,6 +61,8 @@ export default function OrderDetailPage() {
   const [reviewSent, setReviewSent] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState("");
+  const [sellerShippingProfile, setSellerShippingProfile] =
+    useState<SellerShippingProfile | null>(null);
 
   const applyOrderState = useCallback((data: Order) => {
     setOrder(data);
@@ -105,6 +109,12 @@ export default function OrderDetailPage() {
         const me = await getMe();
         setStoredUser(me);
         setUser(me);
+        try {
+          const profile = await getMyShippingProfile();
+          setSellerShippingProfile(profile);
+        } catch {
+          setSellerShippingProfile(null);
+        }
       } catch (err) {
         if (handleAuthRedirect(err, router, pathname)) return;
         redirectToLogin(router, pathname);
@@ -262,6 +272,10 @@ export default function OrderDetailPage() {
   const showBuyerPreparing = isBuyer && status === "pending_shipping";
   const showBuyerActions = isBuyer && status === "shipped";
   const showReviewForm = isBuyer && status === "completed" && !reviewSent;
+  const shippingProfileHint =
+    isSeller && showShippingForm
+      ? formatShippingProfileHint(sellerShippingProfile)
+      : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -442,6 +456,14 @@ export default function OrderDetailPage() {
                 Pago confirmado. Los fondos están retenidos por Melómanos hasta que el
                 comprador confirme recepción. Ingresa los datos de envío para continuar.
               </p>
+              {shippingProfileHint && (
+                <p
+                  data-testid="order-seller-shipping-profile-hint"
+                  className="mt-3 rounded-lg border border-violet-500/25 bg-violet-950/40 px-3 py-2 text-xs text-violet-200/90"
+                >
+                  {shippingProfileHint}
+                </p>
+              )}
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <label className="block text-xs text-zinc-500 sm:col-span-1">
                   Empresa *

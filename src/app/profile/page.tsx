@@ -17,6 +17,7 @@ import {
   logout,
   setStoredUser,
 } from "@/lib/api";
+import SellerShippingProfileSection from "@/components/SellerShippingProfileSection";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import TrustBadgesPanel from "@/components/TrustBadgesPanel";
 import { formatAverageRating, trustLevelLabel } from "@/lib/reputation";
@@ -355,6 +356,8 @@ export default function ProfilePage() {
       )}
 
       {reputation && <TrustBadgesPanel badges={reputation.badges} />}
+
+      <SellerShippingProfileSection />
 
       <div className="mt-10 flex flex-wrap gap-2 border-b border-white/10 pb-px">
         {tabs.map((tab) => (
