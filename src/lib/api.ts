@@ -3,6 +3,7 @@ import { normalizePreferredCouriers } from "@/lib/shipping-profile";
 import { normalizeReputationBadges } from "@/lib/trust-badges";
 import type {
   Conversation,
+  DiggingScore,
   FavoriteWithListing,
   Listing,
   ListingCreate,
@@ -414,6 +415,27 @@ export async function getSellerReputation(userId: number): Promise<SellerReputat
   });
   const data = await handleResponse<SellerReputation>(res);
   return { ...data, badges: normalizeReputationBadges(data.badges) };
+}
+
+export async function getDiggingScore(userId: number): Promise<DiggingScore> {
+  const res = await fetch(`${API_BASE}/users/${userId}/digging-score`, {
+    cache: "no-store",
+  });
+  const data = await handleResponse<DiggingScore>(res);
+  return {
+    user_id: data.user_id,
+    score: data.score ?? 0,
+    level: data.level ?? "Nuevo Melómano",
+    breakdown: {
+      completed_sales: data.breakdown?.completed_sales ?? 0,
+      completed_purchases: data.breakdown?.completed_purchases ?? 0,
+      reviews_received: data.breakdown?.reviews_received ?? 0,
+      reviews_written: data.breakdown?.reviews_written ?? 0,
+      active_listings: data.breakdown?.active_listings ?? 0,
+      protected_trades: data.breakdown?.protected_trades ?? 0,
+      disputes: data.breakdown?.disputes ?? 0,
+    },
+  };
 }
 
 export async function createReview(payload: ReviewCreate): Promise<Review> {

@@ -7,6 +7,7 @@ import { formatProfileName, getUserInitials } from "@/lib/auth";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import {
   getConversations,
+  getDiggingScore,
   getMe,
   getMyFavorites,
   getMyPurchases,
@@ -17,6 +18,7 @@ import {
   logout,
   setStoredUser,
 } from "@/lib/api";
+import DiggingScorePanel from "@/components/DiggingScorePanel";
 import SellerShippingProfileSection from "@/components/SellerShippingProfileSection";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import TrustBadgesPanel from "@/components/TrustBadgesPanel";
@@ -25,6 +27,7 @@ import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/forma
 import { listingsFromFavorites } from "@/lib/listing-normalize";
 import type {
   Conversation,
+  DiggingScore,
   Listing,
   SellerReputation,
   SubscriptionStatus,
@@ -144,6 +147,8 @@ export default function ProfilePage() {
   const [favorites, setFavorites] = useState<Listing[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [reputation, setReputation] = useState<SellerReputation | null>(null);
+  const [diggingScore, setDiggingScore] = useState<DiggingScore | null>(null);
+  const [diggingScoreUnavailable, setDiggingScoreUnavailable] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("sales");
   const [loading, setLoading] = useState(true);
@@ -164,11 +169,19 @@ export default function ProfilePage() {
         ]);
 
       let reputationData: SellerReputation | null = null;
+      let diggingScoreData: DiggingScore | null = null;
+      let diggingUnavailable = false;
       let subscriptionData: SubscriptionStatus | null = null;
       try {
         reputationData = await getSellerReputation(me.id);
       } catch {
         reputationData = null;
+      }
+      try {
+        diggingScoreData = await getDiggingScore(me.id);
+      } catch {
+        diggingScoreData = null;
+        diggingUnavailable = true;
       }
       try {
         subscriptionData = await getMySubscription();
@@ -183,6 +196,8 @@ export default function ProfilePage() {
       setFavorites(listingsFromFavorites(favoritesData));
       setConversations(convData);
       setReputation(reputationData);
+      setDiggingScore(diggingScoreData);
+      setDiggingScoreUnavailable(diggingUnavailable);
       setSubscription(subscriptionData);
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
@@ -356,6 +371,11 @@ export default function ProfilePage() {
       )}
 
       {reputation && <TrustBadgesPanel badges={reputation.badges} />}
+
+      <DiggingScorePanel
+        diggingScore={diggingScore}
+        showFallback={diggingScoreUnavailable}
+      />
 
       <SellerShippingProfileSection />
 

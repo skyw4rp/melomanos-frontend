@@ -63,6 +63,23 @@ export interface SellerReputation {
   badges?: string[];
 }
 
+export interface DiggingScoreBreakdown {
+  completed_sales: number;
+  completed_purchases: number;
+  reviews_received: number;
+  reviews_written: number;
+  active_listings: number;
+  protected_trades: number;
+  disputes: number;
+}
+
+export interface DiggingScore {
+  user_id: number;
+  score: number;
+  level: string;
+  breakdown: DiggingScoreBreakdown;
+}
+
 export interface Conversation {
   id: number;
   listing_id: number;

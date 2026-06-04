@@ -172,10 +172,37 @@ test("profile shows subscription card", async ({ page }) => {
   await expect(page.getByTestId("profile-subscription-card")).toBeVisible({
     timeout: 15_000,
   });
+  const subscriptionCard = page.getByTestId("profile-subscription-card");
   await expect(page.getByTestId("profile-subscription-plan")).toHaveText("PRO");
-  await expect(page.getByText("Plan actual")).toBeVisible();
-  await expect(page.getByText("Publicaciones activas")).toBeVisible();
-  await expect(page.getByText(/PRO: publicaciones ilimitadas/i)).toBeVisible();
+  await expect(subscriptionCard.getByText("Plan actual")).toBeVisible();
+  await expect(subscriptionCard.getByText("Publicaciones activas")).toBeVisible();
+  await expect(subscriptionCard.getByText(/PRO: publicaciones ilimitadas/i)).toBeVisible();
+});
+
+test("profile shows Digging Score", async ({ page }) => {
+  await login(page, SELLER_EMAIL, E2E_PASSWORD);
+  await page.goto("/profile");
+  const panel = page.getByTestId("digging-score-panel");
+  await expect(panel).toBeVisible({ timeout: 15_000 });
+  const hasScore = await page.getByTestId("digging-score-value").isVisible();
+  const hasFallback = await page.getByTestId("digging-score-fallback").isVisible();
+  expect(hasScore || hasFallback).toBe(true);
+  if (hasScore) {
+    await expect(page.getByTestId("digging-score-level")).toBeVisible();
+    await expect(page.getByTestId("digging-score-progress")).toBeVisible();
+  }
+});
+
+test("listing detail seller card shows Digging Score", async ({ page }) => {
+  const listingId = e2eListingId ?? (await findBuyableListingId());
+  test.skip(!listingId, "No listing available for Digging Score E2E");
+
+  await page.goto(`/listings/${listingId}`);
+  const panel = page.getByTestId("digging-score-panel");
+  await expect(panel).toBeVisible({ timeout: 15_000 });
+  const hasScore = await page.getByTestId("digging-score-value").isVisible();
+  const hasLevel = await page.getByTestId("digging-score-level").isVisible();
+  expect(hasScore || hasLevel).toBe(true);
 });
 
 test("seller can update shipping profile", async ({ page }) => {

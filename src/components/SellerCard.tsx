@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import DiggingScorePanel from "@/components/DiggingScorePanel";
 import SellerReputationPanel from "@/components/SellerReputationPanel";
-import { getSellerReputation } from "@/lib/api";
+import { getDiggingScore, getSellerReputation } from "@/lib/api";
 import { resolveSellerDisplay } from "@/lib/listing-normalize";
 import { trustLevelLabel } from "@/lib/reputation";
-import type { Listing, SellerReputation } from "@/types";
+import type { DiggingScore, Listing, SellerReputation } from "@/types";
 
 interface SellerCardProps {
   listing: Listing;
@@ -16,6 +17,7 @@ export default function SellerCard({ listing, sellerId }: SellerCardProps) {
   const seller = resolveSellerDisplay(listing);
   const resolvedSellerId = sellerId ?? listing.seller_id;
   const [reputation, setReputation] = useState<SellerReputation | null>(null);
+  const [diggingScore, setDiggingScore] = useState<DiggingScore | null>(null);
   const [loadingReputation, setLoadingReputation] = useState(false);
 
   useEffect(() => {
@@ -24,12 +26,20 @@ export default function SellerCard({ listing, sellerId }: SellerCardProps) {
     let cancelled = false;
     setLoadingReputation(true);
 
-    getSellerReputation(resolvedSellerId)
+    void getSellerReputation(resolvedSellerId)
       .then((data) => {
         if (!cancelled) setReputation(data);
       })
       .catch(() => {
         if (!cancelled) setReputation(null);
+      });
+
+    void getDiggingScore(resolvedSellerId)
+      .then((data) => {
+        if (!cancelled) setDiggingScore(data);
+      })
+      .catch(() => {
+        if (!cancelled) setDiggingScore(null);
       })
       .finally(() => {
         if (!cancelled) setLoadingReputation(false);
@@ -60,6 +70,8 @@ export default function SellerCard({ listing, sellerId }: SellerCardProps) {
         loading={loadingReputation && resolvedSellerId != null}
         compact
       />
+
+      <DiggingScorePanel diggingScore={diggingScore} compact />
     </aside>
   );
 }
