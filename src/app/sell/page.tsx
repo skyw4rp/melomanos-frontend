@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import VinylCover from "@/components/VinylCover";
 import { createListing, getToken } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
+import { DISCOGS_GRADES } from "@/lib/listing-grading";
 import type { ListingCreate } from "@/types";
 
 const inputClass =
@@ -21,8 +22,10 @@ const emptyForm = {
   genre: "",
   subgenre: "",
   year: "",
-  condition_media: "",
-  condition_sleeve: "",
+  listing_type: "new",
+  record_condition: "",
+  cover_condition: "",
+  video_url: "",
   price_clp: "",
   description: "",
   city: "",
@@ -42,8 +45,13 @@ function buildPayload(form: FormState): ListingCreate {
     genre: form.genre.trim() || undefined,
     subgenre: form.subgenre.trim() || undefined,
     year: year && !Number.isNaN(year) ? year : undefined,
-    condition_media: form.condition_media.trim() || undefined,
-    condition_sleeve: form.condition_sleeve.trim() || undefined,
+    listing_type: form.listing_type.trim() || undefined,
+    record_condition: form.record_condition.trim() || undefined,
+    cover_condition: form.cover_condition.trim() || undefined,
+    video_url:
+      form.listing_type === "used"
+        ? form.video_url.trim() || undefined
+        : form.video_url.trim() || null,
     description: form.description.trim() || undefined,
   };
 }
@@ -60,6 +68,16 @@ function validate(form: FormState): FieldErrors {
   }
   if (form.year.trim() && Number.isNaN(Number(form.year))) {
     errors.year = "Enter a valid year";
+  }
+  if (form.listing_type === "used" && !form.video_url.trim()) {
+    errors.video_url = "Video URL is required for used listings";
+  }
+  if (form.video_url.trim()) {
+    try {
+      new URL(form.video_url.trim());
+    } catch {
+      errors.video_url = "Enter a valid video URL";
+    }
   }
   return errors;
 }
@@ -193,6 +211,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="title"
+                  data-testid="sell-title"
                   value={form.title}
                   onChange={(e) => updateField("title", e.target.value)}
                   disabled={loading || success}
@@ -210,6 +229,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="artist"
+                  data-testid="sell-artist"
                   value={form.artist}
                   onChange={(e) => updateField("artist", e.target.value)}
                   disabled={loading || success}
@@ -227,6 +247,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="label"
+                  data-testid="sell-label"
                   value={form.label}
                   onChange={(e) => updateField("label", e.target.value)}
                   disabled={loading || success}
@@ -241,6 +262,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="genre"
+                  data-testid="sell-genre"
                   value={form.genre}
                   onChange={(e) => updateField("genre", e.target.value)}
                   disabled={loading || success}
@@ -255,6 +277,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="subgenre"
+                  data-testid="sell-subgenre"
                   value={form.subgenre}
                   onChange={(e) => updateField("subgenre", e.target.value)}
                   disabled={loading || success}
@@ -269,6 +292,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="year"
+                  data-testid="sell-year"
                   type="number"
                   min={1900}
                   max={2100}
@@ -283,33 +307,96 @@ export default function SellPage() {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="condition_media" className={labelClass}>
-                  Media condition
-                </label>
-                <input
-                  id="condition_media"
-                  value={form.condition_media}
-                  onChange={(e) => updateField("condition_media", e.target.value)}
-                  disabled={loading || success}
-                  placeholder="NM, VG+, VG…"
-                  className={inputClass}
-                />
+              <div className="sm:col-span-2">
+                <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-violet-200">
+                  Grading Discogs & tipo
+                </h3>
               </div>
 
               <div>
-                <label htmlFor="condition_sleeve" className={labelClass}>
-                  Sleeve condition
+                <label htmlFor="listing_type" className={labelClass}>
+                  Listing type
                 </label>
-                <input
-                  id="condition_sleeve"
-                  value={form.condition_sleeve}
-                  onChange={(e) => updateField("condition_sleeve", e.target.value)}
+                <select
+                  id="listing_type"
+                  data-testid="sell-listing-type"
+                  value={form.listing_type}
+                  onChange={(e) => updateField("listing_type", e.target.value)}
                   disabled={loading || success}
-                  placeholder="NM, VG+, G…"
                   className={inputClass}
-                />
+                >
+                  <option value="new">Nuevo (sellado)</option>
+                  <option value="used">Usado</option>
+                </select>
               </div>
+
+              <div>
+                <label htmlFor="record_condition" className={labelClass}>
+                  Record condition
+                </label>
+                <select
+                  id="record_condition"
+                  data-testid="sell-record-condition"
+                  value={form.record_condition}
+                  onChange={(e) => updateField("record_condition", e.target.value)}
+                  disabled={loading || success}
+                  className={inputClass}
+                >
+                  <option value="">—</option>
+                  {DISCOGS_GRADES.map((grade) => (
+                    <option key={grade} value={grade}>
+                      {grade}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="cover_condition" className={labelClass}>
+                  Cover condition
+                </label>
+                <select
+                  id="cover_condition"
+                  data-testid="sell-cover-condition"
+                  value={form.cover_condition}
+                  onChange={(e) => updateField("cover_condition", e.target.value)}
+                  disabled={loading || success}
+                  className={inputClass}
+                >
+                  <option value="">—</option>
+                  {DISCOGS_GRADES.map((grade) => (
+                    <option key={grade} value={grade}>
+                      {grade}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {form.listing_type === "used" && (
+                <div className="sm:col-span-2">
+                  <label htmlFor="video_url" className={labelClass}>
+                    Video URL <span className="text-fuchsia-400">*</span>
+                  </label>
+                  <input
+                    id="video_url"
+                    data-testid="sell-video-url"
+                    type="url"
+                    value={form.video_url}
+                    onChange={(e) => updateField("video_url", e.target.value)}
+                    disabled={loading || success}
+                    placeholder="https://youtube.com/watch?v=…"
+                    className={`${inputClass} ${fieldErrors.video_url ? "border-red-500/50" : ""}`}
+                  />
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Obligatorio para vinilos usados. Muestra el disco en reproducción.
+                  </p>
+                  {fieldErrors.video_url && (
+                    <p data-testid="sell-video-error" className="mt-1 text-xs text-red-400">
+                      {fieldErrors.video_url}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label htmlFor="price_clp" className={labelClass}>
@@ -317,6 +404,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="price_clp"
+                  data-testid="sell-price"
                   type="number"
                   min={1}
                   value={form.price_clp}
@@ -336,6 +424,7 @@ export default function SellPage() {
                 </label>
                 <input
                   id="city"
+                  data-testid="sell-city"
                   value={form.city}
                   onChange={(e) => updateField("city", e.target.value)}
                   disabled={loading || success}
@@ -353,6 +442,7 @@ export default function SellPage() {
                 </label>
                 <textarea
                   id="description"
+                  data-testid="sell-description"
                   rows={4}
                   value={form.description}
                   onChange={(e) => updateField("description", e.target.value)}
@@ -371,6 +461,7 @@ export default function SellPage() {
 
             <button
               type="submit"
+              data-testid="sell-submit"
               disabled={loading || success}
               className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-60 sm:w-auto sm:px-10"
             >

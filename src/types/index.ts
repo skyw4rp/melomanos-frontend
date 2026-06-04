@@ -13,6 +13,10 @@ export interface Listing {
   year?: number;
   condition_media?: string;
   condition_sleeve?: string;
+  record_condition?: string;
+  cover_condition?: string;
+  listing_type?: string;
+  video_url?: string | null;
   /** Seller user id when embedded seller profile is not included */
   seller_id?: number;
   /** Seller display name when returned by GET /listings/{id} */
@@ -161,6 +165,10 @@ export interface ListingCreate {
   year?: number;
   condition_media?: string;
   condition_sleeve?: string;
+  record_condition?: string;
+  cover_condition?: string;
+  listing_type?: string;
+  video_url?: string | null;
   price_clp: number;
   description?: string;
   city: string;

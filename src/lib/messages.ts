@@ -1,5 +1,22 @@
 import type { Conversation, Message } from "@/types";
 
+export const ANTI_LEAK_BLOCKED_TITLE = "Mensaje bloqueado por seguridad";
+
+export const ANTI_LEAK_BLOCKED_BODY =
+  "Por seguridad, mantén la compra y comunicación dentro de Melómanos. Las compras externas no generan tracking, reviews verificadas ni reputación.";
+
+export const MESSAGE_SAFETY_HELPER =
+  "Evita compartir WhatsApp, Instagram, teléfono o email. Las compras verificadas solo cuentan dentro de Melómanos.";
+
+export function isAntiLeakBlockedError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message;
+  return (
+    msg.includes(ANTI_LEAK_BLOCKED_BODY) ||
+    msg.includes("mantén la compra y comunicación dentro de Melómanos")
+  );
+}
+
 export type MessageSenderLabel = "You" | "Buyer" | "Seller";
 
 export const MESSAGES_UPDATED_EVENT = "melomanos:messages-updated";

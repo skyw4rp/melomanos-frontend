@@ -2,6 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { sendMessage } from "@/lib/api";
+import {
+  ANTI_LEAK_BLOCKED_BODY,
+  ANTI_LEAK_BLOCKED_TITLE,
+  isAntiLeakBlockedError,
+  MESSAGE_SAFETY_HELPER,
+} from "@/lib/messages";
 
 interface MessageFormProps {
   listingId: number;
@@ -13,10 +19,18 @@ export default function MessageForm({
   variant = "default",
 }: MessageFormProps) {
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error" | "blocked"
+  >("idle");
   const [error, setError] = useState("");
+
+  function handleMessageChange(value: string) {
+    setMessage(value);
+    if (status === "blocked") {
+      setStatus("idle");
+    }
+    if (error) setError("");
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -30,6 +44,10 @@ export default function MessageForm({
       setMessage("");
       setStatus("success");
     } catch (err) {
+      if (isAntiLeakBlockedError(err)) {
+        setStatus("blocked");
+        return;
+      }
       setStatus("error");
       setError(err instanceof Error ? err.message : "Failed to send message");
     }
@@ -37,6 +55,7 @@ export default function MessageForm({
 
   return (
     <form
+      data-testid="message-form"
       onSubmit={handleSubmit}
       className={
         variant === "inline"
@@ -51,26 +70,50 @@ export default function MessageForm({
         Pregunta por condición, envío o disponibilidad del press.
       </p>
 
+      <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+        {MESSAGE_SAFETY_HELPER}
+      </p>
+
       <textarea
+        data-testid="message-form-textarea"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => handleMessageChange(e.target.value)}
         rows={4}
         required
         placeholder="¿Sigue disponible? ¿Haces envíos a regiones?"
         className="mt-4 w-full resize-y rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
       />
 
-      {error && (
+      {status === "blocked" && (
+        <div
+          data-testid="message-blocked-warning"
+          className="mt-4 rounded-xl border border-amber-500/40 bg-gradient-to-br from-amber-950/40 via-violet-950/30 to-[#0d0a14] px-4 py-4"
+          role="alert"
+        >
+          <p className="font-semibold text-amber-200">{ANTI_LEAK_BLOCKED_TITLE}</p>
+          <p className="mt-2 text-sm leading-relaxed text-amber-100/90">
+            {ANTI_LEAK_BLOCKED_BODY}
+          </p>
+        </div>
+      )}
+
+      {error && status === "error" && (
         <p className="mt-2 text-sm text-red-400" role="alert">
           {error}
         </p>
       )}
       {status === "success" && (
-        <p className="mt-2 text-sm text-emerald-400">Mensaje enviado.</p>
+        <p
+          data-testid="message-form-success"
+          className="mt-2 text-sm text-emerald-400"
+        >
+          Mensaje enviado.
+        </p>
       )}
 
       <button
         type="submit"
+        data-testid="message-form-submit"
         disabled={status === "loading"}
         className="mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-60"
       >

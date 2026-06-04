@@ -7,7 +7,7 @@ import {
 } from "./helpers/auth";
 import { findBuyableListingId } from "./helpers/api";
 import { BUYER_EMAIL, E2E_PASSWORD, SELLER_EMAIL } from "./helpers/constants";
-import { createListingViaUi } from "./helpers/listing";
+import { createListingViaUi, fillSellListingForm } from "./helpers/listing";
 import {
   expectOrderStatus,
   openSellingOrderFromList,
@@ -60,27 +60,38 @@ test("after login profile loads", async ({ page }) => {
 
 test("sell vinyl page creates listing", async ({ page }) => {
   const stamp = Date.now();
+  const title = `E2E Press ${stamp}`;
+  await login(page, SELLER_EMAIL, E2E_PASSWORD);
+
+  e2eListingId = await createListingViaUi(page, {
+    title,
+    listingType: "new",
+    recordCondition: "NM",
+    coverCondition: "NM",
+  });
+
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(title);
+});
+
+test("used listing requires video URL", async ({ page }) => {
   await login(page, SELLER_EMAIL, E2E_PASSWORD);
   await page.goto("/sell");
   await expect(
     page.getByRole("heading", { name: /sell vinyl/i }),
   ).toBeVisible();
 
-  await page.getByRole("textbox", { name: /title/i }).fill(`E2E Press ${stamp}`);
-  await page.getByRole("textbox", { name: /artist/i }).fill("E2E Artist");
-  await page.locator("#genre").fill("Electronic");
-  await page.getByRole("spinbutton", { name: /price/i }).fill("19990");
-  await page.getByRole("textbox", { name: /city/i }).fill("Santiago");
+  await fillSellListingForm(page, {
+    title: `E2E Used ${Date.now()}`,
+    listingType: "used",
+    recordCondition: "VG+",
+    coverCondition: "VG+",
+  });
 
-  await page.getByRole("button", { name: /publish to crate/i }).click();
-  await page.waitForURL(/\/listings\/\d+/, { timeout: 25_000 });
-
-  const match = page.url().match(/\/listings\/(\d+)/);
-  expect(match).not.toBeNull();
-  e2eListingId = Number(match![1]);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    `E2E Press ${stamp}`,
+  await page.getByTestId("sell-submit").click();
+  await expect(page.getByTestId("sell-video-error")).toContainText(
+    /Video URL is required for used listings/i,
   );
+  await expect(page).toHaveURL(/\/sell$/);
 });
 
 test("listing detail buy button creates order", async ({ page }) => {
@@ -135,6 +146,37 @@ test("favorites flow", async ({ page }) => {
   await expect(page.getByRole("link").first()).toBeVisible({ timeout: 15_000 });
 });
 
+test("listing message blocks contact leak and allows collector questions", async ({
+  page,
+}) => {
+  const listingId = e2eListingId ?? (await findBuyableListingId());
+  test.skip(!listingId, "No listing available for messaging E2E");
+
+  await loginAsBuyer(page);
+  await page.goto(`/listings/${listingId}`);
+  await page.getByTestId("listing-message-toggle").click();
+  await expect(page.getByTestId("message-form")).toBeVisible();
+
+  await page.getByTestId("message-form-textarea").fill("wsp +56912345678");
+  await page.getByTestId("message-form-submit").click();
+
+  const warning = page.getByTestId("message-blocked-warning");
+  await expect(warning).toBeVisible({ timeout: 15_000 });
+  await expect(warning).toContainText("Mensaje bloqueado por seguridad");
+  await expect(warning).toContainText(
+    /mantén la compra y comunicación dentro de Melómanos/i,
+  );
+
+  const allowedMessage = "¿Tiene insert y la funda está VG+ real?";
+  await page.getByTestId("message-form-textarea").fill(allowedMessage);
+  await page.getByTestId("message-form-submit").click();
+
+  await expect(page.getByTestId("message-form-success")).toContainText(
+    /Mensaje enviado/i,
+    { timeout: 15_000 },
+  );
+});
+
 test("messages page loads", async ({ page }) => {
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
   await page.goto("/messages");
@@ -154,7 +196,12 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
-  const listingId = await createListingViaUi(page, { title: listingTitle });
+  const listingId = await createListingViaUi(page, {
+    title: listingTitle,
+    listingType: "new",
+    recordCondition: "NM",
+    coverCondition: "NM",
+  });
 
   await logoutViaStorage(page);
   await loginAsBuyer(page);

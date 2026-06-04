@@ -3,10 +3,16 @@ import { notFound } from "next/navigation";
 import DetailField from "@/components/DetailField";
 import ListingCard from "@/components/ListingCard";
 import ListingDetailActions from "@/components/ListingDetailActions";
+import ListingVideoSection from "@/components/ListingVideoSection";
 import SellerCard from "@/components/SellerCard";
 import VinylCover from "@/components/VinylCover";
 import { API_BASE } from "@/lib/api";
 import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
+import {
+  listingCoverCondition,
+  listingRecordCondition,
+  listingTypeLabel,
+} from "@/lib/listing-grading";
 import { normalizeListing } from "@/lib/listing-normalize";
 import type { Listing, ListingsResponse } from "@/types";
 
@@ -73,6 +79,10 @@ export default async function ListingDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const typeLabel = listing ? listingTypeLabel(listing.listing_type) : null;
+  const recordGrade = listing ? listingRecordCondition(listing) : undefined;
+  const coverGrade = listing ? listingCoverCondition(listing) : undefined;
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
@@ -106,6 +116,11 @@ export default async function ListingDetailPage({ params }: PageProps) {
                       {listing.subgenre}
                     </span>
                   )}
+                  {typeLabel && (
+                    <span className="rounded border border-fuchsia-500/35 bg-fuchsia-500/20 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-fuchsia-100">
+                      {typeLabel}
+                    </span>
+                  )}
                   <span
                     className={`rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${statusBadgeClass(listing.status)}`}
                   >
@@ -129,8 +144,9 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   <DetailField label="Genre" value={listing.genre} />
                   <DetailField label="Subgenre" value={listing.subgenre} />
                   <DetailField label="Year" value={listing.year} />
-                  <DetailField label="Media condition" value={listing.condition_media} />
-                  <DetailField label="Sleeve condition" value={listing.condition_sleeve} />
+                  <DetailField label="Listing type" value={typeLabel} />
+                  <DetailField label="Record condition" value={recordGrade} />
+                  <DetailField label="Cover condition" value={coverGrade} />
                   <DetailField label="City" value={listing.city} />
                   <DetailField label="Status" value={statusLabel(listing.status)} />
                 </dl>
@@ -158,6 +174,8 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   "Sin notas del coleccionista. Contacta al vendedor para más detalles sobre este press."}
               </p>
             </section>
+
+            <ListingVideoSection videoUrl={listing.video_url} />
           </article>
 
           {related.length > 0 && (

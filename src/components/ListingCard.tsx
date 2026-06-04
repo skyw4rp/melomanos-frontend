@@ -7,6 +7,11 @@ import VinylCover from "@/components/VinylCover";
 import { isOwnListing } from "@/lib/auth";
 import { addFavorite, getStoredUser, getToken } from "@/lib/api";
 import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
+import {
+  listingCoverCondition,
+  listingRecordCondition,
+  listingTypeLabel,
+} from "@/lib/listing-grading";
 import type { Listing } from "@/types";
 
 interface ListingCardProps {
@@ -39,6 +44,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const genre = listing.genre ?? "Unknown";
   const safeStatus = normalizeListingStatus(listing.status);
   const listingHref = listing.id ? `/listings/${listing.id}` : "/";
+  const typeLabel = listingTypeLabel(listing.listing_type);
+  const recordGrade = listingRecordCondition(listing);
+  const coverGrade = listingCoverCondition(listing);
 
   const [favState, setFavState] = useState<"idle" | "loading" | "done" | "error">(
     "idle",
@@ -90,6 +98,21 @@ export default function ListingCard({ listing }: ListingCardProps) {
           <span className="rounded bg-violet-500/20 px-2 py-0.5 font-medium text-violet-200">
             {genre}
           </span>
+          {typeLabel && (
+            <span className="rounded border border-fuchsia-500/30 bg-fuchsia-500/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-fuchsia-200">
+              {typeLabel}
+            </span>
+          )}
+          {recordGrade && (
+            <span className="rounded bg-violet-950/80 px-2 py-0.5 font-mono text-[10px] text-violet-200">
+              Disco {recordGrade}
+            </span>
+          )}
+          {coverGrade && (
+            <span className="rounded bg-violet-950/80 px-2 py-0.5 font-mono text-[10px] text-violet-200">
+              Cover {coverGrade}
+            </span>
+          )}
           {isOwner && (
             <span className="rounded bg-fuchsia-500/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-fuchsia-200/90">
               Tu publicación

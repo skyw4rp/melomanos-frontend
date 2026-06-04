@@ -105,6 +105,7 @@ export default function ListingDetailActions({
 
         <button
           type="button"
+          data-testid="listing-message-toggle"
           onClick={() => {
             if (!requireAuth()) return;
             setShowMessage((v) => !v);
