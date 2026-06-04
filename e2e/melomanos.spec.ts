@@ -7,7 +7,10 @@ import {
 } from "./helpers/auth";
 import { findBuyableListingId } from "./helpers/api";
 import { BUYER_EMAIL, E2E_PASSWORD, SELLER_EMAIL } from "./helpers/constants";
-import { createListingViaUi, fillSellListingForm } from "./helpers/listing";
+import {
+  createListingViaUi,
+  fillSellListingForm,
+} from "./helpers/listing";
 import {
   expectOrderStatus,
   openSellingOrderFromList,
@@ -62,14 +65,27 @@ test("sell vinyl page creates listing", async ({ page }) => {
   const stamp = Date.now();
   const title = `E2E Press ${stamp}`;
   await login(page, SELLER_EMAIL, E2E_PASSWORD);
+  await page.goto("/sell");
+  await expect(
+    page.getByRole("heading", { name: /sell vinyl/i }),
+  ).toBeVisible();
+  await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("sell-limit-reached")).toHaveCount(0);
 
-  e2eListingId = await createListingViaUi(page, {
+  await fillSellListingForm(page, {
     title,
     listingType: "new",
     recordCondition: "NM",
     coverCondition: "NM",
   });
+  await page.getByTestId("sell-submit").click();
+  await page.waitForURL(/\/listings\/\d+/, { timeout: 25_000 });
 
+  const match = page.url().match(/\/listings\/(\d+)/);
+  expect(match).not.toBeNull();
+  e2eListingId = Number(match![1]);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(title);
 });
 
@@ -79,6 +95,10 @@ test("used listing requires video URL", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: /sell vinyl/i }),
   ).toBeVisible();
+  await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("sell-limit-reached")).toHaveCount(0);
 
   await fillSellListingForm(page, {
     title: `E2E Used ${Date.now()}`,
@@ -144,6 +164,32 @@ test("favorites flow", async ({ page }) => {
     page.getByRole("heading", { name: /your favorites/i }),
   ).toBeVisible();
   await expect(page.getByRole("link").first()).toBeVisible({ timeout: 15_000 });
+});
+
+test("profile shows subscription card", async ({ page }) => {
+  await login(page, SELLER_EMAIL, E2E_PASSWORD);
+  await page.goto("/profile");
+  await expect(page.getByTestId("profile-subscription-card")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("profile-subscription-plan")).toHaveText("PRO");
+  await expect(page.getByText("Plan actual")).toBeVisible();
+  await expect(page.getByText("Publicaciones activas")).toBeVisible();
+  await expect(page.getByText(/PRO: publicaciones ilimitadas/i)).toBeVisible();
+});
+
+test("sell page shows subscription usage", async ({ page }) => {
+  await login(page, SELLER_EMAIL, E2E_PASSWORD);
+  await page.goto("/sell");
+  await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("sell-subscription-usage")).toContainText(
+    /Publicaciones ilimitadas/i,
+  );
+  await expect(
+    page.getByTestId("sell-subscription-card").getByText("Tu plan", { exact: true }),
+  ).toBeVisible();
 });
 
 test("listing message blocks contact leak and allows collector questions", async ({
@@ -214,6 +260,10 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
 
   await page.getByTestId("order-confirm-payment").click();
   await expectOrderStatus(page, "Pendiente de envío");
+  await expect(page.getByTestId("order-escrow-card")).toContainText(
+    /Fondos retenidos/i,
+    { timeout: 15_000 },
+  );
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
@@ -243,6 +293,10 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
   await page.goto(`/orders/${orderId}`);
   await page.getByTestId("order-confirm-reception").click();
   await expectOrderStatus(page, "Completado");
+  await expect(page.getByTestId("order-escrow-card")).toContainText(
+    /Fondos liberados/i,
+    { timeout: 15_000 },
+  );
 
   await expect(page.getByTestId("order-review-form")).toBeVisible();
   await page.getByTestId("order-review-star-5").click();

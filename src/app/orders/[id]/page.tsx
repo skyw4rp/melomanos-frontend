@@ -16,6 +16,7 @@ import {
 } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import { formatMessageTime, formatPriceCLP, displayValue } from "@/lib/format";
+import OrderEscrowCard from "@/components/OrderEscrowCard";
 import { formatReviewSubmitError } from "@/lib/reviews";
 import {
   isOrderBuyer,
@@ -334,6 +335,8 @@ export default function OrderDetailPage() {
             </dl>
           </section>
 
+          <OrderEscrowCard order={order} />
+
           <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-950/30 to-transparent p-5 sm:p-6">
             <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
               Estado del pedido
@@ -412,7 +415,7 @@ export default function OrderDetailPage() {
                 Pago pendiente
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-                Confirma el pago para que el vendedor pueda preparar el envío.
+                Confirma el pago simulado para activar Compra Segura.
               </p>
               <button
                 type="button"
@@ -436,8 +439,8 @@ export default function OrderDetailPage() {
                 Agregar seguimiento
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-                El comprador ya confirmó el pago. Ingresa los datos de envío para
-                continuar.
+                Pago confirmado. Los fondos están retenidos por Melómanos hasta que el
+                comprador confirme recepción. Ingresa los datos de envío para continuar.
               </p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <label className="block text-xs text-zinc-500 sm:col-span-1">

@@ -43,6 +43,15 @@ export interface User {
   city?: string;
 }
 
+export type SubscriptionPlanType = "free" | "pack" | "pro";
+
+export interface SubscriptionStatus {
+  plan_type: SubscriptionPlanType;
+  active_listings: number;
+  listing_limit: number | null;
+  remaining_slots: number | null;
+}
+
 export interface SellerReputation {
   user_id: number;
   average_rating: number | null;
@@ -113,6 +122,8 @@ export type OrderStatus =
   | "disputed"
   | "cancelled";
 
+export type PaymentStatus = "pending" | "paid" | "held" | "released" | "refunded";
+
 export interface Order {
   id: number;
   listing_id: number;
@@ -121,6 +132,13 @@ export interface Order {
   listing_price_clp: number;
   shipping_price_clp?: number | null;
   status: OrderStatus | string;
+  payment_status?: PaymentStatus | string;
+  amount_paid_clp?: number | null;
+  platform_fee_clp?: number | null;
+  seller_amount_clp?: number | null;
+  funds_held_at?: string | null;
+  funds_released_at?: string | null;
+  refunded_at?: string | null;
   carrier?: string | null;
   tracking_number?: string | null;
   tracking_url?: string | null;

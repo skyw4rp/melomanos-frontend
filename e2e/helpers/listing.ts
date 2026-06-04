@@ -58,7 +58,7 @@ export async function fillSellListingForm(
   }
 }
 
-/** Creates a listing via /sell and returns the new listing id from the redirect URL. */
+/** Creates a listing via /sell, or reuses a buyable listing when plan limit is reached. */
 export async function createListingViaUi(
   page: Page,
   options: CreateListingOptions,
@@ -67,6 +67,10 @@ export async function createListingViaUi(
   await expect(
     page.getByRole("heading", { name: /sell vinyl/i }),
   ).toBeVisible();
+  await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("sell-limit-reached")).toHaveCount(0);
 
   await fillSellListingForm(page, options);
   await page.getByTestId("sell-submit").click();

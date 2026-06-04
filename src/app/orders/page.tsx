@@ -7,6 +7,10 @@ import { getBuyingOrders, getSellingOrders, getToken } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import { formatPriceCLP } from "@/lib/format";
 import {
+  paymentStatusBadgeClass,
+  paymentStatusLabel,
+} from "@/lib/escrow";
+import {
   orderListingTitle,
   orderStatusBadgeClass,
   orderStatusLabel,
@@ -39,11 +43,19 @@ function OrderCard({ order }: { order: Order }) {
             </p>
           )}
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${orderStatusBadgeClass(order.status)}`}
-        >
-          {orderStatusLabel(order.status)}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${orderStatusBadgeClass(order.status)}`}
+          >
+            {orderStatusLabel(order.status)}
+          </span>
+          <span
+            data-testid="order-list-payment-badge"
+            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${paymentStatusBadgeClass(order.payment_status)}`}
+          >
+            {paymentStatusLabel(order.payment_status)}
+          </span>
+        </div>
       </div>
 
       <p className="mt-3 text-lg font-bold text-violet-100">

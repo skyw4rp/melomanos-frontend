@@ -1,3 +1,4 @@
+import { prepareE2eSellerAccount } from "./helpers/e2e-seller-setup";
 import { ensureTestUsers } from "./helpers/setup-users";
 
 const API_BASE = process.env.E2E_API_URL ?? "http://127.0.0.1:8000";
@@ -15,6 +16,7 @@ export default async function globalSetup(): Promise<void> {
     await assertReachable(`${API_BASE}/listings?limit=1`, "Backend");
     await assertReachable(WEB_BASE, "Frontend");
     await ensureTestUsers();
+    await prepareE2eSellerAccount();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(

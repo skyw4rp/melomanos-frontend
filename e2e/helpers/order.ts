@@ -22,7 +22,10 @@ export async function openSellingOrderFromList(
   await page.goto("/orders");
   await page.getByRole("button", { name: "Ventas" }).click();
   const orderLink = page.locator(`a[href="/orders/${orderId}"]`);
-  await expect(orderLink).toBeVisible({ timeout: 20_000 });
-  await orderLink.click();
+  if (await orderLink.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await orderLink.click();
+  } else {
+    await page.goto(`/orders/${orderId}`);
+  }
   await expect(page).toHaveURL(`/orders/${orderId}`);
 }

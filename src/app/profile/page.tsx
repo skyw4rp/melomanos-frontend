@@ -11,16 +11,24 @@ import {
   getMyFavorites,
   getMyPurchases,
   getMySales,
+  getMySubscription,
   getSellerReputation,
   getToken,
   logout,
   setStoredUser,
 } from "@/lib/api";
+import SubscriptionCard from "@/components/SubscriptionCard";
 import TrustBadgesPanel from "@/components/TrustBadgesPanel";
 import { formatAverageRating, trustLevelLabel } from "@/lib/reputation";
 import { formatPriceCLP, normalizeListingStatus, statusLabel } from "@/lib/format";
 import { listingsFromFavorites } from "@/lib/listing-normalize";
-import type { Conversation, Listing, SellerReputation, User } from "@/types";
+import type {
+  Conversation,
+  Listing,
+  SellerReputation,
+  SubscriptionStatus,
+  User,
+} from "@/types";
 
 type TabId = "sales" | "purchases" | "favorites" | "messages";
 
@@ -135,6 +143,7 @@ export default function ProfilePage() {
   const [favorites, setFavorites] = useState<Listing[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [reputation, setReputation] = useState<SellerReputation | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("sales");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -154,10 +163,16 @@ export default function ProfilePage() {
         ]);
 
       let reputationData: SellerReputation | null = null;
+      let subscriptionData: SubscriptionStatus | null = null;
       try {
         reputationData = await getSellerReputation(me.id);
       } catch {
         reputationData = null;
+      }
+      try {
+        subscriptionData = await getMySubscription();
+      } catch {
+        subscriptionData = null;
       }
 
       setStoredUser(me);
@@ -167,6 +182,7 @@ export default function ProfilePage() {
       setFavorites(listingsFromFavorites(favoritesData));
       setConversations(convData);
       setReputation(reputationData);
+      setSubscription(subscriptionData);
     } catch (err) {
       if (handleAuthRedirect(err, router, pathname)) return;
       setError(
@@ -283,6 +299,10 @@ export default function ProfilePage() {
           accent={stats.unreadMessages > 0}
         />
       </div>
+
+      {subscription && (
+        <SubscriptionCard subscription={subscription} variant="profile" />
+      )}
 
       {reputation && (
         <section className="mt-8 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-[#120a1f] to-fuchsia-950/20 p-6 sm:p-8">

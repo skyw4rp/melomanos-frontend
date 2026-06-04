@@ -18,6 +18,22 @@ export async function fetchListings(limit = 20): Promise<ListingRow[]> {
   return Array.isArray(data) ? data : (data.items ?? []);
 }
 
+/** First available listing for the logged-in seller (from localStorage user). */
+export async function findSellerAvailableListingId(
+  sellerUserId: number,
+): Promise<number | null> {
+  const items = await fetchListings(50);
+  const listing = items.find((row) => {
+    const status = (row.status ?? "available").toLowerCase();
+    return (
+      row.seller_id === sellerUserId &&
+      status !== "sold" &&
+      status !== "reserved"
+    );
+  });
+  return listing?.id ?? null;
+}
+
 /** First available listing owned by seller (not buyer). */
 export async function findBuyableListingId(
   buyerUserId?: number,

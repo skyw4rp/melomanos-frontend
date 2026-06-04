@@ -15,6 +15,7 @@ import type {
   Review,
   ReviewCreate,
   SellerReputation,
+  SubscriptionStatus,
   User,
 } from "@/types";
 
@@ -186,6 +187,13 @@ export async function login(email: string, password: string): Promise<LoginRespo
 export async function getMe(): Promise<User> {
   const res = await authFetch(`${API_BASE}/auth/me`, { cache: "no-store" });
   return handleResponse<User>(res);
+}
+
+export async function getMySubscription(): Promise<SubscriptionStatus> {
+  const res = await authFetch(`${API_BASE}/users/me/subscription`, {
+    cache: "no-store",
+  });
+  return handleResponse<SubscriptionStatus>(res);
 }
 
 export async function getListings(

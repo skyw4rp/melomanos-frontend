@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import SubscriptionCard from "@/components/SubscriptionCard";
 import VinylCover from "@/components/VinylCover";
-import { createListing, getToken } from "@/lib/api";
+import { createListing, getMySubscription, getToken } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import { DISCOGS_GRADES } from "@/lib/listing-grading";
-import type { ListingCreate } from "@/types";
+import { isListingLimitReached } from "@/lib/subscription";
+import type { ListingCreate, SubscriptionStatus } from "@/types";
 
 const inputClass =
   "mt-1.5 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60";
@@ -92,14 +94,27 @@ export default function SellPage() {
   const [success, setSuccess] = useState(false);
   const [createdId, setCreatedId] = useState<number | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
 
   useEffect(() => {
     if (!getToken()) {
       redirectToLogin(router, pathname);
       return;
     }
-    setAuthChecked(true);
-  }, [router]);
+
+    async function init() {
+      setAuthChecked(true);
+      try {
+        const sub = await getMySubscription();
+        setSubscription(sub);
+      } catch (err) {
+        if (handleAuthRedirect(err, router, pathname)) return;
+        setSubscription(null);
+      }
+    }
+
+    init();
+  }, [router, pathname]);
 
   function updateField(key: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -114,6 +129,10 @@ export default function SellPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitError("");
+
+    if (subscription && isListingLimitReached(subscription)) {
+      return;
+    }
 
     const errors = validate(form);
     if (Object.keys(errors).length > 0) {
@@ -148,6 +167,9 @@ export default function SellPage() {
 
   const previewTitle = form.title.trim() || "Your release";
   const previewArtist = form.artist.trim() || "Artist";
+  const atListingLimit = subscription ? isListingLimitReached(subscription) : false;
+  const fieldsDisabled = loading || success;
+  const submitDisabled = fieldsDisabled || atListingLimit;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -178,6 +200,10 @@ export default function SellPage() {
         </div>
 
         <div className="mt-10 lg:mt-0">
+          {subscription && (
+            <SubscriptionCard subscription={subscription} variant="sell" />
+          )}
+
           {success && createdId !== null && (
             <div
               className="mb-6 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-4"
@@ -214,7 +240,7 @@ export default function SellPage() {
                   data-testid="sell-title"
                   value={form.title}
                   onChange={(e) => updateField("title", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Album or single title"
                   className={`${inputClass} ${fieldErrors.title ? "border-red-500/50" : ""}`}
                 />
@@ -232,7 +258,7 @@ export default function SellPage() {
                   data-testid="sell-artist"
                   value={form.artist}
                   onChange={(e) => updateField("artist", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Artist or act"
                   className={`${inputClass} ${fieldErrors.artist ? "border-red-500/50" : ""}`}
                 />
@@ -250,7 +276,7 @@ export default function SellPage() {
                   data-testid="sell-label"
                   value={form.label}
                   onChange={(e) => updateField("label", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Record label"
                   className={inputClass}
                 />
@@ -265,7 +291,7 @@ export default function SellPage() {
                   data-testid="sell-genre"
                   value={form.genre}
                   onChange={(e) => updateField("genre", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Techno, House, Jazz…"
                   className={inputClass}
                 />
@@ -280,7 +306,7 @@ export default function SellPage() {
                   data-testid="sell-subgenre"
                   value={form.subgenre}
                   onChange={(e) => updateField("subgenre", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Minimal, Deep…"
                   className={inputClass}
                 />
@@ -298,7 +324,7 @@ export default function SellPage() {
                   max={2100}
                   value={form.year}
                   onChange={(e) => updateField("year", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="1998"
                   className={`${inputClass} ${fieldErrors.year ? "border-red-500/50" : ""}`}
                 />
@@ -322,7 +348,7 @@ export default function SellPage() {
                   data-testid="sell-listing-type"
                   value={form.listing_type}
                   onChange={(e) => updateField("listing_type", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   className={inputClass}
                 >
                   <option value="new">Nuevo (sellado)</option>
@@ -339,7 +365,7 @@ export default function SellPage() {
                   data-testid="sell-record-condition"
                   value={form.record_condition}
                   onChange={(e) => updateField("record_condition", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   className={inputClass}
                 >
                   <option value="">—</option>
@@ -360,7 +386,7 @@ export default function SellPage() {
                   data-testid="sell-cover-condition"
                   value={form.cover_condition}
                   onChange={(e) => updateField("cover_condition", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   className={inputClass}
                 >
                   <option value="">—</option>
@@ -383,7 +409,7 @@ export default function SellPage() {
                     type="url"
                     value={form.video_url}
                     onChange={(e) => updateField("video_url", e.target.value)}
-                    disabled={loading || success}
+                    disabled={fieldsDisabled}
                     placeholder="https://youtube.com/watch?v=…"
                     className={`${inputClass} ${fieldErrors.video_url ? "border-red-500/50" : ""}`}
                   />
@@ -409,7 +435,7 @@ export default function SellPage() {
                   min={1}
                   value={form.price_clp}
                   onChange={(e) => updateField("price_clp", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="45000"
                   className={`${inputClass} ${fieldErrors.price_clp ? "border-red-500/50" : ""}`}
                 />
@@ -427,7 +453,7 @@ export default function SellPage() {
                   data-testid="sell-city"
                   value={form.city}
                   onChange={(e) => updateField("city", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Santiago"
                   className={`${inputClass} ${fieldErrors.city ? "border-red-500/50" : ""}`}
                 />
@@ -446,7 +472,7 @@ export default function SellPage() {
                   rows={4}
                   value={form.description}
                   onChange={(e) => updateField("description", e.target.value)}
-                  disabled={loading || success}
+                  disabled={fieldsDisabled}
                   placeholder="Pressing details, listening notes, shipping…"
                   className={inputClass}
                 />
@@ -462,7 +488,7 @@ export default function SellPage() {
             <button
               type="submit"
               data-testid="sell-submit"
-              disabled={loading || success}
+              disabled={submitDisabled}
               className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-60 sm:w-auto sm:px-10"
             >
               {loading ? "Publishing…" : success ? "Published" : "Publish to crate"}
