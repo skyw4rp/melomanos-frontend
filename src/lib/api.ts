@@ -6,6 +6,7 @@ import type {
   DiggingScore,
   DisputeEvidence,
   DisputeEvidenceCreate,
+  DisputeResolution,
   FavoriteWithListing,
   OrderDispute,
   Listing,
@@ -451,6 +452,45 @@ export async function getDisputeEvidence(
   });
   const data = await handleResponse<DisputeEvidence[]>(res);
   return Array.isArray(data) ? data : [];
+}
+
+const DISPUTE_ADMIN_ERROR =
+  "No autorizado o acción inválida.";
+
+async function patchDisputeAdmin(
+  disputeId: number,
+  adminKey: string,
+  action: "under-review" | "resolve-buyer" | "resolve-seller",
+): Promise<DisputeResolution> {
+  const res = await authFetch(`${API_BASE}/disputes/${disputeId}/${action}`, {
+    method: "PATCH",
+    headers: { "x-admin-key": adminKey.trim() },
+  });
+  if (!res.ok) {
+    throw new Error(DISPUTE_ADMIN_ERROR);
+  }
+  return handleResponse<DisputeResolution>(res);
+}
+
+export async function markDisputeUnderReview(
+  disputeId: number,
+  adminKey: string,
+): Promise<DisputeResolution> {
+  return patchDisputeAdmin(disputeId, adminKey, "under-review");
+}
+
+export async function resolveDisputeForBuyer(
+  disputeId: number,
+  adminKey: string,
+): Promise<DisputeResolution> {
+  return patchDisputeAdmin(disputeId, adminKey, "resolve-buyer");
+}
+
+export async function resolveDisputeForSeller(
+  disputeId: number,
+  adminKey: string,
+): Promise<DisputeResolution> {
+  return patchDisputeAdmin(disputeId, adminKey, "resolve-seller");
 }
 
 export async function getSellerReputation(userId: number): Promise<SellerReputation> {

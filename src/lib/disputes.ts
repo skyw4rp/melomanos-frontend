@@ -33,3 +33,11 @@ export function canOpenOrderDispute(orderStatus: string): boolean {
     orderStatus,
   );
 }
+
+export function isResolvedDisputeStatus(status: string): boolean {
+  return status === "resolved_buyer" || status === "resolved_seller";
+}
+
+export function canAddDisputeEvidence(status: string): boolean {
+  return status === "open" || status === "under_review";
+}

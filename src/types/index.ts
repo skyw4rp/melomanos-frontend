@@ -137,6 +137,7 @@ export type OrderStatus =
   | "delivered"
   | "completed"
   | "disputed"
+  | "refunded"
   | "cancelled";
 
 export type PaymentStatus = "pending" | "paid" | "held" | "released" | "refunded";
@@ -237,6 +238,12 @@ export interface DisputeEvidenceCreate {
   file_url: string;
   evidence_type: DisputeEvidenceType;
   comment?: string | null;
+}
+
+export interface DisputeResolution {
+  dispute: OrderDispute;
+  order_status: string;
+  payment_status: string;
 }
 
 export interface ListingCreate {

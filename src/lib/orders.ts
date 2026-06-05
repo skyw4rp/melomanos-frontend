@@ -9,6 +9,7 @@ export const ORDER_STATUSES: OrderStatus[] = [
   "delivered",
   "completed",
   "disputed",
+  "refunded",
   "cancelled",
 ];
 
@@ -21,6 +22,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   delivered: "Entregado",
   completed: "Completado",
   disputed: "En disputa",
+  refunded: "Reembolsado",
   cancelled: "Cancelado",
 };
 
@@ -33,6 +35,7 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
   delivered: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/30",
   completed: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/30",
   disputed: "bg-red-500/20 text-red-200 ring-red-500/40",
+  refunded: "bg-amber-500/20 text-amber-200 ring-amber-400/30",
   cancelled: "bg-zinc-500/20 text-zinc-400 ring-zinc-500/30",
 };
 
@@ -141,7 +144,7 @@ export function timelinePhaseState(
 }
 
 export function isTerminalOrderStatus(status: OrderStatus): boolean {
-  return status === "disputed" || status === "cancelled";
+  return status === "disputed" || status === "cancelled" || status === "refunded";
 }
 
 export function orderNeedsPayment(status: OrderStatus): boolean {

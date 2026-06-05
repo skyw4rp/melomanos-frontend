@@ -6,15 +6,20 @@ import {
   addDisputeEvidence,
   getDisputeEvidence,
   getOrderDispute,
+  markDisputeUnderReview,
   openOrderDispute,
+  resolveDisputeForBuyer,
+  resolveDisputeForSeller,
 } from "@/lib/api";
 import { handleAuthRedirect } from "@/lib/auth-session";
 import {
+  canAddDisputeEvidence,
   canOpenOrderDispute,
   disputeOpenedByLabel,
   disputeStatusLabel,
   evidenceTypeFromSelect,
   evidenceTypeLabel,
+  isResolvedDisputeStatus,
 } from "@/lib/disputes";
 import { formatMessageTime } from "@/lib/format";
 import { isOrderBuyer, isOrderSeller, normalizeOrderStatus } from "@/lib/orders";
@@ -54,6 +59,8 @@ export default function OrderDisputeSection({
   const [evidenceComment, setEvidenceComment] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [adminKey, setAdminKey] = useState("");
+  const [adminSuccess, setAdminSuccess] = useState("");
 
   const loadDisputeData = useCallback(async () => {
     setLoadingDispute(true);
@@ -157,6 +164,56 @@ export default function OrderDisputeSection({
     }
   }
 
+  async function handleAdminAction(
+    action: "under-review" | "resolve-buyer" | "resolve-seller",
+  ) {
+    if (!dispute) return;
+    const key = adminKey.trim();
+    if (!key) {
+      setError("Ingresa la admin key.");
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    setAdminSuccess("");
+
+    try {
+      const result =
+        action === "under-review"
+          ? await markDisputeUnderReview(dispute.id, key)
+          : action === "resolve-buyer"
+            ? await resolveDisputeForBuyer(dispute.id, key)
+            : await resolveDisputeForSeller(dispute.id, key);
+
+      setDispute(result.dispute);
+      await onOrderRefresh();
+      await loadDisputeData();
+
+      const messages: Record<typeof action, string> = {
+        "under-review": "Disputa marcada en revisión.",
+        "resolve-buyer": "Disputa resuelta a favor del comprador.",
+        "resolve-seller": "Disputa resuelta a favor del vendedor.",
+      };
+      setAdminSuccess(messages[action]);
+    } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No autorizado o acción inválida.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const disputeResolved = dispute
+    ? isResolvedDisputeStatus(dispute.status)
+    : false;
+  const showEvidenceForm =
+    dispute != null && canAddDisputeEvidence(dispute.status);
+
   return (
     <section
       data-testid="order-dispute-section"
@@ -182,6 +239,7 @@ export default function OrderDisputeSection({
               <dt className="text-zinc-500">Estado disputa</dt>
               <dd
                 data-testid="order-dispute-status"
+                data-dispute-status={dispute.status}
                 className="font-medium text-white"
               >
                 {disputeStatusLabel(dispute.status)}
@@ -212,14 +270,17 @@ export default function OrderDisputeSection({
             )}
           </dl>
 
-          <p
-            data-testid="order-dispute-funds-held"
-            className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90"
-          >
-            Los fondos permanecen retenidos mientras Melómanos revisa la
-            disputa.
-          </p>
+          {!disputeResolved && (
+            <p
+              data-testid="order-dispute-funds-held"
+              className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90"
+            >
+              Los fondos permanecen retenidos mientras Melómanos revisa la
+              disputa.
+            </p>
+          )}
 
+          {showEvidenceForm && (
           <form onSubmit={handleAddEvidence} className="mt-6 space-y-4">
             <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-violet-300/90">
               Agregar evidencia
@@ -269,6 +330,7 @@ export default function OrderDisputeSection({
               {busy ? "Agregando…" : "Agregar evidencia"}
             </button>
           </form>
+          )}
 
           {evidence.length > 0 && (
             <ul
@@ -304,6 +366,71 @@ export default function OrderDisputeSection({
               ))}
             </ul>
           )}
+
+          <div
+            data-testid="order-dispute-admin-section"
+            className="mt-6 border-t border-white/10 pt-5"
+          >
+            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-fuchsia-300/90">
+              Admin resolución disputa
+            </p>
+            <label className="mt-3 block text-xs text-zinc-500">
+              Admin key
+              <input
+                data-testid="order-dispute-admin-key"
+                type="password"
+                value={adminKey}
+                onChange={(e) => {
+                  setAdminKey(e.target.value);
+                  setAdminSuccess("");
+                }}
+                disabled={busy}
+                autoComplete="off"
+                className={inputClass}
+              />
+            </label>
+
+            {dispute.status === "open" && (
+              <button
+                type="button"
+                data-testid="order-dispute-admin-under-review"
+                onClick={() => handleAdminAction("under-review")}
+                disabled={busy}
+                className="mt-3 w-full rounded-xl border border-violet-500/30 bg-violet-500/15 px-4 py-2.5 text-sm font-semibold text-violet-100 transition hover:bg-violet-500/25 disabled:opacity-50 sm:w-auto"
+              >
+                Marcar en revisión
+              </button>
+            )}
+
+            {dispute.status === "under_review" && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  data-testid="order-dispute-admin-resolve-buyer"
+                  onClick={() => handleAdminAction("resolve-buyer")}
+                  disabled={busy}
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                >
+                  Resolver a favor comprador
+                </button>
+                <button
+                  type="button"
+                  data-testid="order-dispute-admin-resolve-seller"
+                  onClick={() => handleAdminAction("resolve-seller")}
+                  disabled={busy}
+                  className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-sm font-semibold text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-50"
+                >
+                  Resolver a favor vendedor
+                </button>
+              </div>
+            )}
+
+            {disputeResolved && (
+              <p className="mt-3 text-sm text-zinc-400">
+                Disputa cerrada — {disputeStatusLabel(dispute.status)}.
+              </p>
+            )}
+          </div>
         </div>
       ) : canOpen ? (
         <div className="mt-5">
@@ -345,6 +472,16 @@ export default function OrderDisputeSection({
       ) : (
         <p className="mt-4 text-sm text-zinc-500">
           No hay disputa activa en este pedido.
+        </p>
+      )}
+
+      {adminSuccess && (
+        <p
+          data-testid="order-dispute-admin-success"
+          className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
+          role="status"
+        >
+          {adminSuccess}
         </p>
       )}
 
