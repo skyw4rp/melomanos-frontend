@@ -29,6 +29,22 @@ test("homepage loads marketplace", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /filter crate/i })).toBeVisible();
 });
 
+test("admin panel loads summary and tables", async ({ page }) => {
+  await page.goto("/admin");
+  await expect(
+    page.getByRole("heading", { name: /admin panel/i }),
+  ).toBeVisible();
+  await page.getByTestId("admin-key-input").fill("test-admin-key");
+  await page.getByTestId("admin-load-data").click();
+  await expect(page.getByTestId("admin-summary-section")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("admin-summary-users_count")).toBeVisible();
+  await expect(page.getByTestId("admin-disputes-section")).toBeVisible();
+  await expect(page.getByTestId("admin-orders-section")).toBeVisible();
+  await expect(page.getByTestId("admin-users-section")).toBeVisible();
+});
+
 test("protected pages redirect to login with next", async ({ page }) => {
   await logoutViaStorage(page);
   await page.goto("/profile");

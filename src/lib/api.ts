@@ -2,6 +2,10 @@ import { dispatchAuthChange } from "@/lib/auth-events";
 import { normalizePreferredCouriers } from "@/lib/shipping-profile";
 import { normalizeReputationBadges } from "@/lib/trust-badges";
 import type {
+  AdminDispute,
+  AdminOrderListResponse,
+  AdminSummary,
+  AdminUserListResponse,
   Conversation,
   DiggingScore,
   DisputeEvidence,
@@ -520,6 +524,60 @@ export async function getDiggingScore(userId: number): Promise<DiggingScore> {
       disputes: data.breakdown?.disputes ?? 0,
     },
   };
+}
+
+export const ADMIN_UNAUTHORIZED_MESSAGE =
+  "No autorizado. Revisa la clave admin.";
+
+async function adminFetch(path: string, adminKey: string): Promise<Response> {
+  return fetch(`${API_BASE}${path}`, {
+    cache: "no-store",
+    headers: { "x-admin-key": adminKey.trim() },
+  });
+}
+
+async function handleAdminResponse<T>(res: Response): Promise<T> {
+  if (res.status === 403) {
+    throw new Error(ADMIN_UNAUTHORIZED_MESSAGE);
+  }
+  return handleResponse<T>(res);
+}
+
+export async function getAdminSummary(adminKey: string): Promise<AdminSummary> {
+  const res = await adminFetch("/admin/summary", adminKey);
+  return handleAdminResponse<AdminSummary>(res);
+}
+
+export async function getAdminDisputes(adminKey: string): Promise<AdminDispute[]> {
+  const res = await adminFetch("/admin/disputes", adminKey);
+  return handleAdminResponse<AdminDispute[]>(res);
+}
+
+export async function getAdminOrders(
+  adminKey: string,
+  params: { skip?: number; limit?: number; status?: string } = {},
+): Promise<AdminOrderListResponse> {
+  const search = new URLSearchParams();
+  if (params.skip != null) search.set("skip", String(params.skip));
+  if (params.limit != null) search.set("limit", String(params.limit));
+  if (params.status?.trim()) search.set("status", params.status.trim());
+  const query = search.toString();
+  const path = query ? `/admin/orders?${query}` : "/admin/orders";
+  const res = await adminFetch(path, adminKey);
+  return handleAdminResponse<AdminOrderListResponse>(res);
+}
+
+export async function getAdminUsers(
+  adminKey: string,
+  params: { skip?: number; limit?: number } = {},
+): Promise<AdminUserListResponse> {
+  const search = new URLSearchParams();
+  if (params.skip != null) search.set("skip", String(params.skip));
+  if (params.limit != null) search.set("limit", String(params.limit));
+  const query = search.toString();
+  const path = query ? `/admin/users?${query}` : "/admin/users";
+  const res = await adminFetch(path, adminKey);
+  return handleAdminResponse<AdminUserListResponse>(res);
 }
 
 export async function createReview(payload: ReviewCreate): Promise<Review> {

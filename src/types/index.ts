@@ -246,6 +246,63 @@ export interface DisputeResolution {
   payment_status: string;
 }
 
+export interface AdminSummary {
+  users_count: number;
+  active_listings_count: number;
+  sold_listings_count: number;
+  orders_count: number;
+  disputed_orders_count: number;
+  open_disputes_count: number;
+  under_review_disputes_count: number;
+  completed_orders_count: number;
+  refunded_orders_count: number;
+}
+
+export interface AdminDispute {
+  dispute_id: number;
+  order_id: number;
+  status: string;
+  reason: string;
+  opened_by_user_id: number;
+  created_at: string;
+  order_status: string;
+  payment_status: string;
+  buyer_id: number;
+  seller_id: number;
+}
+
+export interface AdminOrder {
+  order_id: number;
+  listing_id: number;
+  buyer_id: number;
+  seller_id: number;
+  status: string;
+  payment_status: string;
+  platform_fee_clp: number;
+  seller_amount_clp: number | null;
+  created_at: string;
+}
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  city: string | null;
+  plan_type: SubscriptionPlanType | string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AdminOrderListResponse {
+  total: number;
+  items: AdminOrder[];
+}
+
+export interface AdminUserListResponse {
+  total: number;
+  items: AdminUser[];
+}
+
 export interface ListingCreate {
   title: string;
   artist: string;
