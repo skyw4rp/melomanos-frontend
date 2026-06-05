@@ -10,13 +10,13 @@ import {
   getMyShippingProfile,
   getOrder,
   getToken,
-  openDispute,
   setStoredUser,
   simulatePayment,
   updateShipping,
 } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
 import { formatMessageTime, formatPriceCLP, displayValue } from "@/lib/format";
+import OrderDisputeSection from "@/components/OrderDisputeSection";
 import OrderEscrowCard from "@/components/OrderEscrowCard";
 import { formatReviewSubmitError } from "@/lib/reviews";
 import {
@@ -63,6 +63,7 @@ export default function OrderDetailPage() {
   const [reviewSuccess, setReviewSuccess] = useState("");
   const [sellerShippingProfile, setSellerShippingProfile] =
     useState<SellerShippingProfile | null>(null);
+  const [requestDisputeForm, setRequestDisputeForm] = useState(false);
 
   const applyOrderState = useCallback((data: Order) => {
     setOrder(data);
@@ -221,21 +222,13 @@ export default function OrderDetailPage() {
     }
   }
 
-  async function handleDispute() {
-    if (!order) return;
-    setBusy(true);
-    setActionError("");
-    try {
-      await openDispute(order.id);
-      await refreshOrder();
-    } catch (err) {
-      if (handleAuthRedirect(err, router, pathname)) return;
-      setActionError(
-        err instanceof Error ? err.message : "No se pudo reportar el problema.",
-      );
-    } finally {
-      setBusy(false);
-    }
+  function handleReportProblem() {
+    setRequestDisputeForm(true);
+    requestAnimationFrame(() => {
+      document
+        .querySelector("[data-testid='order-dispute-section']")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   if (loading && !order) {
@@ -272,6 +265,7 @@ export default function OrderDetailPage() {
   const showBuyerPreparing = isBuyer && status === "pending_shipping";
   const showBuyerActions = isBuyer && status === "shipped";
   const showReviewForm = isBuyer && status === "completed" && !reviewSent;
+  const showDisputeSection = isBuyer || isSeller;
   const shippingProfileHint =
     isSeller && showShippingForm
       ? formatShippingProfileHint(sellerShippingProfile)
@@ -554,7 +548,8 @@ export default function OrderDetailPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={handleDispute}
+                  data-testid="order-report-problem"
+                  onClick={handleReportProblem}
                   disabled={busy}
                   className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-50"
                 >
@@ -649,6 +644,18 @@ export default function OrderDetailPage() {
             >
               {reviewSuccess}
             </p>
+          )}
+
+          {showDisputeSection && (
+            <OrderDisputeSection
+              order={order}
+              user={user}
+              onOrderRefresh={async () => {
+                await refreshOrder();
+              }}
+              showOpenForm={requestDisputeForm}
+              onOpenFormShown={() => setRequestDisputeForm(false)}
+            />
           )}
 
           <section

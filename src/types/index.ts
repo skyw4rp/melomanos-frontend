@@ -205,6 +205,40 @@ export interface SellerShippingProfileUpdate {
   shipping_notes?: string | null;
 }
 
+export type DisputeStatus =
+  | "open"
+  | "under_review"
+  | "resolved_buyer"
+  | "resolved_seller";
+
+export type DisputeEvidenceType = "photo" | "video";
+
+export interface OrderDispute {
+  id: number;
+  order_id: number;
+  opened_by_user_id: number;
+  reason: string;
+  status: DisputeStatus | string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DisputeEvidence {
+  id: number;
+  dispute_id: number;
+  uploaded_by_user_id: number;
+  file_url: string;
+  evidence_type: DisputeEvidenceType | string;
+  comment?: string | null;
+  created_at?: string;
+}
+
+export interface DisputeEvidenceCreate {
+  file_url: string;
+  evidence_type: DisputeEvidenceType;
+  comment?: string | null;
+}
+
 export interface ListingCreate {
   title: string;
   artist: string;

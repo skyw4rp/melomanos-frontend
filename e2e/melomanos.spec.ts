@@ -281,6 +281,77 @@ test("messages page loads", async ({ page }) => {
   await expect(page.getByText("Inbox")).toBeVisible();
 });
 
+test("buyer can open dispute and add evidence", async ({ page }) => {
+  test.setTimeout(120_000);
+
+  const stamp = Date.now();
+  const listingTitle = `E2E Dispute ${stamp}`;
+  const disputeReason = "El vinilo llegó con una raya visible";
+
+  await logoutViaStorage(page);
+  await loginAsSeller(page);
+  const listingId = await createListingViaUi(page, {
+    title: listingTitle,
+    listingType: "new",
+    recordCondition: "NM",
+    coverCondition: "NM",
+  });
+
+  await logoutViaStorage(page);
+  await loginAsBuyer(page);
+  await page.goto(`/listings/${listingId}`);
+  await page.getByRole("button", { name: /^comprar$/i }).click();
+  await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
+
+  const orderId = orderIdFromUrl(page.url());
+  await page.getByTestId("order-confirm-payment").click();
+  await expectOrderStatus(page, "Pendiente de envío");
+
+  await logoutViaStorage(page);
+  await loginAsSeller(page);
+  await openSellingOrderFromList(page, orderId);
+  await page.getByTestId("order-shipping-carrier").fill("Chilexpress");
+  await page.getByTestId("order-shipping-tracking").fill("DISPUTE123");
+  await page.getByTestId("order-confirm-shipping").click();
+  await expectOrderStatus(page, "Enviado");
+
+  await logoutViaStorage(page);
+  await loginAsBuyer(page);
+  await page.goto(`/orders/${orderId}`);
+  await expect(page.getByTestId("order-dispute-section")).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page.getByTestId("order-dispute-open-toggle").click();
+  await page.getByTestId("order-dispute-reason").fill(disputeReason);
+  await page.getByTestId("order-dispute-submit").click();
+
+  await expect(page.getByTestId("order-dispute-card")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("order-dispute-reason-display")).toContainText(
+    disputeReason,
+  );
+  await expect(page.getByTestId("order-dispute-funds-held")).toContainText(
+    /fondos permanecen retenidos/i,
+  );
+  await expectOrderStatus(page, "En disputa");
+
+  await page
+    .getByTestId("order-dispute-evidence-url")
+    .fill("https://example.com/evidence.jpg");
+  await page.getByTestId("order-dispute-evidence-type").selectOption("photo");
+  await page
+    .getByTestId("order-dispute-evidence-comment")
+    .fill("Raya visible en lado A");
+  await page.getByTestId("order-dispute-evidence-submit").click();
+
+  await expect(
+    page.getByRole("link", { name: /evidence\.jpg/i }),
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Raya visible en lado A")).toBeVisible();
+});
+
 test("full order lifecycle with tracking and review", async ({ page }) => {
   test.setTimeout(120_000);
 

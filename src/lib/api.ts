@@ -4,7 +4,10 @@ import { normalizeReputationBadges } from "@/lib/trust-badges";
 import type {
   Conversation,
   DiggingScore,
+  DisputeEvidence,
+  DisputeEvidenceCreate,
   FavoriteWithListing,
+  OrderDispute,
   Listing,
   ListingCreate,
   ListingsResponse,
@@ -402,11 +405,52 @@ export async function completeOrder(orderId: number): Promise<Order> {
   return handleResponse<Order>(res);
 }
 
-export async function openDispute(orderId: number): Promise<Order> {
+export async function openOrderDispute(
+  orderId: number,
+  reason: string,
+): Promise<OrderDispute> {
   const res = await authFetch(`${API_BASE}/orders/${orderId}/dispute`, {
-    method: "PATCH",
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reason: reason.trim() }),
   });
-  return handleResponse<Order>(res);
+  return handleResponse<OrderDispute>(res);
+}
+
+export async function getOrderDispute(
+  orderId: number,
+): Promise<OrderDispute | null> {
+  const res = await authFetch(`${API_BASE}/orders/${orderId}/dispute`, {
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  return handleResponse<OrderDispute>(res);
+}
+
+export async function addDisputeEvidence(
+  disputeId: number,
+  payload: DisputeEvidenceCreate,
+): Promise<DisputeEvidence> {
+  const res = await authFetch(`${API_BASE}/disputes/${disputeId}/evidence`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      file_url: payload.file_url.trim(),
+      evidence_type: payload.evidence_type,
+      comment: payload.comment?.trim() || null,
+    }),
+  });
+  return handleResponse<DisputeEvidence>(res);
+}
+
+export async function getDisputeEvidence(
+  disputeId: number,
+): Promise<DisputeEvidence[]> {
+  const res = await authFetch(`${API_BASE}/disputes/${disputeId}/evidence`, {
+    cache: "no-store",
+  });
+  const data = await handleResponse<DisputeEvidence[]>(res);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getSellerReputation(userId: number): Promise<SellerReputation> {
