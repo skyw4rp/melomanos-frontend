@@ -314,6 +314,28 @@ export interface AdminUserListResponse {
   items: AdminUser[];
 }
 
+export interface Notification {
+  id: number;
+  user_id: number;
+  type: string;
+  title: string;
+  body: string | null;
+  entity_type: string | null;
+  entity_id: number | null;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationListResponse {
+  total: number;
+  unread_count: number;
+  items: Notification[];
+}
+
+export interface UnreadCountResponse {
+  unread_count: number;
+}
+
 export interface ListingCreate {
   title: string;
   artist: string;

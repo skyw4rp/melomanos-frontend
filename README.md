@@ -66,6 +66,12 @@ npm run test:e2e:ui
 
 Reports: `playwright-report/` after a run (`npx playwright show-report`).
 
+### Notifications UI
+
+- Navbar **Alertas** bell (`data-testid="notifications-bell"`) polls `GET /users/me/notifications/unread-count`.
+- Dropdown shows recent items; full list at `/notifications`.
+- Deep links: messages → `/messages`, orders → `/orders/{id}`; disputes are text-only (no order id on entity).
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

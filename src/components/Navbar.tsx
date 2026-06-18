@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AUTH_CHANGED_EVENT } from "@/lib/auth-events";
 import { formatProfileName, getUserInitials } from "@/lib/auth";
+import NotificationBell from "@/components/NotificationBell";
 import {
   getConversations,
   getMe,
@@ -196,6 +197,8 @@ export default function Navbar() {
                 <Link href="/orders" className={linkClass("/orders")}>
                   Orders
                 </Link>
+
+                <NotificationBell />
 
                 <MessagesLink unread={unreadMessages} />
 

@@ -20,6 +20,9 @@ import type {
   Message,
   MessageCreate,
   MessageReplyCreate,
+  Notification,
+  NotificationListResponse,
+  UnreadCountResponse,
   CheckoutSession,
   Order,
   OrderShippingUpdate,
@@ -312,6 +315,40 @@ export async function markMessageRead(messageId: number): Promise<void> {
     method: "PATCH",
   });
   return handleResponse<void>(res);
+}
+
+export async function getNotifications(
+  options: { skip?: number; limit?: number; unread_only?: boolean } = {},
+): Promise<NotificationListResponse> {
+  const params = new URLSearchParams();
+  params.set("skip", String(options.skip ?? 0));
+  params.set("limit", String(options.limit ?? 20));
+  if (options.unread_only) {
+    params.set("unread_only", "true");
+  }
+  const res = await authFetch(
+    `${API_BASE}/users/me/notifications?${params.toString()}`,
+    { cache: "no-store" },
+  );
+  return handleResponse<NotificationListResponse>(res);
+}
+
+export async function getUnreadNotificationCount(): Promise<number> {
+  const res = await authFetch(`${API_BASE}/users/me/notifications/unread-count`, {
+    cache: "no-store",
+  });
+  const data = await handleResponse<UnreadCountResponse>(res);
+  return data.unread_count;
+}
+
+export async function markNotificationRead(
+  notificationId: number,
+): Promise<Notification> {
+  const res = await authFetch(
+    `${API_BASE}/users/me/notifications/${notificationId}/read`,
+    { method: "PATCH" },
+  );
+  return handleResponse<Notification>(res);
 }
 
 export async function markMessageUnread(messageId: number): Promise<void> {

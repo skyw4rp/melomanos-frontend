@@ -5,9 +5,11 @@ import { sendMessage } from "@/lib/api";
 import {
   ANTI_LEAK_BLOCKED_BODY,
   ANTI_LEAK_BLOCKED_TITLE,
+  dispatchMessagesUpdated,
   isAntiLeakBlockedError,
   MESSAGE_SAFETY_HELPER,
 } from "@/lib/messages";
+import { dispatchNotificationsUpdated } from "@/lib/notifications";
 
 interface MessageFormProps {
   listingId: number;
@@ -43,6 +45,8 @@ export default function MessageForm({
       await sendMessage({ listing_id: listingId, message_text: message.trim() });
       setMessage("");
       setStatus("success");
+      dispatchMessagesUpdated();
+      dispatchNotificationsUpdated();
     } catch (err) {
       if (isAntiLeakBlockedError(err)) {
         setStatus("blocked");
