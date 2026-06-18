@@ -38,6 +38,19 @@ Optional env overrides:
 | `E2E_SELLER_EMAIL` | `seller@example.com` |
 | `E2E_PASSWORD` | `devpassword12` |
 
+### WebPay placeholder E2E
+
+Full placeholder lifecycle tests require the backend in `webpay_placeholder` mode:
+
+```powershell
+cd C:\melomanos\workspace
+py run_melomanos.py --kill-stale --e2e-webpay --no-wait
+```
+
+Or set `PAYMENT_PROVIDER_MODE=webpay_placeholder` and `WEBPAY_CALLBACK_SECRET` per `workspace/e2e-webpay.env`.
+
+Frontend WebPay UI uses `NEXT_PUBLIC_PAYMENT_PROVIDER_MODE=webpay_placeholder` or `localStorage.melomanos_payment_mode` (E2E helper).
+
 ### Run
 
 ```bash

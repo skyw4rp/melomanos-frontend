@@ -16,6 +16,7 @@ import {
   openSellingOrderFromList,
   orderIdFromUrl,
 } from "./helpers/order";
+import { confirmOrderPaymentForE2e } from "./helpers/payment";
 
 test.describe.configure({ mode: "serial" });
 
@@ -320,7 +321,7 @@ test("buyer can open dispute and add evidence", async ({ page }) => {
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   const orderId = orderIdFromUrl(page.url());
-  await page.getByTestId("order-confirm-payment").click();
+  await confirmOrderPaymentForE2e(page, orderId);
   await expectOrderStatus(page, "Pendiente de envío");
 
   await logoutViaStorage(page);
@@ -391,7 +392,7 @@ test("admin can resolve dispute for buyer", async ({ page }) => {
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   const orderId = orderIdFromUrl(page.url());
-  await page.getByTestId("order-confirm-payment").click();
+  await confirmOrderPaymentForE2e(page, orderId);
   await expectOrderStatus(page, "Pendiente de envío");
 
   await logoutViaStorage(page);
@@ -471,7 +472,7 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
   const orderId = orderIdFromUrl(page.url());
   await expect(page.getByText(new RegExp(`order #${orderId}`, "i"))).toBeVisible();
 
-  await page.getByTestId("order-confirm-payment").click();
+  await confirmOrderPaymentForE2e(page, orderId);
   await expectOrderStatus(page, "Pendiente de envío");
   await expect(page.getByTestId("order-escrow-card")).toContainText(
     /Fondos retenidos/i,
