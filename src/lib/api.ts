@@ -20,6 +20,7 @@ import type {
   Message,
   MessageCreate,
   MessageReplyCreate,
+  CheckoutSession,
   Order,
   OrderShippingUpdate,
   Review,
@@ -389,6 +390,26 @@ export async function simulatePayment(orderId: number): Promise<Order> {
     method: "PATCH",
   });
   return handleResponse<Order>(res);
+}
+
+export async function createCheckoutSession(
+  orderId: number,
+  options?: { returnUrl?: string; cancelUrl?: string },
+): Promise<CheckoutSession> {
+  const body: { return_url?: string; cancel_url?: string } = {};
+  if (options?.returnUrl) {
+    body.return_url = options.returnUrl;
+  }
+  if (options?.cancelUrl) {
+    body.cancel_url = options.cancelUrl;
+  }
+
+  const res = await authFetch(`${API_BASE}/orders/${orderId}/checkout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<CheckoutSession>(res);
 }
 
 export async function updateShipping(

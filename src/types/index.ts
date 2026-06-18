@@ -142,6 +142,17 @@ export type OrderStatus =
 
 export type PaymentStatus = "pending" | "paid" | "held" | "released" | "refunded";
 
+export interface CheckoutSession {
+  order_id: number;
+  checkout_session_id: number;
+  provider: string;
+  status: string;
+  amount_clp: number;
+  currency: string;
+  checkout_url?: string | null;
+  expires_at?: string | null;
+}
+
 export interface Order {
   id: number;
   listing_id: number;

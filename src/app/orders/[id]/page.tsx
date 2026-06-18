@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   completeOrder,
+  createCheckoutSession,
   createReview,
   getMe,
   getMyShippingProfile,
@@ -34,6 +35,13 @@ import {
   timelinePhaseState,
 } from "@/lib/orders";
 import { formatShippingProfileHint } from "@/lib/shipping-profile";
+import {
+  buildCheckoutReturnUrl,
+  formatCheckoutError,
+  orderCanStartWebPayCheckout,
+  resolveCheckoutRedirectUrl,
+  usesWebPayCheckout,
+} from "@/lib/payments";
 import type { Order, SellerShippingProfile, User } from "@/types";
 
 const inputClass =
@@ -43,13 +51,16 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
+  const searchParams = useSearchParams();
   const orderId = Number(params.id);
+  const checkoutReturnHandled = useRef(false);
 
   const [user, setUser] = useState<User | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [checkoutNotice, setCheckoutNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
   const [carrier, setCarrier] = useState("");
@@ -127,6 +138,28 @@ export default function OrderDetailPage() {
     init();
   }, [router, pathname, loadOrder]);
 
+  useEffect(() => {
+    if (checkoutReturnHandled.current || loading || !order) {
+      return;
+    }
+
+    const checkout = searchParams.get("checkout");
+    if (!checkout) {
+      return;
+    }
+
+    checkoutReturnHandled.current = true;
+
+    if (checkout === "success") {
+      setCheckoutNotice("Payment submitted successfully.");
+      void refreshOrder();
+    } else if (checkout === "cancelled") {
+      setCheckoutNotice("Checkout cancelled.");
+    }
+
+    router.replace(`/orders/${orderId}`, { scroll: false });
+  }, [searchParams, loading, order, orderId, router, refreshOrder]);
+
   async function handleConfirmPayment() {
     if (!order) return;
 
@@ -140,6 +173,32 @@ export default function OrderDetailPage() {
       setActionError(
         err instanceof Error ? err.message : "No se pudo confirmar el pago.",
       );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleWebPayCheckout() {
+    if (!order) return;
+
+    setBusy(true);
+    setActionError("");
+    setCheckoutNotice("");
+    try {
+      const session = await createCheckoutSession(order.id, {
+        returnUrl: buildCheckoutReturnUrl(order.id, "success"),
+        cancelUrl: buildCheckoutReturnUrl(order.id, "cancelled"),
+      });
+
+      if (session.checkout_url) {
+        window.location.href = resolveCheckoutRedirectUrl(session.checkout_url);
+        return;
+      }
+
+      setActionError("Checkout URL not available.");
+    } catch (err) {
+      if (handleAuthRedirect(err, router, pathname)) return;
+      setActionError(formatCheckoutError(err));
     } finally {
       setBusy(false);
     }
@@ -260,7 +319,11 @@ export default function OrderDetailPage() {
   const terminal = isTerminalOrderStatus(status);
   const phases = orderTimelinePhases();
   const hasTracking = orderHasTracking(order);
-  const showPaymentCard = isBuyer && orderNeedsPayment(status);
+  const webPayCheckoutEnabled = usesWebPayCheckout();
+  const showWebPayPaymentCard =
+    isBuyer && orderCanStartWebPayCheckout(order) && webPayCheckoutEnabled;
+  const showSimulatePaymentCard =
+    isBuyer && orderNeedsPayment(status) && !webPayCheckoutEnabled;
   const showShippingForm = isSeller && status === "pending_shipping";
   const showBuyerPreparing = isBuyer && status === "pending_shipping";
   const showBuyerActions = isBuyer && status === "shipped";
@@ -417,7 +480,40 @@ export default function OrderDetailPage() {
             )}
           </section>
 
-          {showPaymentCard && (
+          {checkoutNotice && (
+            <p
+              data-testid="order-checkout-notice"
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                checkoutNotice.includes("successfully")
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
+                  : "border-amber-500/40 bg-amber-500/10 text-amber-200"
+              }`}
+            >
+              {checkoutNotice}
+            </p>
+          )}
+
+          {showWebPayPaymentCard && (
+            <section className="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-950/30 via-violet-950/20 to-transparent p-5 sm:p-6">
+              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                Pago pendiente
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                Completa el pago con WebPay para activar Compra Segura.
+              </p>
+              <button
+                type="button"
+                data-testid="order-checkout-webpay"
+                onClick={handleWebPayCheckout}
+                disabled={busy}
+                className="mt-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
+              >
+                {busy ? "Starting checkout…" : "Pay with WebPay"}
+              </button>
+            </section>
+          )}
+
+          {showSimulatePaymentCard && (
             <section className="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-950/30 via-violet-950/20 to-transparent p-5 sm:p-6">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-amber-200/90">
                 Pago pendiente
