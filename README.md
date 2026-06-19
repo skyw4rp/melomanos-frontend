@@ -16,6 +16,40 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Environment variables
+
+Copy [`frontend/.env.example`](.env.example) to `.env.local` for optional local overrides.
+
+| Variable | Local default | Production (Vercel) |
+|----------|---------------|---------------------|
+| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8000` when unset | `https://api.melomanos.cl` |
+| `NEXT_PUBLIC_PAYMENT_PROVIDER_MODE` | unset | Match backend (`simulate` or `webpay_placeholder`) |
+
+**Vercel setup:** Project → Settings → Environment Variables → add `NEXT_PUBLIC_API_URL` for the **Production** environment. Redeploy after changing `NEXT_PUBLIC_*` vars.
+
+Backend CORS must allow the frontend origin — set `CORS_ORIGINS` on the VPS to `https://melomanos.cl,https://www.melomanos.cl`. See [`workspace/PRODUCTION_ENV_MATRIX.md`](../workspace/PRODUCTION_ENV_MATRIX.md).
+
+## Continuous integration
+
+GitHub Actions runs on push/PR to `main` or `master` (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+
+| Step | Command |
+|------|---------|
+| Install | `npm ci` |
+| Lint | `npm run lint` |
+| Build | `npm run build` |
+
+Local check (same as CI, without E2E):
+
+```bash
+npm run lint
+npm run build
+```
+
+Lint uses ESLint + `eslint-config-next` on `src/` (Playwright `e2e/` is excluded). Some React hook rules report **warnings** on legacy fetch-on-mount patterns; CI fails only on errors.
+
+E2E tests are **not** in CI — run locally with `npm run test:e2e` when changing user flows.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 ## E2E tests (Playwright)
