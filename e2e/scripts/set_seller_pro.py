@@ -1,11 +1,14 @@
-"""Set E2E seller plan to pro (run from melomanos_market project root)."""
+"""Set E2E seller plan to pro (run with cwd = backend/)."""
 
 from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.getcwd())
+BACKEND_ROOT = Path(__file__).resolve().parents[3] / "backend"
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
 
 from sqlalchemy import text  # noqa: E402
 

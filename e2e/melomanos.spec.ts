@@ -326,7 +326,7 @@ test("buyer can open dispute and add evidence", async ({ page }) => {
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
-  await openSellingOrderFromList(page, orderId);
+  await openSellingOrderFromList(page, orderId, { waitForShippingForm: true });
   await page.getByTestId("order-shipping-carrier").fill("Chilexpress");
   await page.getByTestId("order-shipping-tracking").fill("DISPUTE123");
   await page.getByTestId("order-confirm-shipping").click();
@@ -397,7 +397,7 @@ test("admin can resolve dispute for buyer", async ({ page }) => {
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
-  await openSellingOrderFromList(page, orderId);
+  await openSellingOrderFromList(page, orderId, { waitForShippingForm: true });
   await page.getByTestId("order-shipping-carrier").fill("Chilexpress");
   await page.getByTestId("order-shipping-tracking").fill("ADMINDISPUTE1");
   await page.getByTestId("order-confirm-shipping").click();
@@ -481,7 +481,7 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
-  await openSellingOrderFromList(page, orderId);
+  await openSellingOrderFromList(page, orderId, { waitForShippingForm: true });
 
   await expect(page.getByTestId("order-shipping-form")).toBeVisible();
   await page.getByTestId("order-shipping-carrier").fill("Chilexpress");

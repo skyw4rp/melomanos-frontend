@@ -74,7 +74,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0a14] shadow-md shadow-black/40 transition duration-300 ease-out hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-[0_0_40px_-8px_rgba(139,92,246,0.55)]">
-      <VinylCover title={title} artist={artist} size="card" />
+      <VinylCover
+        title={title}
+        artist={artist}
+        coverImageUrl={listing.cover_image_url}
+        size="card"
+      />
 
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-3 flex items-start justify-between gap-3">

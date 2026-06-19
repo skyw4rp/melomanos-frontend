@@ -103,7 +103,12 @@ export default async function ListingDetailPage({ params }: PageProps) {
           <article className="mt-6 lg:mt-8">
             <div className="grid gap-8 lg:grid-cols-[minmax(280px,420px)_1fr] lg:gap-12">
               <div className="mx-auto w-full lg:mx-0">
-                <VinylCover title={listing.title} artist={listing.artist} size="hero" />
+                <VinylCover
+                  title={listing.title}
+                  artist={listing.artist}
+                  coverImageUrl={listing.cover_image_url}
+                  size="hero"
+                />
               </div>
 
               <div className="min-w-0">

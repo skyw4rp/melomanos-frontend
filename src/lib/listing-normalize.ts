@@ -53,6 +53,7 @@ export function normalizeListing(raw: Partial<Listing> & { id?: number }): Listi
     cover_condition: raw.cover_condition,
     listing_type: raw.listing_type,
     video_url: raw.video_url,
+    cover_image_url: raw.cover_image_url,
     seller_id: raw.seller_id,
     seller_name: raw.seller_name,
     seller_city: raw.seller_city,

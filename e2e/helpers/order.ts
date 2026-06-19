@@ -14,18 +14,21 @@ export async function expectOrderStatus(
   await expect(page.getByTestId("order-status")).toContainText(label, { timeout });
 }
 
-/** Opens a selling order from /orders → Ventas (cards use Listing #id, not title). */
+/**
+ * Open an order by id (direct navigation — deterministic for E2E).
+ * Optionally wait until the seller shipping form is visible (pending_shipping only).
+ */
 export async function openSellingOrderFromList(
   page: Page,
   orderId: number,
+  options?: { waitForShippingForm?: boolean },
 ): Promise<void> {
-  await page.goto("/orders");
-  await page.getByRole("button", { name: "Ventas" }).click();
-  const orderLink = page.locator(`a[href="/orders/${orderId}"]`);
-  if (await orderLink.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    await orderLink.click();
-  } else {
-    await page.goto(`/orders/${orderId}`);
+  await page.goto(`/orders/${orderId}`);
+  await expect(page).toHaveURL(new RegExp(`/orders/${orderId}(\\?.*)?$`));
+  await expect(page.getByTestId("order-status")).toBeVisible({ timeout: 20_000 });
+  if (options?.waitForShippingForm) {
+    await expect(page.getByTestId("order-shipping-form")).toBeVisible({
+      timeout: 20_000,
+    });
   }
-  await expect(page).toHaveURL(`/orders/${orderId}`);
 }

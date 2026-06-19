@@ -3,8 +3,9 @@ import path from "node:path";
 import { API_BASE, SELLER_EMAIL } from "./constants";
 import { authHeaders, loginForApi } from "./auth-api";
 
-const MARKET_ROOT =
-  process.env.MELOMANOS_MARKET_ROOT ?? "C:\\melomanos_market";
+const BACKEND_ROOT =
+  process.env.MELOMANOS_BACKEND_ROOT ??
+  path.resolve(process.cwd(), "..", "backend");
 
 interface MineListing {
   id: number;
@@ -24,7 +25,7 @@ interface SubscriptionResponse {
 export function setSellerProPlanInDatabase(): void {
   const scriptPath = path.join(process.cwd(), "e2e", "scripts", "set_seller_pro.py");
   execSync(`py "${scriptPath}"`, {
-    cwd: MARKET_ROOT,
+    cwd: BACKEND_ROOT,
     env: {
       ...process.env,
       E2E_SELLER_EMAIL: SELLER_EMAIL,
@@ -107,7 +108,7 @@ export async function prepareE2eSellerAccount(): Promise<void> {
   const sub = await fetchSubscription(token);
   if (sub.plan_type !== "pro" && sub.remaining_slots === 0) {
     throw new Error(
-      "E2E seller still has no listing slots after setup. Set MELOMANOS_MARKET_ROOT and DB, or free listings manually.",
+      "E2E seller still has no listing slots after setup. Set MELOMANOS_BACKEND_ROOT and DB, or free listings manually.",
     );
   }
 }

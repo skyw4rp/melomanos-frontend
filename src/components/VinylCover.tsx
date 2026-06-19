@@ -1,69 +1,65 @@
-import { labelGrooves, recordGrooves } from "@/lib/vinyl-styles";
+"use client";
+
+import { useState } from "react";
+import VinylCoverPlaceholder from "@/components/VinylCoverPlaceholder";
+import { buildCoverAlt, resolveCoverImageUrl } from "@/lib/listing-cover";
 
 interface VinylCoverProps {
   title?: string | null;
   artist?: string | null;
+  coverImageUrl?: string | null;
   size?: "card" | "hero";
 }
+
+const containerClass = (isHero: boolean) =>
+  `relative w-full overflow-hidden ${
+    isHero
+      ? "aspect-square max-w-md rounded-2xl border border-white/10 shadow-2xl shadow-violet-950/60 lg:max-w-none"
+      : "aspect-square"
+  }`;
 
 export default function VinylCover({
   title,
   artist,
+  coverImageUrl,
   size = "card",
 }: VinylCoverProps) {
-  const safeTitle = title ?? "?";
-  const safeArtist = artist ?? "?";
-  const initials =
-    `${safeTitle.charAt(0)}${safeArtist.charAt(0)}`.toUpperCase();
+  const safeTitle = title?.trim() || "?";
+  const safeArtist = artist?.trim() || "?";
   const isHero = size === "hero";
+  const resolvedUrl = resolveCoverImageUrl(coverImageUrl);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const showImage = Boolean(resolvedUrl) && failedUrl !== resolvedUrl;
+  const alt = buildCoverAlt(title, artist);
 
   return (
-    <div
-      className={`relative w-full overflow-hidden ${
-        isHero
-          ? "aspect-square max-w-md rounded-2xl border border-white/10 shadow-2xl shadow-violet-950/60 lg:max-w-none"
-          : "aspect-square"
-      }`}
-    >
-      <div
-        className="absolute inset-0 bg-gradient-to-br from-violet-950 via-[#1a0f2e] to-fuchsia-950"
-        aria-hidden
-      />
-      <div className="absolute inset-0 opacity-[0.14]" style={recordGrooves} aria-hidden />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(167,139,250,0.35),transparent_55%)]"
-        aria-hidden
-      />
-      <div
-        className={`absolute inset-0 flex flex-col items-center justify-center ${isHero ? "p-8" : "p-4"}`}
-      >
-        <div
-          className={`relative flex items-center justify-center rounded-full border border-white/20 bg-black/50 shadow-inner shadow-black/60 ring-2 ring-violet-400/30 ${
-            isHero ? "h-36 w-36 sm:h-44 sm:w-44" : "h-20 w-20"
-          }`}
-        >
+    <div className={containerClass(isHero)}>
+      {showImage ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- demo/API URLs vary by environment */}
+          <img
+            src={resolvedUrl!}
+            alt={alt}
+            data-testid="listing-cover-image"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading={isHero ? "eager" : "lazy"}
+            decoding="async"
+            onError={() => setFailedUrl(resolvedUrl)}
+          />
           <div
-            className="absolute inset-2 rounded-full opacity-30"
-            style={labelGrooves}
+            className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent"
             aria-hidden
           />
-          <span
-            className={`relative font-bold tracking-wider text-violet-100 ${
-              isHero ? "text-3xl sm:text-4xl" : "text-lg"
-            }`}
-          >
-            {initials}
-          </span>
+        </>
+      ) : (
+        <div data-testid="listing-cover-placeholder" className="absolute inset-0">
+          <VinylCoverPlaceholder title={safeTitle} artist={safeArtist} size={size} />
         </div>
-        <span
-          className={`rounded border border-white/10 bg-black/40 font-mono uppercase tracking-[0.2em] text-violet-300/80 ${
-            isHero ? "mt-4 px-3 py-1 text-xs" : "mt-3 px-2 py-0.5 text-[10px]"
-          }`}
-        >
-          12&quot; · LP
-        </span>
-      </div>
-      <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 opacity-80" />
+      )}
+      <div
+        className="pointer-events-none absolute left-0 top-0 z-10 h-1 w-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 opacity-80"
+        aria-hidden
+      />
     </div>
   );
 }

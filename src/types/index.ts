@@ -17,6 +17,8 @@ export interface Listing {
   cover_condition?: string;
   listing_type?: string;
   video_url?: string | null;
+  /** Demo or catalog cover image URL from the API */
+  cover_image_url?: string | null;
   /** Seller user id when embedded seller profile is not included */
   seller_id?: number;
   /** Seller display name when returned by GET /listings/{id} */
