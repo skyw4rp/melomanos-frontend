@@ -12,11 +12,9 @@ interface VinylCoverProps {
 }
 
 const containerClass = (isHero: boolean) =>
-  `relative w-full overflow-hidden ${
-    isHero
-      ? "aspect-square max-w-md rounded-2xl border border-white/10 shadow-2xl shadow-violet-950/60 lg:max-w-none"
-      : "aspect-square"
-  }`;
+  isHero
+    ? "relative w-full overflow-hidden aspect-square max-w-md rounded-2xl border border-white/10 shadow-2xl shadow-black/40 lg:max-w-none"
+    : "relative w-full overflow-hidden aspect-square bg-surface-muted";
 
 export default function VinylCover({
   title,
@@ -47,7 +45,7 @@ export default function VinylCover({
             onError={() => setFailedUrl(resolvedUrl)}
           />
           <div
-            className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent"
+            className={`absolute inset-0 ${isHero ? "bg-gradient-to-t from-black/35 via-transparent to-transparent" : "bg-gradient-to-t from-black/15 via-transparent to-transparent"}`}
             aria-hidden
           />
         </>
@@ -56,10 +54,12 @@ export default function VinylCover({
           <VinylCoverPlaceholder title={safeTitle} artist={safeArtist} size={size} />
         </div>
       )}
-      <div
-        className="pointer-events-none absolute left-0 top-0 z-10 h-1 w-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 opacity-80"
-        aria-hidden
-      />
+      {isHero && (
+        <div
+          className="pointer-events-none absolute left-0 top-0 z-10 h-1 w-full bg-accent opacity-90"
+          aria-hidden
+        />
+      )}
     </div>
   );
 }

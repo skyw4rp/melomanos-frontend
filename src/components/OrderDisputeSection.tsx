@@ -25,8 +25,7 @@ import { formatMessageTime } from "@/lib/format";
 import { isOrderBuyer, isOrderSeller, normalizeOrderStatus } from "@/lib/orders";
 import type { DisputeEvidence, Order, OrderDispute, User } from "@/types";
 
-const inputClass =
-  "mt-1 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60";
+const inputClass = "input-field";
 
 interface OrderDisputeSectionProps {
   order: Order;
@@ -217,22 +216,20 @@ export default function OrderDisputeSection({
   return (
     <section
       data-testid="order-dispute-section"
-      className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-950/25 via-violet-950/30 to-fuchsia-950/15 p-5 sm:p-6"
+      className="rounded-2xl border border-destructive/25 bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6"
     >
-      <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-red-200/90">
-        Disputa
-      </h2>
-      <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+      <h2 className="text-sm font-semibold text-destructive">Disputa</h2>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         Si el vinilo llegó dañado, no coincide con la publicación o hubo un
         problema de envío, abre una disputa y agrega evidencia.
       </p>
 
       {loadingDispute ? (
-        <p className="mt-4 text-sm text-zinc-500">Cargando disputa…</p>
+        <p className="mt-4 text-sm text-muted-foreground">Cargando disputa…</p>
       ) : dispute ? (
         <div
           data-testid="order-dispute-card"
-          className="mt-5 rounded-xl border border-white/10 bg-black/25 p-4 sm:p-5"
+          className="mt-5 rounded-xl border border-border bg-surface-muted/40 p-4 sm:p-5"
         >
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
@@ -462,7 +459,7 @@ export default function OrderDisputeSection({
                 type="submit"
                 data-testid="order-dispute-submit"
                 disabled={busy}
-                className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
+                className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {busy ? "Enviando…" : "Enviar disputa"}
               </button>

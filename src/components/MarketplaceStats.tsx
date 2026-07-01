@@ -11,7 +11,7 @@ export default function MarketplaceStatsRow({
 }: MarketplaceStatsProps) {
   const items = [
     {
-      label: "Listings",
+      label: "Publicaciones",
       value: stats.totalListings,
       hint: "en catálogo",
     },
@@ -29,24 +29,26 @@ export default function MarketplaceStatsRow({
 
   return (
     <div
-      className={`grid grid-cols-3 gap-2 rounded-xl border border-violet-500/20 bg-gradient-to-r from-violet-950/40 via-[#120a1f] to-fuchsia-950/30 ${compact ? "p-2.5" : "p-3 sm:gap-3 sm:p-4"}`}
+      data-testid="marketplace-stats"
+      className={`rounded-2xl border border-border bg-surface px-2 py-3 sm:px-4 ${compact ? "" : "py-4"}`}
     >
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="border-r border-white/5 px-1 text-center last:border-r-0 sm:px-2"
-        >
-          <p
-            className={`font-black tabular-nums text-white ${compact ? "text-xl" : "text-2xl sm:text-3xl"}`}
-          >
-            {item.value}
-          </p>
-          <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-violet-300/90 sm:text-[10px]">
-            {item.label}
-          </p>
-          <p className="mt-0.5 hidden text-[9px] text-zinc-500 sm:block">{item.hint}</p>
-        </div>
-      ))}
+      <div className="grid grid-cols-3 divide-x divide-border">
+        {items.map((item) => (
+          <div key={item.label} className="px-3 text-center sm:px-4">
+            <p
+              className={`font-bold tabular-nums text-foreground ${compact ? "text-2xl sm:text-3xl" : "text-3xl sm:text-4xl"}`}
+            >
+              {item.value}
+            </p>
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+              {item.label}
+            </p>
+            <p className="mt-0.5 hidden text-[10px] text-muted-foreground/80 sm:block">
+              {item.hint}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
+import NotificationBell from "@/components/NotificationBell";
+import {
+  IconChevronDown,
+  IconHeart,
+  IconMessage,
+  IconSearch,
+  ICON_SIZE_MD,
+} from "@/components/icons";
 import { AUTH_CHANGED_EVENT } from "@/lib/auth-events";
 import { formatProfileName, getUserInitials } from "@/lib/auth";
-import NotificationBell from "@/components/NotificationBell";
+import { dispatchHomeSearch, scrollToCatalog } from "@/lib/home-search";
 import {
   getConversations,
   getMe,
@@ -17,11 +26,59 @@ import {
 import { MESSAGES_UPDATED_EVENT, totalUnreadCount } from "@/lib/messages";
 import type { User } from "@/types";
 
-const navLinkClass =
-  "rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/5 hover:text-white sm:px-3";
+const CENTER_NAV: { label: string; href: string; testId?: string; homeActive?: boolean }[] = [
+  { label: "Explorar", href: "/#catalogo", testId: "nav-marketplace", homeActive: true },
+  { label: "Sellos", href: "/#catalogo" },
+  { label: "Artistas", href: "/#catalogo" },
+  { label: "Nuevos ingresos", href: "/#nuevos-ingresos" },
+  { label: "Guía del digger", href: "/#guia-digger" },
+];
 
-const sellCtaClass =
-  "rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-violet-950/50 transition hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-violet-900/40";
+const iconBtnClass = "icon-btn";
+
+function navLinkClass(active: boolean) {
+  return `relative whitespace-nowrap px-3 py-2 text-[13px] font-medium transition-ui focus-ring ${
+    active
+      ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-accent"
+      : "text-muted-foreground hover:text-foreground"
+  }`;
+}
+
+function NavbarSearch() {
+  const [query, setQuery] = useState("");
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    scrollToCatalog();
+    dispatchHomeSearch(query);
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="hidden min-w-[200px] flex-1 md:block md:max-w-[240px] lg:max-w-[280px] xl:max-w-[300px]"
+    >
+      <label htmlFor="home-search" className="sr-only">
+        Buscar vinilos, artistas, sellos
+      </label>
+      <div className="relative">
+        <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          id="home-search"
+          type="search"
+          data-testid="home-search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar vinilos, artistas, sellos..."
+          className="w-full rounded-full border border-border/80 bg-[#ede8df] py-2 pl-10 pr-14 text-[13px] text-foreground transition-ui placeholder:text-[var(--color-text-placeholder)] focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15"
+        />
+        <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-surface/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
+          ⌘ K
+        </kbd>
+      </div>
+    </form>
+  );
+}
 
 function ProfileChip({ user }: { user: User }) {
   const pathname = usePathname();
@@ -32,29 +89,31 @@ function ProfileChip({ user }: { user: User }) {
   return (
     <Link
       href="/profile"
-      className={`flex items-center gap-2 rounded-xl border px-2 py-1.5 transition sm:px-2.5 ${
+      data-testid="nav-profile"
+      className={`flex max-w-[12rem] items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition sm:max-w-none sm:pr-2.5 ${
         active
-          ? "border-violet-400/50 bg-violet-950/60 shadow-[0_0_20px_-6px_rgba(139,92,246,0.5)]"
-          : "border-violet-500/25 bg-violet-950/40 hover:border-violet-400/40 hover:bg-violet-900/50"
+          ? "border-accent/35 bg-surface"
+          : "border-border/80 bg-surface hover:border-accent/25"
       }`}
-      title={`${name} · Collector`}
+      title={`${name} · Coleccionista`}
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm font-bold text-white ring-2 ring-violet-400/30">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
         {initials}
       </span>
-      <span className="hidden min-w-0 sm:block">
-        <span className="block truncate text-sm font-semibold leading-tight text-white">
+      <span className="hidden min-w-0 md:block">
+        <span className="block truncate text-[13px] font-semibold leading-tight text-foreground">
           {name}
         </span>
-        <span className="block font-mono text-[9px] uppercase tracking-[0.18em] text-violet-400/90">
-          Collector
+        <span className="block text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+          Coleccionista
         </span>
       </span>
+      <IconChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground md:block" />
     </Link>
   );
 }
 
-function MessagesLink({ unread }: { unread: number }) {
+function MessagesIconLink({ unread }: { unread: number }) {
   const pathname = usePathname();
   const active =
     pathname === "/messages" || pathname.startsWith("/messages/");
@@ -62,18 +121,32 @@ function MessagesLink({ unread }: { unread: number }) {
   return (
     <Link
       href="/messages"
-      className={active ? `${navLinkClass} bg-white/10 text-white` : navLinkClass}
+      data-testid="nav-messages"
+      aria-label={unread > 0 ? `Mensajes, ${unread} sin leer` : "Mensajes"}
+      className={`${iconBtnClass} ${active ? "bg-surface-muted/80" : ""}`}
     >
-      <span className="inline-flex items-center gap-1.5">
-        <span className="hidden sm:inline">Messages</span>
-        <span className="sm:hidden">Msg</span>
-        <span
-          className="min-w-[1.25rem] rounded-full bg-fuchsia-500/25 px-1.5 py-0.5 text-center font-mono text-[10px] font-bold tabular-nums text-fuchsia-200 ring-1 ring-fuchsia-400/30"
-          aria-label={`${unread} unread messages`}
-        >
-          {unread}
+      <IconMessage className={ICON_SIZE_MD} />
+      {unread > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 min-w-[1rem] rounded-full bg-accent px-1 text-center text-[9px] font-bold text-primary-foreground">
+          {unread > 9 ? "9+" : unread}
         </span>
-      </span>
+      )}
+    </Link>
+  );
+}
+
+function FavoritesIconLink() {
+  const pathname = usePathname();
+  const active = pathname === "/favorites" || pathname.startsWith("/favorites/");
+
+  return (
+    <Link
+      href="/favorites"
+      data-testid="nav-favorites"
+      aria-label="Favoritos"
+      className={`${iconBtnClass} ${active ? "bg-surface-muted/80" : ""}`}
+    >
+      <IconHeart className={ICON_SIZE_MD} />
     </Link>
   );
 }
@@ -149,77 +222,99 @@ export default function Navbar() {
     router.refresh();
   }
 
-  function linkClass(href: string) {
-    const active =
-      pathname === href || (href !== "/" && pathname.startsWith(href));
-    return active
-      ? `${navLinkClass} bg-white/10 text-white`
-      : navLinkClass;
+  function isNavItemActive(item: (typeof CENTER_NAV)[number]) {
+    if (item.homeActive) return pathname === "/";
+    return false;
   }
 
   const loggedIn = Boolean(user);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0c0a12]/80 backdrop-blur-md">
-      <nav className="mx-auto max-w-6xl px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="group flex shrink-0 items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm font-bold text-white shadow-lg shadow-violet-900/40">
-              M
-            </span>
-            <span className="hidden font-semibold tracking-tight text-white group-hover:text-violet-200 sm:inline sm:text-lg">
-              Melomanos Market
-            </span>
-          </Link>
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-surface/98 backdrop-blur-sm">
+      <nav className="mx-auto max-w-[1440px] px-5 py-3 sm:px-8">
+        <div className="flex items-center gap-4 lg:gap-6">
+          <BrandLogo />
 
-          <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
-            <Link href="/" className={linkClass("/")}>
-              <span className="hidden sm:inline">Marketplace</span>
-              <span className="sm:hidden">Crate</span>
-            </Link>
+          <div className="hidden flex-1 items-center justify-center lg:flex">
+            {CENTER_NAV.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                {...(item.testId ? { "data-testid": item.testId } : {})}
+                className={navLinkClass(isNavItemActive(item))}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2 lg:flex-none">
+            <NavbarSearch />
 
             {hydrated && loggedIn && user && (
-              <>
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 <Link
                   href="/sell"
-                  className={`${sellCtaClass} ${pathname === "/sell" ? "ring-2 ring-violet-300/50" : ""}`}
+                  data-testid="nav-sell"
+                  className="hidden rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-accent lg:inline-block"
                 >
-                  + Sell Vinyl
+                  Vender vinilo
                 </Link>
 
-                <Link href="/favorites" className={linkClass("/favorites")}>
-                  <span className="hidden sm:inline">Favorites</span>
-                  <span className="sm:hidden" aria-label="Favorites">
-                    ♥
-                  </span>
+                <Link
+                  href="/orders"
+                  data-testid="nav-orders"
+                  className="hidden rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-foreground lg:inline-block"
+                >
+                  Compras y ventas
                 </Link>
 
-                <Link href="/orders" className={linkClass("/orders")}>
-                  Orders
-                </Link>
+                <NotificationBell iconOnly />
 
-                <NotificationBell />
+                <MessagesIconLink unread={unreadMessages} />
 
-                <MessagesLink unread={unreadMessages} />
+                <FavoritesIconLink />
 
                 <ProfileChip user={user} />
 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="hidden rounded-lg border border-white/15 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-violet-400/50 hover:bg-white/5 hover:text-white lg:inline-block"
+                  data-testid="nav-logout"
+                  className="hidden rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-foreground 2xl:inline-block"
                 >
-                  Logout
+                  Salir
                 </button>
-              </>
+              </div>
             )}
 
             {hydrated && !loggedIn && (
-              <Link href="/login" className={linkClass("/login")}>
-                Login
+              <Link
+                href="/login"
+                data-testid="nav-login"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+              >
+                Iniciar sesión
               </Link>
             )}
           </div>
+        </div>
+
+        <div className="mt-2.5 flex gap-2 overflow-x-auto pb-0.5 lg:hidden">
+          {CENTER_NAV.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              {...(item.testId ? { "data-testid": `${item.testId}-mobile` } : {})}
+              className={`shrink-0 px-2 py-1 text-xs font-medium ${
+                isNavItemActive(item)
+                  ? "text-foreground underline decoration-accent decoration-2 underline-offset-4"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       </nav>
     </header>

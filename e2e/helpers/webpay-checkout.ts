@@ -211,7 +211,7 @@ export async function completeWebPayPlaceholderPayment(
   });
 
   await approvePlaceholderCheckoutViaPage(page);
-  await expectOrderStatus(page, "Pendiente de envío", 20_000);
+  await expectOrderStatus(page, "Preparando envío", 20_000);
 
   await assertOrderPaymentHeld(orderId, buyerToken);
   await assertCheckoutSessionNoLongerStartable(orderId, buyerToken);

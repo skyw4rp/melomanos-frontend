@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import NotificationItem, { NotificationEmptyState } from "@/components/NotificationItem";
@@ -77,33 +78,49 @@ export default function NotificationsPage() {
   if (!user && !error) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-        <p className="text-center text-zinc-400">Cargando…</p>
+        <p className="text-center text-sm text-muted-foreground">Cargando…</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Notificaciones</h1>
+    <main
+      data-testid="notifications-page"
+      className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10"
+    >
+      <Link
+        href="/"
+        className="text-sm font-medium text-muted-foreground transition hover:text-accent"
+      >
+        ← Volver al catálogo
+      </Link>
+
+      <header className="mb-6 mt-4">
+        <p className="editorial-label text-accent">Actividad Melómanos</p>
+        <h1
+          data-testid="notifications-title"
+          className="mt-2 text-2xl font-bold tracking-tight text-foreground"
+        >
+          Notificaciones
+        </h1>
         {unreadCount > 0 && (
-          <p className="mt-1 text-sm text-zinc-400">
-            {unreadCount} sin leer
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{unreadCount} sin leer</p>
         )}
       </header>
 
       {error && (
-        <p className="mb-4 rounded-lg border border-red-500/30 bg-red-950/30 px-3 py-2 text-sm text-red-200">
+        <p className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {error}
         </p>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-card)]">
         {loading ? (
-          <p className="py-12 text-center text-zinc-400">Cargando…</p>
+          <p className="py-12 text-center text-sm text-muted-foreground">Cargando…</p>
         ) : items.length === 0 ? (
-          <NotificationEmptyState />
+          <div className="p-4">
+            <NotificationEmptyState />
+          </div>
         ) : (
           items.map((notification) => (
             <NotificationItem

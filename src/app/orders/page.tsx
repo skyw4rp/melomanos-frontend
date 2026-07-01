@@ -20,10 +20,13 @@ import type { Order } from "@/types";
 
 type TabId = "buying" | "selling";
 
-const tabs: { id: TabId; label: string }[] = [
-  { id: "buying", label: "Compras" },
-  { id: "selling", label: "Ventas" },
+const tabs: { id: TabId; label: string; testId: string }[] = [
+  { id: "buying", label: "Compras", testId: "orders-tab-purchases" },
+  { id: "selling", label: "Ventas", testId: "orders-tab-sales" },
 ];
+
+const badgeClass =
+  "rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset";
 
 function OrderCard({ order }: { order: Order }) {
   const title = orderListingTitle(order);
@@ -32,54 +35,86 @@ function OrderCard({ order }: { order: Order }) {
   return (
     <Link
       href={`/orders/${order.id}`}
-      className="block rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-violet-400/40 hover:bg-white/[0.06]"
+      data-testid="order-card"
+      className="block rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition hover:border-accent/40 hover:shadow-[var(--shadow-card-hover)] sm:p-5"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-white">{title}</p>
+          <p className="truncate text-base font-semibold text-foreground">
+            {title}
+          </p>
           {order.listing_artist && (
-            <p className="mt-0.5 truncate font-mono text-xs uppercase tracking-wide text-fuchsia-300/80">
+            <p className="mt-0.5 truncate text-xs font-medium uppercase tracking-[0.06em] text-muted-foreground">
               {order.listing_artist}
             </p>
           )}
+          <p className="mt-2 text-xs text-muted-foreground">
+            Pedido #{order.id}
+          </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <span
-            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${orderStatusBadgeClass(order.status)}`}
+            data-testid="order-status-badge"
+            className={`${badgeClass} ${orderStatusBadgeClass(order.status)}`}
           >
             {orderStatusLabel(order.status)}
           </span>
           <span
-            data-testid="order-list-payment-badge"
-            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${paymentStatusBadgeClass(order.payment_status)}`}
+            data-testid="funds-status-badge"
+            className={`${badgeClass} ${paymentStatusBadgeClass(order.payment_status)}`}
           >
             {paymentStatusLabel(order.payment_status)}
           </span>
         </div>
       </div>
 
-      <p className="mt-3 text-lg font-bold text-violet-100">
+      <p className="mt-4 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
         {formatPriceCLP(orderTotalClp(order))}
       </p>
 
-      <div className="mt-3 flex flex-wrap gap-3 text-xs text-zinc-500">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         {order.carrier && (
           <span>
-            <span className="text-zinc-600">Carrier · </span>
+            <span className="text-foreground/70">Transportista · </span>
             {order.carrier}
           </span>
         )}
         {hasTracking && (
           <span>
-            <span className="text-zinc-600">Tracking · </span>
-            {order.tracking_number || "Link disponible"}
+            <span className="text-foreground/70">Seguimiento · </span>
+            {order.tracking_number || "Enlace disponible"}
           </span>
         )}
         {!order.carrier && !hasTracking && (
-          <span className="text-zinc-600">Sin tracking aún</span>
+          <span>Sin seguimiento todavía</span>
         )}
       </div>
     </Link>
+  );
+}
+
+function OrdersEmptyState({ tab }: { tab: TabId }) {
+  const isBuying = tab === "buying";
+
+  return (
+    <div
+      data-testid={isBuying ? "orders-empty-purchases" : "orders-empty-sales"}
+      className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center shadow-[var(--shadow-card)]"
+    >
+      <p className="text-base font-semibold text-foreground">
+        {isBuying ? "Aún no tienes compras" : "Aún no tienes ventas"}
+      </p>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+        {isBuying
+          ? "Cuando compres un vinilo, aparecerá aquí el seguimiento de tu pedido."
+          : "Cuando alguien compre una de tus publicaciones, aparecerá aquí."}
+      </p>
+      {isBuying && (
+        <Link href="/" className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm">
+          Explorar catálogo
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -108,7 +143,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [router, pathname]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -116,39 +151,70 @@ export default function OrdersPage() {
       return;
     }
     loadOrders();
-  }, [router, loadOrders]);
+  }, [router, pathname, loadOrders]);
 
   const orders = activeTab === "buying" ? buying : selling;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+    <div
+      data-testid="orders-page"
+      className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10"
+    >
       <Link
         href="/"
-        className="font-mono text-xs uppercase tracking-wider text-violet-300 hover:text-violet-200"
+        data-testid="orders-back-link"
+        className="text-sm font-medium text-muted-foreground transition hover:text-accent"
       >
-        ← Marketplace
+        ← Volver al catálogo
       </Link>
-      <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Orders</h1>
-      <p className="mt-1 text-sm text-zinc-400">
-        Compras y ventas estilo pulga — seguimiento y estado del vinilo.
-      </p>
+
+      <header className="mt-4">
+        <p className="editorial-label text-accent">Transacciones Melómanos</p>
+        <h1
+          data-testid="orders-page-title"
+          className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
+        >
+          Compras y ventas
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Revisa el estado de tus compras, ventas y pagos protegidos.
+        </p>
+      </header>
+
+      <aside
+        data-testid="orders-trust-block"
+        className="mt-6 rounded-2xl border border-border bg-surface-muted/40 px-5 py-4 shadow-[var(--shadow-card)] sm:px-6 sm:py-5"
+      >
+        <h2 className="text-sm font-semibold text-foreground">
+          Compra protegida Melómanos
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Tu pago se mantiene protegido hasta confirmar la recepción del vinilo.
+          Si algo no está bien, puedes revisar el estado de la compra desde esta
+          sección.
+        </p>
+      </aside>
 
       {error && (
-        <p className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p
+          className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}
 
-      <div className="mt-8 flex gap-1 border-b border-white/10">
+      <div className="mt-8 flex gap-1 border-b border-border">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            data-testid={tab.testId}
             onClick={() => setActiveTab(tab.id)}
             className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
               activeTab === tab.id
-                ? "border-fuchsia-400 text-white"
-                : "border-transparent text-zinc-400 hover:text-violet-200"
+                ? "border-accent text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -156,17 +222,15 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      <section className="mt-6">
+      <section data-testid="orders-list-section" className="mt-6">
         {loading && (
-          <p className="py-12 text-center text-sm text-zinc-500">Cargando pedidos…</p>
+          <p className="py-12 text-center text-sm text-muted-foreground">
+            Cargando pedidos…
+          </p>
         )}
 
         {!loading && orders.length === 0 && (
-          <p className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-12 text-center text-sm text-zinc-400">
-            {activeTab === "buying"
-              ? "Aún no tienes compras."
-              : "Aún no tienes ventas."}
-          </p>
+          <OrdersEmptyState tab={activeTab} />
         )}
 
         {!loading && orders.length > 0 && (

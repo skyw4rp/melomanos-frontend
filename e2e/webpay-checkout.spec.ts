@@ -51,7 +51,7 @@ test.describe("WebPay checkout (Phase 5)", () => {
     await page.goto(`/orders/${orderId}?checkout=success`);
 
     await expect(page.getByTestId("order-checkout-notice")).toContainText(
-      "Payment submitted successfully.",
+      "Pago enviado correctamente.",
       { timeout: 15_000 },
     );
     await expect(page).toHaveURL(`/orders/${orderId}`);
@@ -66,7 +66,7 @@ test.describe("WebPay checkout (Phase 5)", () => {
     await page.goto(`/orders/${orderId}?checkout=cancelled`);
 
     await expect(page.getByTestId("order-checkout-notice")).toContainText(
-      "Checkout cancelled.",
+      "Pago cancelado.",
       { timeout: 15_000 },
     );
     await expect(page).toHaveURL(`/orders/${orderId}`);

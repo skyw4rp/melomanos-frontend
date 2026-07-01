@@ -7,11 +7,9 @@ import { handleAuthRedirect } from "@/lib/auth-session";
 import { ALLOWED_COURIERS } from "@/lib/shipping-profile";
 import type { SellerShippingProfile } from "@/types";
 
-const inputClass =
-  "mt-1.5 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60";
+const inputClass = "input-field";
 
-const labelClass =
-  "block font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-400";
+const labelClass = "block text-sm font-medium text-foreground";
 
 function profileToFormState(profile: SellerShippingProfile) {
   return {
@@ -106,17 +104,15 @@ export default function SellerShippingProfileSection() {
   return (
     <section
       data-testid="shipping-profile-section"
-      className="mt-8 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-[#120a1f] to-fuchsia-950/20 p-6 sm:p-8"
+      className="mt-8 card-surface p-6 sm:p-8"
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
-        Perfil de despacho
-      </p>
-      <p className="mt-2 text-sm text-zinc-400">
+      <p className="text-sm font-semibold text-foreground">Perfil de despacho</p>
+      <p className="mt-2 text-sm text-muted-foreground">
         Configura cómo envías tus vinilos para que los compradores sepan qué esperar.
       </p>
 
       {loading ? (
-        <p className="mt-6 text-sm text-zinc-500">Cargando perfil de despacho…</p>
+        <p className="mt-6 text-sm text-muted-foreground">Cargando perfil de despacho…</p>
       ) : (
         <form
           data-testid="shipping-profile-form"
@@ -157,23 +153,23 @@ export default function SellerShippingProfileSection() {
           </label>
 
           <fieldset>
-            <legend className={labelClass}>Couriers preferidos</legend>
+            <legend className={labelClass}>Transportistas preferidos</legend>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
               {ALLOWED_COURIERS.map((courier) => {
                 const checked = preferredCouriers.includes(courier);
                 const testId = `shipping-profile-courier-${courier.replace(/\s+/g, "-")}`;
                 return (
                   <li key={courier}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 transition hover:border-violet-400/40">
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5 transition hover:border-accent/40">
                       <input
                         type="checkbox"
                         data-testid={testId}
                         checked={checked}
                         onChange={() => toggleCourier(courier)}
                         disabled={saving}
-                        className="h-4 w-4 rounded border-white/20 bg-black/40 text-violet-500 focus:ring-violet-500/40"
+                        className="h-4 w-4 rounded border-border text-accent focus:ring-accent/30"
                       />
-                      <span className="text-sm text-zinc-200">{courier}</span>
+                      <span className="text-sm text-foreground">{courier}</span>
                     </label>
                   </li>
                 );
@@ -200,7 +196,7 @@ export default function SellerShippingProfileSection() {
           {error && (
             <p
               data-testid="shipping-profile-error"
-              className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+              className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
               role="alert"
             >
               {error}
@@ -210,7 +206,7 @@ export default function SellerShippingProfileSection() {
           {success && (
             <p
               data-testid="shipping-profile-success"
-              className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
+              className="rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success"
               role="status"
             >
               {success}
@@ -221,7 +217,7 @@ export default function SellerShippingProfileSection() {
             type="submit"
             data-testid="shipping-profile-save"
             disabled={saving}
-            className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50"
+            className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saving ? "Guardando…" : "Guardar perfil de despacho"}
           </button>

@@ -62,7 +62,7 @@ test.describe("WebPay placeholder full lifecycle (Phase 6)", () => {
     expect(session.checkout_session_id).toBeGreaterThan(0);
 
     await expect(page.getByTestId("order-checkout-notice")).toContainText(
-      "Payment submitted successfully.",
+      "Pago enviado correctamente.",
       { timeout: 15_000 },
     );
     await expect(page.getByTestId("order-escrow-card")).toContainText(

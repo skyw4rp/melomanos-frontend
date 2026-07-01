@@ -11,7 +11,7 @@ export async function expectOrderStatus(
   label: string,
   timeout = 20_000,
 ): Promise<void> {
-  await expect(page.getByTestId("order-status")).toContainText(label, { timeout });
+  await expect(page.getByTestId("order-detail-status-badge")).toContainText(label, { timeout });
 }
 
 /**
@@ -25,7 +25,7 @@ export async function openSellingOrderFromList(
 ): Promise<void> {
   await page.goto(`/orders/${orderId}`);
   await expect(page).toHaveURL(new RegExp(`/orders/${orderId}(\\?.*)?$`));
-  await expect(page.getByTestId("order-status")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId("order-detail-status-badge")).toBeVisible({ timeout: 20_000 });
   if (options?.waitForShippingForm) {
     await expect(page.getByTestId("order-shipping-form")).toBeVisible({
       timeout: 20_000,

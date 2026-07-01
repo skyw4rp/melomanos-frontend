@@ -25,9 +25,13 @@ let e2eListingId: number | null = null;
 test("homepage loads marketplace", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /vinyl & electronic marketplace/i }),
+    page.getByRole("heading", { name: /el lugar donde la música vive/i }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: /filter crate/i })).toBeVisible();
+  await expect(page.getByTestId("home-hero")).toBeVisible();
+  await expect(page.getByTestId("hero-cover-frame")).toBeVisible();
+  await expect(page.getByTestId("trust-strip")).toBeVisible();
+  await expect(page.getByTestId("marketplace-filters")).toBeVisible();
+  await expect(page.getByText("Refinar búsqueda")).toBeVisible();
 });
 
 test("admin panel loads summary and tables", async ({ page }) => {
@@ -67,15 +71,18 @@ test("protected pages redirect to login with next", async ({ page }) => {
 test("login works", async ({ page }) => {
   await logoutViaStorage(page);
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
-  await expect(page.getByRole("link", { name: "Orders" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /sell vinyl/i })).toBeVisible();
+  await expect(page.getByTestId("nav-orders")).toBeVisible();
+  await expect(page.getByTestId("nav-sell")).toBeVisible();
 });
 
 test("after login profile loads", async ({ page }) => {
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
   await page.goto("/profile");
   await expect(page.getByText(BUYER_EMAIL)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole("main").getByText("Collector")).toBeVisible();
+  await expect(page.getByTestId("profile-name")).toBeVisible();
+  await expect(
+    page.getByTestId("profile-header").getByText("Coleccionista", { exact: true }),
+  ).toBeVisible();
 });
 
 test("sell vinyl page creates listing", async ({ page }) => {
@@ -83,9 +90,7 @@ test("sell vinyl page creates listing", async ({ page }) => {
   const title = `E2E Press ${stamp}`;
   await login(page, SELLER_EMAIL, E2E_PASSWORD);
   await page.goto("/sell");
-  await expect(
-    page.getByRole("heading", { name: /sell vinyl/i }),
-  ).toBeVisible();
+  await expect(page.getByTestId("sell-page-title")).toHaveText("Publicar vinilo");
   await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
     timeout: 15_000,
   });
@@ -109,9 +114,7 @@ test("sell vinyl page creates listing", async ({ page }) => {
 test("used listing requires video URL", async ({ page }) => {
   await login(page, SELLER_EMAIL, E2E_PASSWORD);
   await page.goto("/sell");
-  await expect(
-    page.getByRole("heading", { name: /sell vinyl/i }),
-  ).toBeVisible();
+  await expect(page.getByTestId("sell-page-title")).toHaveText("Publicar vinilo");
   await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
     timeout: 15_000,
   });
@@ -126,7 +129,7 @@ test("used listing requires video URL", async ({ page }) => {
 
   await page.getByTestId("sell-submit").click();
   await expect(page.getByTestId("sell-video-error")).toContainText(
-    /Video URL is required for used listings/i,
+    /URL de video es obligatoria para vinilos usados/i,
   );
   await expect(page).toHaveURL(/\/sell$/);
 });
@@ -139,20 +142,21 @@ test("listing detail buy button creates order", async ({ page }) => {
   await page.goto(`/listings/${listingId}`);
   await page.getByRole("button", { name: /^comprar$/i }).click();
   await page.waitForURL(/\/orders\/\d+/, { timeout: 20_000 });
-  await expect(page.getByText(/order #/i)).toBeVisible();
+  await expect(page.getByText(/pedido #/i)).toBeVisible();
 });
 
 test("orders page shows buying and selling tabs", async ({ page }) => {
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
   await page.goto("/orders");
-  await expect(
-    page.getByRole("heading", { name: "Orders", exact: true }),
-  ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Compras" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Ventas" })).toBeVisible();
+  await expect(page.getByTestId("orders-page")).toBeVisible();
+  await expect(page.getByTestId("orders-page-title")).toHaveText(
+    "Compras y ventas",
+  );
+  await expect(page.getByTestId("orders-tab-purchases")).toBeVisible();
+  await expect(page.getByTestId("orders-tab-sales")).toBeVisible();
 
-  await page.getByRole("button", { name: "Ventas" }).click();
-  await expect(page.locator("section")).toBeVisible();
+  await page.getByTestId("orders-tab-sales").click();
+  await expect(page.getByTestId("orders-list-section")).toBeVisible();
 });
 
 test("favorites flow", async ({ page }) => {
@@ -177,9 +181,7 @@ test("favorites flow", async ({ page }) => {
   }
 
   await page.goto("/favorites");
-  await expect(
-    page.getByRole("heading", { name: /your favorites/i }),
-  ).toBeVisible();
+  await expect(page.getByTestId("favorites-page-title")).toHaveText("Tus favoritos");
   await expect(page.getByRole("link").first()).toBeVisible({ timeout: 15_000 });
 });
 
@@ -292,10 +294,9 @@ test("listing message blocks contact leak and allows collector questions", async
 test("messages page loads", async ({ page }) => {
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
   await page.goto("/messages");
-  await expect(
-    page.getByRole("heading", { name: "Messages", exact: true }),
-  ).toBeVisible();
-  await expect(page.getByText("Inbox")).toBeVisible();
+  await expect(page.getByTestId("messages-page")).toBeVisible();
+  await expect(page.getByTestId("messages-page-title")).toHaveText("Mensajes");
+  await expect(page.getByTestId("messages-list").getByText("Conversaciones")).toBeVisible();
 });
 
 test("buyer can open dispute and add evidence", async ({ page }) => {
@@ -322,7 +323,7 @@ test("buyer can open dispute and add evidence", async ({ page }) => {
 
   const orderId = orderIdFromUrl(page.url());
   await confirmOrderPaymentForE2e(page, orderId);
-  await expectOrderStatus(page, "Pendiente de envío");
+  await expectOrderStatus(page, "Preparando envío");
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
@@ -393,7 +394,7 @@ test("admin can resolve dispute for buyer", async ({ page }) => {
 
   const orderId = orderIdFromUrl(page.url());
   await confirmOrderPaymentForE2e(page, orderId);
-  await expectOrderStatus(page, "Pendiente de envío");
+  await expectOrderStatus(page, "Preparando envío");
 
   await logoutViaStorage(page);
   await loginAsSeller(page);
@@ -470,10 +471,10 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   const orderId = orderIdFromUrl(page.url());
-  await expect(page.getByText(new RegExp(`order #${orderId}`, "i"))).toBeVisible();
+  await expect(page.getByText(new RegExp(`pedido #${orderId}`, "i"))).toBeVisible();
 
   await confirmOrderPaymentForE2e(page, orderId);
-  await expectOrderStatus(page, "Pendiente de envío");
+  await expectOrderStatus(page, "Preparando envío");
   await expect(page.getByTestId("order-escrow-card")).toContainText(
     /Fondos retenidos/i,
     { timeout: 15_000 },
@@ -495,7 +496,7 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
   await page.getByTestId("order-confirm-shipping").click();
   await expectOrderStatus(page, "Enviado");
 
-  await expect(page.getByTestId("order-tracking-section")).toBeVisible();
+  await expect(page.getByTestId("order-detail-tracking")).toBeVisible();
   await expect(page.getByTestId("order-tracking-number")).toHaveText(
     "TEST123456",
   );

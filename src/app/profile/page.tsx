@@ -43,9 +43,15 @@ const tabs: { id: TabId; label: string }[] = [
   { id: "messages", label: "Mensajes" },
 ];
 
+const cardClass =
+  "rounded-2xl border border-border bg-surface shadow-[var(--shadow-card)]";
+
+const statCellClass =
+  "rounded-xl border border-border bg-surface p-4 shadow-sm";
+
 function EmptyState({ message }: { message: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-12 text-center text-sm text-zinc-400">
+    <p className="rounded-xl border border-dashed border-border bg-surface-muted/30 px-6 py-12 text-center text-sm text-muted-foreground">
       {message}
     </p>
   );
@@ -55,22 +61,22 @@ function ListingRow({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-violet-400/40 hover:bg-white/[0.06] sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 transition hover:border-accent/40 hover:shadow-[var(--shadow-card-hover)] sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="min-w-0">
-        <p className="truncate font-semibold text-white">{listing.title}</p>
-        <p className="truncate font-mono text-xs uppercase tracking-wide text-fuchsia-300/80">
+        <p className="truncate font-semibold text-foreground">{listing.title}</p>
+        <p className="truncate text-xs font-medium uppercase tracking-[0.06em] text-muted-foreground">
           {listing.artist}
         </p>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {listing.genre} · {listing.city}
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">
-        <span className="text-lg font-bold text-violet-100">
+        <span className="text-lg font-bold text-foreground">
           {formatPriceCLP(listing.price_clp)}
         </span>
-        <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-200">
+        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground ring-1 ring-border">
           {statusLabel(listing.status)}
         </span>
       </div>
@@ -81,7 +87,7 @@ function ListingRow({ listing }: { listing: Listing }) {
 function ConversationRow({ conversation }: { conversation: Conversation }) {
   const title =
     conversation.listing_title ||
-    (conversation.listing_id ? `Listing #${conversation.listing_id}` : "Conversación");
+    (conversation.listing_id ? `Publicación #${conversation.listing_id}` : "Conversación");
   const preview =
     conversation.last_message_text?.trim() ||
     conversation.last_message ||
@@ -91,20 +97,20 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
   return (
     <Link
       href="/messages"
-      className="block rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-violet-400/40 hover:bg-white/[0.06]"
+      className="block rounded-xl border border-border bg-surface p-4 transition hover:border-accent/40 hover:shadow-[var(--shadow-card-hover)]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-white">{title}</p>
+          <p className="truncate font-semibold text-foreground">{title}</p>
           {conversation.other_user_name && (
-            <p className="mt-0.5 text-xs text-violet-300/90">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {conversation.other_user_name}
             </p>
           )}
-          <p className="mt-2 line-clamp-2 text-sm text-zinc-400">{preview}</p>
+          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{preview}</p>
         </div>
         {unread > 0 && (
-          <span className="shrink-0 rounded-full bg-fuchsia-500/30 px-2 py-0.5 font-mono text-[10px] font-bold text-fuchsia-100">
+          <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold tabular-nums text-accent ring-1 ring-accent/30">
             {unread}
           </span>
         )}
@@ -113,27 +119,11 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent?: boolean;
-}) {
+function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div
-      className={`rounded-xl border p-4 ${
-        accent
-          ? "border-fuchsia-500/30 bg-gradient-to-br from-violet-950/60 to-fuchsia-950/30"
-          : "border-white/10 bg-white/[0.03]"
-      }`}
-    >
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
-        {label}
-      </p>
-      <p className="mt-2 text-3xl font-black tabular-nums text-white">{value}</p>
+    <div className={statCellClass}>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-2 text-3xl font-bold tabular-nums text-foreground">{value}</p>
     </div>
   );
 }
@@ -207,7 +197,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -215,7 +205,7 @@ export default function ProfilePage() {
       return;
     }
     loadDashboard();
-  }, [router, loadDashboard]);
+  }, [router, pathname, loadDashboard]);
 
   const safeSales = Array.isArray(sales) ? sales : [];
   const safePurchases = Array.isArray(purchases) ? purchases : [];
@@ -241,8 +231,8 @@ export default function ProfilePage() {
 
   if (loading && !user) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-sm text-zinc-500">
-        Cargando tu crate…
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-sm text-muted-foreground">
+        Cargando tu perfil…
       </div>
     );
   }
@@ -250,11 +240,14 @@ export default function ProfilePage() {
   if (!user && error) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16">
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {error}
         </p>
-        <Link href="/login" className="mt-4 inline-block text-sm text-violet-300">
-          Ir a login
+        <Link
+          href="/login"
+          className="mt-4 inline-block text-sm font-medium text-accent hover:underline"
+        >
+          Ir a iniciar sesión
         </Link>
       </div>
     );
@@ -265,135 +258,162 @@ export default function ProfilePage() {
   const name = formatProfileName(user);
   const initials = getUserInitials(user);
   const city = user.city?.trim() || "—";
+  const roleSubtitle =
+    city !== "—" ? `Coleccionista · ${city}` : "Coleccionista";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+    <div
+      data-testid="profile-page"
+      className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10"
+    >
       <Link
         href="/"
-        className="font-mono text-xs uppercase tracking-wider text-violet-300 hover:text-violet-200"
+        data-testid="profile-back-link"
+        className="text-sm font-medium text-muted-foreground transition hover:text-accent"
       >
-        ← Marketplace
+        ← Volver al catálogo
       </Link>
 
       {error && (
-        <p className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+        <p className="mt-4 rounded-xl border border-amber-600/25 bg-amber-600/10 px-4 py-3 text-sm text-amber-900">
           {error}
         </p>
       )}
 
-      <header className="mt-6 flex flex-col gap-6 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-[#120a1f] to-fuchsia-950/20 p-6 sm:flex-row sm:items-center sm:p-8">
-        <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 text-3xl font-bold text-white ring-2 ring-violet-400/40 shadow-lg shadow-violet-950/50">
+      <header
+        data-testid="profile-header"
+        className={`mt-6 flex flex-col gap-6 ${cardClass} p-6 sm:flex-row sm:items-center sm:p-8`}
+      >
+        <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-border bg-surface-muted text-3xl font-bold text-foreground ring-2 ring-accent/30">
           {initials}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
-            Collector
-          </p>
-          <h1 className="mt-1 text-3xl font-bold text-white">{name}</h1>
-          <p className="mt-2 text-sm text-zinc-300">{user.email}</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            <span className="text-zinc-600">Ciudad · </span>
-            {city}
-          </p>
+          <p className="editorial-label text-accent">Coleccionista</p>
+          <h1
+            data-testid="profile-name"
+            className="mt-1 text-3xl font-bold tracking-tight text-foreground"
+          >
+            {name}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>
+          <p className="mt-1 text-sm text-foreground">{roleSubtitle}</p>
         </div>
         <Link
           href="/sell"
-          className="shrink-0 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:from-violet-500 hover:to-fuchsia-500"
+          data-testid="profile-sell-cta"
+          className="btn-primary shrink-0 px-5 py-3 text-center text-sm"
         >
-          + Sell Vinyl
+          Publicar vinilo
         </Link>
       </header>
 
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <StatCard label="Activos" value={stats.activeListings} accent />
+      <div
+        data-testid="profile-stats"
+        className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+      >
+        <StatCard label="Publicaciones activas" value={stats.activeListings} />
         <StatCard label="Ventas" value={stats.salesCount} />
         <StatCard label="Compras" value={stats.purchasesCount} />
         <StatCard label="Favoritos" value={stats.favoritesCount} />
-        <StatCard
-          label="Sin leer"
-          value={stats.unreadMessages}
-          accent={stats.unreadMessages > 0}
-        />
+        <StatCard label="Mensajes sin leer" value={stats.unreadMessages} />
       </div>
 
       {subscription && (
-        <SubscriptionCard subscription={subscription} variant="profile" />
+        <div data-testid="profile-plan-card">
+          <SubscriptionCard subscription={subscription} variant="profile" />
+        </div>
       )}
 
-      {reputation && (
-        <section className="mt-8 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-[#120a1f] to-fuchsia-950/20 p-6 sm:p-8">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
-            Confianza en el crate
+      {reputation ? (
+        <section
+          data-testid="profile-reputation-section"
+          className={`mt-8 ${cardClass} p-6 sm:p-8`}
+        >
+          <h2 className="text-sm font-semibold text-foreground">Reputación Melómanos</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Tu reputación crece según tus compras, ventas y comportamiento dentro de
+            la comunidad.
           </p>
-          <p className="mt-3 inline-block rounded-full bg-fuchsia-500/20 px-3 py-1 text-sm font-semibold uppercase tracking-wide text-fuchsia-200 ring-1 ring-fuchsia-400/30">
+          <p className="mt-4 inline-block rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent ring-1 ring-accent/30">
             {trustLevelLabel(reputation.trust_level)}
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
-                Calificación
-              </p>
-              <p className="mt-2 text-2xl font-bold text-white">
+            <div className={statCellClass}>
+              <p className="text-xs font-medium text-muted-foreground">Calificación</p>
+              <p className="mt-2 text-2xl font-bold text-foreground">
                 {formatAverageRating(reputation.average_rating)}
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+            <div className={statCellClass}>
+              <p className="text-xs font-medium text-muted-foreground">
                 Ventas completadas
               </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-white">
+              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
                 {reputation.completed_sales}
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+            <div className={statCellClass}>
+              <p className="text-xs font-medium text-muted-foreground">
                 Intercambios protegidos
               </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-white">
+              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
                 {reputation.protected_trades}
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
-                Reviews
-              </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-white">
+            <div className={statCellClass}>
+              <p className="text-xs font-medium text-muted-foreground">Reseñas</p>
+              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
                 {reputation.total_reviews}
               </p>
             </div>
           </div>
           {reputation.disputed_orders > 0 && (
-            <p className="mt-4 text-sm text-amber-200/90">
+            <p className="mt-4 text-sm text-destructive">
               Disputas registradas: {reputation.disputed_orders}
             </p>
           )}
+          <TrustBadgesPanel badges={reputation.badges} editorial />
         </section>
+      ) : (
+        !loading && (
+          <section
+            data-testid="profile-reputation-section"
+            className={`mt-8 ${cardClass} p-6 sm:p-8`}
+          >
+            <h2 className="text-sm font-semibold text-foreground">Reputación Melómanos</h2>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Aún no tienes reseñas
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Cuando completes ventas o compras, tu reputación aparecerá aquí.
+            </p>
+          </section>
+        )
       )}
-
-      {reputation && <TrustBadgesPanel badges={reputation.badges} />}
 
       <DiggingScorePanel
         diggingScore={diggingScore}
         showFallback={diggingScoreUnavailable}
+        editorial
       />
 
       <SellerShippingProfileSection />
 
-      <div className="mt-10 flex flex-wrap gap-2 border-b border-white/10 pb-px">
+      <div className="mt-10 flex flex-wrap gap-1 border-b border-border">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`rounded-t-lg px-4 py-2.5 text-sm font-medium transition ${
+            className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
               activeTab === tab.id
-                ? "border border-b-0 border-white/10 bg-white/[0.06] text-white"
-                : "text-zinc-400 hover:text-violet-200"
+                ? "border-accent text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab.label}
             {tab.id === "messages" && stats.unreadMessages > 0 && (
-              <span className="ml-1.5 rounded-full bg-fuchsia-500/30 px-1.5 text-[10px] font-bold text-fuchsia-200">
+              <span className="ml-1.5 rounded-full bg-accent/15 px-1.5 text-[10px] font-bold text-accent ring-1 ring-accent/30">
                 {stats.unreadMessages}
               </span>
             )}
@@ -401,9 +421,9 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      <section className="mt-0 rounded-b-2xl rounded-tr-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-6">
+      <section className={`mt-0 ${cardClass} rounded-t-none border-t-0 p-4 sm:p-6`}>
         {loading ? (
-          <p className="py-12 text-center text-sm text-zinc-500">Cargando…</p>
+          <p className="py-12 text-center text-sm text-muted-foreground">Cargando…</p>
         ) : (
           <>
             {activeTab === "sales" &&
@@ -467,7 +487,7 @@ export default function ProfilePage() {
           logout();
           router.push("/login");
         }}
-        className="mt-8 w-full rounded-xl border border-white/15 py-3 text-sm font-medium text-zinc-300 transition hover:border-red-400/40 hover:text-red-200 sm:hidden"
+        className="btn-ghost mt-8 w-full py-3 text-sm text-destructive hover:border-destructive/30 hover:bg-destructive/5 sm:hidden"
       >
         Cerrar sesión
       </button>

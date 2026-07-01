@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" role="img" aria-label="Tornamesa y vinilo abstracto">
+  <defs>
+    <linearGradient id="deck" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="50%" stop-color="#0b0b0b"/>
+      <stop offset="100%" stop-color="#2a2520"/>
+    </linearGradient>
+    <radialGradient id="vinyl" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#3d3d3d"/>
+      <stop offset="40%" stop-color="#141414"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b68a2e" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#b68a2e" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#b68a2e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="520" rx="28" fill="url(#deck)"/>
+  <rect width="720" height="520" rx="28" fill="url(#gold)" opacity="0.6"/>
+  <!-- tonearm -->
+  <path d="M520 120 L620 80 L640 100 L560 200 Z" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+  <circle cx="520" cy="120" r="14" fill="#1a1a1a" stroke="#555" stroke-width="2"/>
+  <!-- platter -->
+  <circle cx="340" cy="280" r="175" fill="#111" stroke="#333" stroke-width="2"/>
+  <circle cx="340" cy="280" r="155" fill="url(#vinyl)"/>
+  <!-- grooves -->
+  <g opacity="0.25" stroke="#fff" fill="none">
+    <circle cx="340" cy="280" r="140" stroke-width="0.5"/>
+    <circle cx="340" cy="280" r="120" stroke-width="0.5"/>
+    <circle cx="340" cy="280" r="100" stroke-width="0.5"/>
+    <circle cx="340" cy="280" r="80" stroke-width="0.5"/>
+    <circle cx="340" cy="280" r="60" stroke-width="0.5"/>
+  </g>
+  <circle cx="340" cy="280" r="28" fill="#0b0b0b" stroke="#b68a2e" stroke-width="2" opacity="0.9"/>
+  <circle cx="340" cy="280" r="8" fill="#b68a2e" opacity="0.8"/>
+  <!-- ambient light -->
+  <ellipse cx="200" cy="120" rx="120" ry="60" fill="#b68a2e" opacity="0.06"/>
+</svg>

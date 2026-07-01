@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Melomanos Market",
-  description: "Buy and sell music gear in Chile",
+  title: "Melómanos Market — Mercado de vinilo electrónico",
+  description:
+    "Compra y vende vinilos de House, Techno, Minimal y más. Coleccionistas y DJs en Chile.",
 };
 
 export default function RootLayout({
@@ -28,7 +29,7 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#08060d] text-zinc-100">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <Navbar />
         <main className="flex-1">{children}</main>
       </body>

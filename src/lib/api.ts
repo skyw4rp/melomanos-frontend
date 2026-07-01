@@ -1,4 +1,5 @@
 import { dispatchAuthChange } from "@/lib/auth-events";
+import { DEFAULT_API_BASE, resolveApiBase } from "@/lib/api-base";
 import { normalizePreferredCouriers } from "@/lib/shipping-profile";
 import { normalizeReputationBadges } from "@/lib/trust-badges";
 import type {
@@ -35,9 +36,9 @@ import type {
   User,
 } from "@/types";
 
-export const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000"
-);
+export const API_BASE = resolveApiBase();
+
+export { DEFAULT_API_BASE, resolveApiBase };
 
 const TOKEN_KEY = "access_token";
 const USER_KEY = "melomanos_user";

@@ -19,11 +19,11 @@ const PAYMENT_STATUS_DESCRIPTIONS: Record<PaymentStatus, string> = {
 };
 
 const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
-  pending: "bg-amber-500/20 text-amber-200 ring-amber-400/30",
-  paid: "bg-violet-500/20 text-violet-200 ring-violet-400/30",
-  held: "bg-fuchsia-500/20 text-fuchsia-200 ring-fuchsia-400/40",
-  released: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/35",
-  refunded: "bg-zinc-500/20 text-zinc-300 ring-zinc-500/35",
+  pending: "bg-amber-600/10 text-amber-900 ring-amber-600/25",
+  paid: "bg-accent/10 text-accent ring-accent/30",
+  held: "bg-accent/10 text-accent ring-accent/30",
+  released: "bg-success/10 text-success ring-success/25",
+  refunded: "bg-destructive/10 text-destructive ring-destructive/30",
 };
 
 export function normalizePaymentStatus(status?: string | null): PaymentStatus {

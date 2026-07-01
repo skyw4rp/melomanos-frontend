@@ -16,22 +16,22 @@ function FavoriteFallbackCard({
   listingId: number;
 }) {
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-300/90">
+    <div className="flex h-full flex-col rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <p className="text-xs font-medium uppercase tracking-[0.06em] text-muted-foreground">
         Favorito
       </p>
-      <p className="mt-2 font-semibold text-amber-100">Listing no disponible</p>
-      <p className="mt-2 text-sm text-amber-200/80">
+      <p className="mt-2 font-semibold text-foreground">Publicación no disponible</p>
+      <p className="mt-2 text-sm text-muted-foreground">
         No pudimos cargar los datos de este vinilo. Puede haber sido eliminado.
       </p>
-      <p className="mt-4 font-mono text-xs text-amber-200/60">
-        #{favoriteId} · listing {listingId}
+      <p className="mt-4 text-xs text-muted-foreground">
+        #{favoriteId} · publicación {listingId}
       </p>
       <Link
         href="/"
-        className="mt-auto pt-6 text-sm font-medium text-violet-300 hover:text-violet-200"
+        className="mt-auto pt-6 text-sm font-medium text-accent hover:underline"
       >
-        Volver al marketplace →
+        Volver al catálogo →
       </Link>
     </div>
   );
@@ -57,37 +57,63 @@ export default function FavoritesPage() {
       })
       .catch((err) => {
         if (handleAuthRedirect(err, router, pathname)) return;
-        setError(err instanceof Error ? err.message : "Failed to load favorites");
+        setError(
+          err instanceof Error ? err.message : "No se pudieron cargar los favoritos",
+        );
       })
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [router, pathname]);
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-zinc-400 sm:px-6">
-        Loading favorites…
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-sm text-muted-foreground sm:px-6">
+        Cargando favoritos…
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <h1 className="text-3xl font-bold text-white">Your favorites</h1>
-      <p className="mt-2 text-zinc-400">Listings you have saved for later.</p>
+    <div
+      data-testid="favorites-page"
+      className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10"
+    >
+      <header>
+        <p className="editorial-label text-accent">Colección personal</p>
+        <h1
+          data-testid="favorites-page-title"
+          className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
+        >
+          Tus favoritos
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Vinilos que guardaste para revisar más tarde.
+        </p>
+      </header>
 
       {error && (
-        <p className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+        <p
+          className="mt-8 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}
 
       {!error && entries.length === 0 && (
-        <p className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-12 text-center text-zinc-400">
-          No favorites yet.{" "}
-          <Link href="/" className="text-violet-300 hover:text-violet-200">
-            Browse the marketplace
+        <div
+          data-testid="favorites-empty-state"
+          className="mt-8 rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center shadow-[var(--shadow-card)]"
+        >
+          <p className="text-base font-semibold text-foreground">
+            Aún no tienes favoritos
+          </p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Guarda vinilos para volver a revisarlos cuando quieras.
+          </p>
+          <Link href="/" className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm">
+            Explorar catálogo
           </Link>
-        </p>
+        </div>
       )}
 
       {!error && entries.length > 0 && (

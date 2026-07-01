@@ -21,7 +21,7 @@ export async function confirmOrderPaymentForE2e(
   if (await simulate.isVisible({ timeout: 3_000 }).catch(() => false)) {
     await simulate.click();
     try {
-      await expectOrderStatus(page, "Pendiente de envío", 15_000);
+      await expectOrderStatus(page, "Preparando envío", 15_000);
       return;
     } catch {
       // simulate-payment returns 410 when backend is in webpay_placeholder mode
@@ -34,7 +34,7 @@ export async function confirmOrderPaymentForE2e(
   });
 
   const session = await startWebPayCheckoutFromOrderPage(page);
-  await expectOrderStatus(page, "Pendiente de envío", 20_000);
+  await expectOrderStatus(page, "Preparando envío", 20_000);
 
   const buyerToken = await loginForApi(BUYER_EMAIL);
   await assertOrderPaymentHeld(orderId, buyerToken);
@@ -64,7 +64,7 @@ export async function retryWebPayCheckoutAfterCancel(
   await page.getByRole("link", { name: "Fail payment" }).click();
   await page.waitForURL(new RegExp(`/orders/${orderId}`), { timeout: 25_000 });
   await expect(page.getByTestId("order-checkout-notice")).toContainText(
-    "Checkout cancelled.",
+    "Pago cancelado.",
     { timeout: 15_000 },
   );
 
@@ -77,6 +77,6 @@ export async function retryWebPayCheckoutAfterCancel(
   const buyerToken = await loginForApi(BUYER_EMAIL);
   const session = await startWebPayCheckoutFromOrderPage(page);
   expect(session?.provider).toBe("webpay_placeholder");
-  await expectOrderStatus(page, "Pendiente de envío", 20_000);
+  await expectOrderStatus(page, "Preparando envío", 20_000);
   await assertOrderPaymentHeld(orderId, buyerToken);
 }

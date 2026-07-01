@@ -18,16 +18,44 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Environment variables
 
-Copy [`frontend/.env.example`](.env.example) to `.env.local` for optional local overrides.
+Copy [`frontend/.env.example`](.env.example) to `.env.local` for local overrides (recommended):
+
+```powershell
+cd frontend
+Copy-Item .env.example .env.local
+# or let workspace/run_melomanos.py create .env.local on first start
+```
 
 | Variable | Local default | Production (Vercel) |
 |----------|---------------|---------------------|
-| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8000` when unset | `https://api.melomanos.cl` |
+| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8000` when unset/blank | `https://api.melomanos.cl` |
 | `NEXT_PUBLIC_PAYMENT_PROVIDER_MODE` | unset | Match backend (`simulate` or `webpay_placeholder`) |
+
+**Important:** A blank `NEXT_PUBLIC_API_URL` in your shell breaks login (`Failed to fetch`). Use `.env.local` or start via `py run_melomanos.py` which injects the correct value.
 
 **Vercel setup:** Project → Settings → Environment Variables → add `NEXT_PUBLIC_API_URL` for the **Production** environment. Redeploy after changing `NEXT_PUBLIC_*` vars.
 
-Backend CORS must allow the frontend origin — set `CORS_ORIGINS` on the VPS to `https://melomanos.cl,https://www.melomanos.cl`. See [`workspace/PRODUCTION_ENV_MATRIX.md`](../workspace/PRODUCTION_ENV_MATRIX.md).
+Backend CORS must allow the frontend origin — default includes `http://localhost:3000`, `http://127.0.0.1:3000`, and fallback port **3001**. See [`workspace/PRODUCTION_ENV_MATRIX.md`](../workspace/PRODUCTION_ENV_MATRIX.md).
+
+## Local demo stack (Daniela UX review)
+
+```powershell
+cd C:\melomanos\backend
+$env:MELOMANOS_DEMO_MODE="1"
+py -m app.demo reset --factory --force
+py -m app.demo seed --size medium
+
+cd C:\melomanos\workspace
+py run_melomanos.py --auto-migrate --kill-stale --no-wait
+```
+
+Open http://localhost:3000/login — credentials: `daniela.review@demo.melomanos.local` / `devpassword12`
+
+Readiness check (health + listings + demo login smoke):
+
+```powershell
+py run_melomanos.py --check
+```
 
 ## Continuous integration
 

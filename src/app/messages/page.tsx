@@ -29,15 +29,35 @@ import {
 } from "@/lib/messages";
 import type { Conversation, Message, User } from "@/types";
 
+const inputClass =
+  "w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground shadow-sm transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60";
+
 function conversationTitle(conv: Conversation): string {
   return (
     conv.listing_title ||
-    (conv.listing_id ? `Listing #${conv.listing_id}` : "Conversación")
+    (conv.listing_id ? `Publicación #${conv.listing_id}` : "Conversación")
   );
 }
 
 function conversationPreview(conv: Conversation): string {
   return conv.last_message_text?.trim() || "Sin mensajes aún";
+}
+
+function ConversationsEmptyState() {
+  return (
+    <div
+      data-testid="messages-inbox-empty"
+      className="mx-4 my-6 rounded-2xl border border-dashed border-border bg-surface-muted/30 px-6 py-10 text-center"
+    >
+      <p className="text-base font-semibold text-foreground">Aún no tienes mensajes</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+        Cuando converses con un comprador o vendedor, tus mensajes aparecerán aquí.
+      </p>
+      <Link href="/" className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm">
+        Explorar catálogo
+      </Link>
+    </div>
+  );
 }
 
 export default function MessagesPage() {
@@ -116,7 +136,7 @@ export default function MessagesPage() {
         setLoadingThread(false);
       }
     },
-    [markUnreadInThread],
+    [markUnreadInThread, router, pathname],
   );
 
   useEffect(() => {
@@ -141,13 +161,15 @@ export default function MessagesPage() {
       loadConversations()
         .catch((err) => {
           if (handleAuthRedirect(err, router, pathname)) return;
-          setError(err instanceof Error ? err.message : "No se pudo cargar el inbox.");
+          setError(
+            err instanceof Error ? err.message : "No se pudieron cargar las conversaciones.",
+          );
         })
         .finally(() => setLoadingInbox(false));
     }
 
     init();
-  }, [router, loadConversations]);
+  }, [router, pathname, loadConversations]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -249,49 +271,73 @@ export default function MessagesPage() {
   const showThreadOnMobile = selectedListingId !== null;
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-4.5rem)] max-w-6xl flex-col px-4 py-6 sm:px-6 lg:h-[calc(100vh-5rem)]">
-      <div className="mb-4 shrink-0">
-        <Link
-          href="/"
-          className="font-mono text-xs uppercase tracking-wider text-violet-300 hover:text-violet-200"
+    <div
+      data-testid="messages-page"
+      className="mx-auto flex max-w-6xl flex-col px-4 py-8 sm:px-6 sm:py-10"
+    >
+      <Link
+        href="/"
+        data-testid="messages-back-link"
+        className="text-sm font-medium text-muted-foreground transition hover:text-accent"
+      >
+        ← Volver al catálogo
+      </Link>
+
+      <header className="mt-4 shrink-0">
+        <p className="editorial-label text-accent">Conversaciones Melómanos</p>
+        <h1
+          data-testid="messages-page-title"
+          className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
         >
-          ← Marketplace
-        </Link>
-        <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Messages</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          Conversaciones sobre listings en el crate.
+          Mensajes
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Conversa con compradores y vendedores sobre tus publicaciones.
         </p>
-      </div>
+      </header>
+
+      <aside
+        data-testid="messages-trust-block"
+        className="mt-6 shrink-0 rounded-2xl border border-border bg-surface-muted/40 px-5 py-4 shadow-[var(--shadow-card)] sm:px-6 sm:py-5"
+      >
+        <h2 className="text-sm font-semibold text-foreground">Compra y vende seguro</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Mantén la conversación dentro de Melómanos para proteger acuerdos, pagos y
+          seguimiento de tus compras.
+        </p>
+      </aside>
 
       {error && (
-        <p className="mb-4 shrink-0 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <p
+          className="mt-6 shrink-0 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}
 
-      <div className="flex min-h-0 flex-1 gap-4 overflow-hidden rounded-2xl border border-white/10 bg-[#0a0810] shadow-xl shadow-violet-950/30">
-        {/* Inbox column */}
+      <div className="mt-6 flex min-h-[70vh] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-card)] lg:min-h-[calc(100vh-18rem)] lg:flex-row">
+        {/* Conversation list */}
         <aside
-          className={`flex w-full shrink-0 flex-col border-white/10 lg:w-80 lg:border-r ${
+          data-testid="messages-list"
+          className={`flex w-full shrink-0 flex-col border-border lg:w-80 lg:border-r ${
             showThreadOnMobile ? "hidden lg:flex" : "flex"
           }`}
         >
-          <div className="border-b border-white/10 px-4 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
-              Inbox
+          <div className="border-b border-border px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+              Conversaciones
             </p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {loadingInbox && (
-              <p className="px-4 py-8 text-center text-sm text-zinc-500">Cargando…</p>
-            )}
-
-            {!loadingInbox && conversations.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-zinc-400">
-                Aún no tienes mensajes.
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+                Cargando…
               </p>
             )}
+
+            {!loadingInbox && conversations.length === 0 && <ConversationsEmptyState />}
 
             {!loadingInbox &&
               conversations.map((conv) => {
@@ -302,33 +348,34 @@ export default function MessagesPage() {
                   <button
                     key={conv.id}
                     type="button"
+                    data-testid={`messages-conversation-${conv.listing_id}`}
                     onClick={() => user && openConversation(conv.listing_id, user)}
-                    className={`w-full border-b border-white/5 px-4 py-3 text-left transition ${
+                    className={`w-full border-b border-border px-4 py-3 text-left transition ${
                       active
-                        ? "bg-violet-950/50"
-                        : "hover:bg-white/[0.04]"
+                        ? "bg-surface-muted/60 ring-1 ring-inset ring-accent/30"
+                        : "hover:bg-surface-muted/40"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="line-clamp-1 font-semibold text-white">
+                      <p className="line-clamp-1 font-semibold text-foreground">
                         {conversationTitle(conv)}
                       </p>
                       {unread > 0 && (
-                        <span className="shrink-0 rounded-full bg-fuchsia-500/30 px-1.5 py-0.5 font-mono text-[10px] font-bold text-fuchsia-100">
+                        <span className="shrink-0 rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-accent ring-1 ring-accent/30">
                           {unread}
                         </span>
                       )}
                     </div>
                     {conv.other_user_name && (
-                      <p className="mt-0.5 text-xs text-violet-300/80">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {conv.other_user_name}
                       </p>
                     )}
-                    <p className="mt-1 line-clamp-2 text-sm text-zinc-400">
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                       {conversationPreview(conv)}
                     </p>
                     {conv.last_message_at && (
-                      <p className="mt-1 font-mono text-[10px] text-zinc-600">
+                      <p className="mt-1 text-[10px] text-muted-foreground">
                         {formatMessageTime(conv.last_message_at)}
                       </p>
                     )}
@@ -338,63 +385,76 @@ export default function MessagesPage() {
           </div>
         </aside>
 
-        {/* Thread column */}
+        {/* Thread */}
         <section
-          className={`flex min-w-0 flex-1 flex-col ${
+          data-testid="message-thread"
+          className={`flex min-w-0 flex-1 flex-col bg-surface ${
             showThreadOnMobile ? "flex" : "hidden lg:flex"
           }`}
         >
           {!selectedListingId && (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center text-zinc-500">
-              <p className="text-sm">Selecciona una conversación</p>
+            <div
+              data-testid="message-empty-state"
+              className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center"
+            >
+              <p className="text-base font-semibold text-foreground">
+                Selecciona una conversación
+              </p>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                Elige una conversación para revisar mensajes sobre una publicación.
+              </p>
             </div>
           )}
 
           {selectedListingId && selectedConversation && user && (
             <>
-              <header className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+              <header className="flex items-center gap-3 border-b border-border px-4 py-3">
                 <button
                   type="button"
                   onClick={() => setSelectedListingId(null)}
-                  className="rounded-lg border border-white/10 px-2 py-1 text-xs text-zinc-300 lg:hidden"
+                  className="btn-ghost px-2 py-1 text-xs lg:hidden"
                 >
-                  ← Inbox
+                  ← Conversaciones
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-white">
+                  <p className="truncate font-semibold text-foreground">
                     {conversationTitle(selectedConversation)}
                   </p>
                   {selectedConversation.other_user_name && (
-                    <p className="truncate text-xs text-violet-300/80">
+                    <p className="truncate text-xs text-muted-foreground">
                       {selectedConversation.other_user_name}
                     </p>
                   )}
                 </div>
                 <Link
                   href={`/listings/${selectedListingId}`}
-                  className="shrink-0 text-xs font-medium text-violet-300 hover:text-violet-200"
+                  className="shrink-0 text-xs font-medium text-accent hover:underline"
                 >
-                  Ver listing
+                  Ver publicación
                 </Link>
               </header>
 
-              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+              <div className="flex-1 space-y-3 overflow-y-auto bg-background/40 px-4 py-4">
                 {loadingThread && (
-                  <p className="text-center text-sm text-zinc-500">Cargando mensajes…</p>
+                  <p className="text-center text-sm text-muted-foreground">
+                    Cargando mensajes…
+                  </p>
                 )}
 
                 {threadError && (
-                  <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
                     {threadError}
                   </p>
                 )}
 
                 {!loadingThread && messages.length === 0 && !threadError && (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/80">
-                      Thread
+                    <p className="text-sm font-medium text-foreground">
+                      Aún no hay mensajes
                     </p>
-                    <p className="mt-2 text-sm text-zinc-400">No messages yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Envía el primer mensaje sobre esta publicación.
+                    </p>
                   </div>
                 )}
 
@@ -432,24 +492,26 @@ export default function MessagesPage() {
 
               <form
                 onSubmit={handleSend}
-                className="shrink-0 border-t border-white/10 bg-black/20 p-4"
+                className="shrink-0 border-t border-border bg-surface p-4"
               >
                 <label htmlFor="reply" className="sr-only">
-                  Reply
+                  Mensaje
                 </label>
                 <textarea
                   id="reply"
+                  data-testid="messages-reply-input"
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   rows={2}
                   placeholder="Escribe un mensaje…"
                   disabled={sending}
-                  className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60"
+                  className={inputClass}
                 />
                 <button
                   type="submit"
+                  data-testid="messages-send-btn"
                   disabled={sending || !reply.trim()}
-                  className="mt-2 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-50 sm:w-auto sm:px-8"
+                  className="btn-primary mt-2 w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-8"
                 >
                   {sending ? "Enviando…" : "Enviar"}
                 </button>

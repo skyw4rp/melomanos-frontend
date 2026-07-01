@@ -64,9 +64,7 @@ export async function createListingViaUi(
   options: CreateListingOptions,
 ): Promise<number> {
   await page.goto("/sell");
-  await expect(
-    page.getByRole("heading", { name: /sell vinyl/i }),
-  ).toBeVisible();
+  await expect(page.getByTestId("sell-page-title")).toHaveText("Publicar vinilo");
   await expect(page.getByTestId("sell-subscription-card")).toBeVisible({
     timeout: 15_000,
   });

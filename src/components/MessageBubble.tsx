@@ -53,8 +53,8 @@ export default function MessageBubble({
       >
         <div className="mb-1 flex items-center gap-2 px-1">
           <span
-            className={`font-mono text-[10px] uppercase tracking-wider ${
-              isMine ? "text-fuchsia-300/90" : "text-violet-300/80"
+            className={`text-[10px] font-medium uppercase tracking-[0.06em] ${
+              isMine ? "text-accent" : "text-muted-foreground"
             }`}
           >
             {senderLabel}
@@ -65,8 +65,8 @@ export default function MessageBubble({
                 type="button"
                 onClick={() => setMenuOpen((open) => !open)}
                 disabled={busy}
-                className="rounded-md px-1.5 py-0.5 text-xs text-zinc-500 opacity-70 transition hover:bg-white/10 hover:text-zinc-300 group-hover:opacity-100 disabled:opacity-40"
-                aria-label="Message actions"
+                className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground opacity-70 transition hover:bg-surface-muted hover:text-foreground group-hover:opacity-100 disabled:opacity-40"
+                aria-label="Acciones del mensaje"
                 aria-expanded={menuOpen}
               >
                 ···
@@ -74,7 +74,7 @@ export default function MessageBubble({
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 z-10 mt-1 min-w-[9.5rem] overflow-hidden rounded-xl border border-white/10 bg-[#120e1a] py-1 shadow-xl shadow-violet-950/50"
+                  className="absolute right-0 z-10 mt-1 min-w-[9.5rem] overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-[var(--shadow-card-hover)]"
                 >
                   {canMarkUnread && (
                     <button
@@ -85,9 +85,9 @@ export default function MessageBubble({
                         setMenuOpen(false);
                         onMarkUnread();
                       }}
-                      className="block w-full px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-violet-950/60 disabled:opacity-50"
+                      className="block w-full px-3 py-2 text-left text-sm text-foreground transition hover:bg-surface-muted disabled:opacity-50"
                     >
-                      Mark unread
+                      Marcar como no leído
                     </button>
                   )}
                   {canDelete && (
@@ -99,9 +99,9 @@ export default function MessageBubble({
                         setMenuOpen(false);
                         onDelete();
                       }}
-                      className="block w-full px-3 py-2 text-left text-sm text-red-300 transition hover:bg-red-950/40 disabled:opacity-50"
+                      className="block w-full px-3 py-2 text-left text-sm text-destructive transition hover:bg-destructive/5 disabled:opacity-50"
                     >
-                      Delete
+                      Eliminar
                     </button>
                   )}
                 </div>
@@ -113,15 +113,15 @@ export default function MessageBubble({
         <div
           className={`rounded-2xl px-4 py-2.5 ${
             isMine
-              ? "rounded-br-md bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
-              : "rounded-bl-md border border-white/10 bg-white/[0.06] text-zinc-100"
+              ? "rounded-br-md bg-primary text-primary-foreground"
+              : "rounded-bl-md border border-border bg-surface text-foreground shadow-sm"
           }`}
         >
           <p className="whitespace-pre-wrap text-sm">{message.message_text}</p>
           {message.created_at && (
             <p
-              className={`mt-1 font-mono text-[10px] ${
-                isMine ? "text-violet-200/70" : "text-zinc-500"
+              className={`mt-1 text-[10px] ${
+                isMine ? "text-primary-foreground/70" : "text-muted-foreground"
               }`}
             >
               {formatMessageTime(message.created_at)}

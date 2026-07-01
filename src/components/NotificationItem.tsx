@@ -38,23 +38,25 @@ export default function NotificationItem({
       <div className="flex items-start justify-between gap-2">
         <p
           className={`text-sm leading-snug ${
-            unread ? "font-semibold text-white" : "font-medium text-zinc-300"
+            unread ? "font-semibold text-foreground" : "font-medium text-foreground/80"
           }`}
         >
           {notification.title}
         </p>
         {unread && (
           <span
-            className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-violet-400"
+            className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent ring-2 ring-accent/20"
             aria-hidden
           />
         )}
       </div>
       {notification.body && (
-        <p className="mt-1 line-clamp-2 text-xs text-zinc-400">{notification.body}</p>
+        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+          {notification.body}
+        </p>
       )}
       {timeLabel && (
-        <p className="mt-1.5 font-mono text-[10px] text-zinc-500">{timeLabel}</p>
+        <p className="mt-1.5 text-[10px] text-muted-foreground">{timeLabel}</p>
       )}
     </>
   );
@@ -62,8 +64,8 @@ export default function NotificationItem({
   return (
     <div
       data-testid="notification-item"
-      className={`border-b border-white/5 px-3 py-3 last:border-b-0 ${
-        unread ? "bg-violet-950/20" : "bg-transparent"
+      className={`border-b border-border px-3 py-3 last:border-b-0 ${
+        unread ? "bg-accent/5" : "bg-transparent"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -86,7 +88,7 @@ export default function NotificationItem({
             data-testid="notification-mark-read"
             disabled={markingId === notification.id}
             onClick={() => onMarkRead(notification.id)}
-            className="shrink-0 rounded-lg border border-white/10 px-2 py-1 text-[10px] font-medium text-zinc-300 transition hover:border-violet-400/40 hover:text-white disabled:opacity-50"
+            className="btn-ghost shrink-0 rounded-lg border border-border bg-surface px-2 py-1 text-[10px] font-medium text-muted-foreground transition-ui hover:border-accent/40 hover:text-accent disabled:opacity-50"
             title="Marcar como leída"
           >
             Leída
@@ -98,21 +100,40 @@ export default function NotificationItem({
 }
 
 export function NotificationEmptyState({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <div
+        data-testid="notifications-empty-state"
+        className="px-4 py-8 text-center"
+      >
+        <p className="text-sm font-semibold text-foreground">No tienes notificaciones</p>
+        <p className="mx-auto mt-2 max-w-xs text-xs leading-relaxed text-muted-foreground">
+          Cuando haya actividad en tus compras, ventas o mensajes, aparecerá aquí.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <p
-      className={`text-center text-zinc-400 ${compact ? "px-4 py-8 text-sm" : "py-12 text-base"}`}
+    <div
+      data-testid="notifications-empty-state"
+      className="rounded-xl border border-dashed border-border bg-surface-muted/30 px-6 py-12 text-center"
     >
-      No tienes notificaciones.
-    </p>
+      <p className="text-base font-semibold text-foreground">No tienes notificaciones</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+        Cuando haya actividad en tus compras, ventas o mensajes, aparecerá aquí.
+      </p>
+    </div>
   );
 }
 
 export function NotificationListFooter() {
   return (
-    <div className="border-t border-white/10 px-3 py-2 text-center">
+    <div className="border-t border-border bg-surface-muted/30 px-3 py-2.5 text-center">
       <Link
         href="/notifications"
-        className="text-xs font-medium text-violet-300 transition hover:text-violet-200"
+        data-testid="notifications-view-all"
+        className="text-xs font-semibold text-accent transition hover:text-foreground hover:underline"
       >
         Ver todas
       </Link>

@@ -15,11 +15,11 @@ export async function login(
   password: string,
 ): Promise<void> {
   await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: /sign in/i }).click();
+  await page.getByTestId("login-email").fill(email);
+  await page.getByTestId("login-password").fill(password);
+  await page.getByTestId("login-submit").click();
 
-  const ordersLink = page.getByRole("link", { name: "Orders" });
+  const ordersLink = page.getByTestId("nav-orders");
   const formError = page.locator("form [role='alert']");
 
   try {
@@ -29,7 +29,7 @@ export async function login(
       const message = (await formError.textContent())?.trim() || "Login failed";
       throw new Error(message);
     }
-    throw new Error("Login did not complete — Orders link not visible");
+    throw new Error("Login did not complete — Compras y ventas link not visible");
   }
 }
 

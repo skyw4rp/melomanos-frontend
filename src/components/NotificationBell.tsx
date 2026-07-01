@@ -17,9 +17,14 @@ import NotificationItem, {
   NotificationEmptyState,
   NotificationListFooter,
 } from "@/components/NotificationItem";
+import { IconBell } from "@/components/icons";
 import type { Notification } from "@/types";
 
-export default function NotificationBell() {
+type NotificationBellProps = {
+  iconOnly?: boolean;
+};
+
+export default function NotificationBell({ iconOnly = false }: NotificationBellProps) {
   const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -122,17 +127,29 @@ export default function NotificationBell() {
             : "Notificaciones"
         }
         onClick={() => setOpen((prev) => !prev)}
-        className="relative rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/5 hover:text-white sm:px-3"
+        className={`relative rounded-lg text-muted-foreground transition-ui focus-ring ${
+          iconOnly ? "icon-btn h-9 w-9" : "px-2.5 py-2 text-sm font-medium sm:px-3"
+        }`}
       >
         <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden className="text-base leading-none">
-            🔔
-          </span>
-          <span className="hidden sm:inline">Alertas</span>
+          {iconOnly ? (
+            <IconBell className="h-5 w-5" />
+          ) : (
+            <>
+              <span aria-hidden className="text-base leading-none">
+                🔔
+              </span>
+              <span className="hidden sm:inline">Alertas</span>
+            </>
+          )}
           {unreadCount > 0 && (
             <span
               data-testid="notifications-unread-count"
-              className="min-w-[1.25rem] rounded-full bg-violet-500/30 px-1.5 py-0.5 text-center font-mono text-[10px] font-bold tabular-nums text-violet-100 ring-1 ring-violet-400/40"
+              className={`rounded-full bg-accent/15 text-center font-mono text-[10px] font-bold tabular-nums text-accent ring-1 ring-accent/30 ${
+                iconOnly
+                  ? "absolute -right-0.5 -top-0.5 min-w-[1rem] px-1 py-0"
+                  : "min-w-[1.25rem] px-1.5 py-0.5"
+              }`}
             >
               {formatUnreadBadge(unreadCount)}
             </span>
@@ -143,15 +160,20 @@ export default function NotificationBell() {
       {open && (
         <div
           data-testid="notifications-dropdown"
-          className="absolute right-0 z-50 mt-2 w-[min(100vw-2rem,22rem)] overflow-hidden rounded-xl border border-white/10 bg-[#12101a] shadow-xl shadow-black/40"
+          className="dropdown-panel absolute right-0 z-50 mt-2 w-[min(100vw-2rem,22rem)]"
         >
-          <div className="border-b border-white/10 px-3 py-2.5">
-            <h2 className="text-sm font-semibold text-white">Notificaciones</h2>
+          <div className="border-b border-border px-4 py-3">
+            <h2
+              data-testid="notifications-title"
+              className="text-sm font-semibold text-foreground"
+            >
+              Notificaciones
+            </h2>
           </div>
 
           <div className="max-h-80 overflow-y-auto">
             {loadingList ? (
-              <p className="px-4 py-6 text-center text-sm text-zinc-500">
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">
                 Cargando…
               </p>
             ) : items.length === 0 ? (

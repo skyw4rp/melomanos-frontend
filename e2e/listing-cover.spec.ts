@@ -28,10 +28,13 @@ test("listing grid shows cover image when cover_image_url is present", async ({
   });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /greyscale transit ep/i })).toBeVisible({
+  const catalogCard = page.getByTestId("listing-card").first();
+  await expect(
+    catalogCard.getByRole("heading", { name: /greyscale transit ep/i }),
+  ).toBeVisible({
     timeout: 15_000,
   });
-  const img = page.getByTestId("listing-cover-image").first();
+  const img = catalogCard.getByTestId("listing-cover-image");
   await expect(img).toBeVisible({ timeout: 15_000 });
   await expect(img).toHaveAttribute("src", MOCK_LISTING.cover_image_url);
   await expect(img).toHaveAttribute(
@@ -75,7 +78,7 @@ test("listing detail shows cover image when cover_image_url is present", async (
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/E2E Cover/, {
     timeout: 15_000,
   });
-  const img = page.getByTestId("listing-cover-image");
+  const img = page.locator("article").first().getByTestId("listing-cover-image");
   await expect(img).toBeVisible({ timeout: 15_000 });
   await expect(img).toHaveAttribute("src", new RegExp(`${API_BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/static/demo/covers/`));
 });

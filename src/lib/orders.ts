@@ -16,8 +16,8 @@ export const ORDER_STATUSES: OrderStatus[] = [
 const STATUS_LABELS: Record<OrderStatus, string> = {
   created: "Compra iniciada",
   pending_payment: "Pago pendiente",
-  paid: "Pago confirmado",
-  pending_shipping: "Pendiente de envío",
+  paid: "Pago protegido",
+  pending_shipping: "Preparando envío",
   shipped: "Enviado",
   delivered: "Entregado",
   completed: "Completado",
@@ -27,16 +27,16 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
-  created: "bg-zinc-500/20 text-zinc-200 ring-zinc-500/30",
-  pending_payment: "bg-amber-500/20 text-amber-200 ring-amber-400/30",
-  paid: "bg-violet-500/20 text-violet-200 ring-violet-400/30",
-  pending_shipping: "bg-violet-500/20 text-violet-200 ring-violet-400/30",
-  shipped: "bg-fuchsia-500/20 text-fuchsia-200 ring-fuchsia-400/30",
-  delivered: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/30",
-  completed: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/30",
-  disputed: "bg-red-500/20 text-red-200 ring-red-500/40",
-  refunded: "bg-amber-500/20 text-amber-200 ring-amber-400/30",
-  cancelled: "bg-zinc-500/20 text-zinc-400 ring-zinc-500/30",
+  created: "bg-surface-muted text-muted-foreground ring-border",
+  pending_payment: "bg-amber-600/10 text-amber-900 ring-amber-600/25",
+  paid: "bg-accent/10 text-accent ring-accent/30",
+  pending_shipping: "bg-accent/10 text-accent ring-accent/30",
+  shipped: "bg-surface-muted text-foreground ring-border",
+  delivered: "bg-success/10 text-success ring-success/25",
+  completed: "bg-success/10 text-success ring-success/25",
+  disputed: "bg-destructive/10 text-destructive ring-destructive/30",
+  refunded: "bg-muted-foreground/10 text-muted-foreground ring-border",
+  cancelled: "bg-muted-foreground/10 text-muted-foreground ring-border",
 };
 
 const STATUS_FLOW: OrderStatus[] = [
@@ -72,7 +72,7 @@ export function orderStatusBadgeClass(status?: string | null): string {
 export function orderListingTitle(order: Order): string {
   return (
     order.listing_title?.trim() ||
-    (order.listing_id ? `Listing #${order.listing_id}` : `Order #${order.id}`)
+    (order.listing_id ? `Publicación #${order.listing_id}` : `Pedido #${order.id}`)
   );
 }
 
