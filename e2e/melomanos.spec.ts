@@ -25,7 +25,7 @@ let e2eListingId: number | null = null;
 test("homepage loads marketplace", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /el lugar donde la música vive/i }),
+    page.getByRole("heading", { name: /donde los vinilos cambian de manos/i }),
   ).toBeVisible();
   await expect(page.getByTestId("home-hero")).toBeVisible();
   await expect(page.getByTestId("hero-cover-frame")).toBeVisible();

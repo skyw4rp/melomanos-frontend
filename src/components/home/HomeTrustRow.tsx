@@ -14,7 +14,7 @@ const ITEMS = [
   {
     icon: IconUsers,
     title: "Comunidad real",
-    description: "DJs y coleccionistas como tú.",
+    description: "DJs y coleccionistas moviendo música.",
   },
 ] as const;
 
