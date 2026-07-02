@@ -15,29 +15,40 @@ const HOME_MARKETING_STATS = [
   { value: "37", label: "Ciudades", icon: IconMapPin },
 ] as const;
 
-function IconCheckVerified({ className = "h-4 w-4" }: { className?: string }) {
+function IconCheckBadge({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden>
-      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <svg
+      className={`inline-block h-4 w-4 shrink-0 ${className ?? ""}`}
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.1" />
+      <path
+        d="M4.25 7l1.75 1.75 3.5-3.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
 export default function HomeMetricsBand() {
   return (
-    <section data-testid="home-metrics" className="mt-12">
-      <div className="grid gap-4 lg:grid-cols-[1fr_minmax(280px,340px)] lg:gap-5">
-        <div className="overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-[var(--shadow-card)]">
-          <div className="grid grid-cols-2 divide-x divide-y divide-border/80 lg:grid-cols-4 lg:divide-y-0">
+    <section data-testid="home-metrics" className="mt-8">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-stretch lg:gap-5">
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-[var(--shadow-card)] lg:h-28">
+          <div className="grid h-full grid-cols-2 divide-x divide-y divide-border/80 lg:grid-cols-4 lg:divide-y-0">
             {HOME_MARKETING_STATS.map((stat) => (
               <div
                 key={stat.label}
-                className="flex items-center gap-3 px-4 py-5 sm:px-5 sm:py-6"
+                className="flex h-full items-center gap-2.5 px-4 py-4 sm:px-5 lg:py-0"
               >
-                <stat.icon className="h-5 w-5 shrink-0 text-foreground" />
-                <div>
-                  <p className="text-2xl font-bold tabular-nums leading-none tracking-tight text-foreground sm:text-[1.65rem]">
+                <stat.icon className="h-6 w-6 shrink-0 text-foreground" />
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold tabular-nums leading-none tracking-tight text-foreground">
                     {stat.value}
                   </p>
                   <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -51,27 +62,25 @@ export default function HomeMetricsBand() {
 
         <aside
           data-testid="home-confidence-card"
-          className="flex flex-col justify-between rounded-2xl border border-border/80 bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6"
+          className="relative flex min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-border/80 bg-surface px-4 py-4 shadow-[var(--shadow-card)] sm:gap-4 sm:px-5 lg:h-28"
         >
-          <div className="flex gap-4">
-            <IconConfidenceStamp className="h-[3.25rem] w-[3.25rem] shrink-0 text-accent" />
-            <div>
-              <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-foreground">
-                Confianza Melómanos
-                <IconCheckVerified className="text-accent" />
-              </h2>
-              <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-                Tu pago queda retenido hasta que confirmes la recepción del vinilo.
-                Si algo no está bien, te protegemos.
-              </p>
-            </div>
+          <IconConfidenceStamp className="h-10 w-10 shrink-0 text-accent sm:h-11 sm:w-11" />
+          <div className="flex min-w-0 flex-1 flex-col justify-center">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold leading-tight text-foreground">
+              <span>Confianza Melómanos</span>
+              <IconCheckBadge className="text-accent" />
+            </h2>
+            <p className="mt-1 text-xs leading-snug text-muted-foreground sm:text-[13px] sm:leading-relaxed">
+              Tu pago queda retenido hasta que confirmes la recepción del vinilo.
+              Si algo no está bien, te protegemos.
+            </p>
+            <Link
+              href="#catalogo"
+              className="mt-2 inline-flex text-xs font-semibold text-accent transition-colors duration-200 hover:text-foreground sm:text-[13px]"
+            >
+              Cómo funciona →
+            </Link>
           </div>
-          <Link
-            href="#catalogo"
-            className="mt-4 inline-flex text-[13px] font-semibold text-accent transition hover:text-foreground"
-          >
-            Cómo funciona →
-          </Link>
         </aside>
       </div>
     </section>

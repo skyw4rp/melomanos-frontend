@@ -30,39 +30,29 @@ export default function HomeHero({ featuredListing }: HomeHeroProps) {
     : "#catalogo";
 
   return (
-    <section data-testid="home-hero" className="pt-4 pb-2 sm:pt-6">
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,480px)] lg:gap-10 xl:gap-14">
-        <div className="max-w-[34rem]">
-          <p className="editorial-eyebrow">
-            Compra · Vende · Conecta
+    <section data-testid="home-hero" className="pt-4 pb-0 sm:pt-6">
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,560px)] lg:gap-8 xl:gap-10">
+        <div className="max-w-[32rem]">
+          <p className="text-[10px] font-semibold uppercase leading-snug tracking-[0.14em] text-accent sm:text-[11px] sm:tracking-[0.12em]">
+            VENDE · DESCUBRE · COMUNIDAD ELECTRÓNICA EN VINILO
           </p>
-          <h1 className="mt-5 text-[2.5rem] font-bold leading-[1.06] tracking-[-0.02em] text-foreground sm:text-5xl lg:text-[3.25rem] xl:text-[3.5rem]">
-            El lugar donde la música{" "}
-            <span className="relative inline-block text-accent">
-              vive.
-              <svg
-                className="absolute -bottom-0.5 left-0 w-full text-accent"
-                viewBox="0 0 120 8"
-                fill="none"
-                aria-hidden
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M2 5.5 Q30 2 60 5 Q90 7.5 118 3"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
+          <h1 className="mt-6 text-[2rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground sm:text-[2.35rem] lg:text-[2.65rem] xl:text-[2.85rem]">
+            Donde los vinilos{" "}
+            <span className="text-accent">cambian de manos,</span>{" "}
+            no de historia.
           </h1>
-          <p className="mt-5 max-w-md text-[15px] leading-[1.65] text-muted-foreground sm:text-base">
-            Compra y vende vinilos de House, Techno, Minimal y más.
-            <br className="hidden sm:inline" /> Conecta con coleccionistas y DJs de
-            Chile y el mundo.
-          </p>
+          <div className="mt-6 max-w-[30rem] space-y-4 text-[15px] leading-[1.7] text-muted-foreground sm:text-base">
+            <p>
+              Vende ese disco que estás listo para dejar partir y deja que encuentre a
+              alguien que lo disfrute como tú.
+            </p>
+            <p>
+              Explora una comunidad donde todo parte desde la música electrónica: sin
+              revolver entre catálogos generalistas, solo vinilos para filtrar
+            </p>
+          </div>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
               href="#catalogo"
               data-testid="hero-explore-cta"
@@ -93,7 +83,7 @@ export default function HomeHero({ featuredListing }: HomeHeroProps) {
             data-testid="home-featured-card"
             className="overflow-hidden rounded-[1.35rem] bg-[#080808] shadow-[0_28px_56px_rgb(8_8_8_/_32%)]"
           >
-            <div className="relative aspect-[1.05/1] overflow-hidden sm:aspect-[4/3]">
+            <div className="relative aspect-[4/3] overflow-hidden lg:aspect-[16/9]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={HERO_TURNTABLE_VISUAL}
@@ -108,28 +98,32 @@ export default function HomeHero({ featuredListing }: HomeHeroProps) {
               </span>
             </div>
 
-            <div className="space-y-0.5 px-5 pb-4 pt-4 text-on-inverse sm:px-6 sm:pb-5">
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-on-inverse/60">
-                {artist}
-              </p>
-              <p className="text-xl font-semibold leading-tight sm:text-2xl">{title}</p>
-              <p className="flex items-center gap-1.5 pt-1 text-sm text-on-inverse/55">
-                <IconMapPin className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                {city}
-              </p>
-              <p className="pt-3 text-[1.75rem] font-bold tabular-nums tracking-tight">
-                {formatPriceCLP(price)}
-              </p>
+            <div className="px-5 pb-4 pt-4 text-on-inverse sm:px-6 sm:pb-5 lg:flex lg:items-end lg:justify-between lg:gap-4 lg:px-5 lg:py-3 lg:pb-3">
+              <div className="min-w-0 space-y-0.5">
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-on-inverse/60">
+                  {artist}
+                </p>
+                <p className="text-xl font-semibold leading-tight sm:text-2xl lg:text-lg">
+                  {title}
+                </p>
+                <p className="flex items-center gap-1.5 pt-1 text-sm text-on-inverse/55 lg:text-[13px]">
+                  <IconMapPin className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                  {city}
+                </p>
+                <p className="pt-2 text-[1.75rem] font-bold tabular-nums tracking-tight lg:pt-1 lg:text-2xl">
+                  {formatPriceCLP(price)}
+                </p>
+              </div>
               <Link
                 href={detailHref}
-                className="btn-ghost mt-4 w-full border-on-inverse/30 bg-transparent py-2.5 text-on-inverse hover:border-on-inverse/50 hover:bg-on-inverse/10"
+                className="btn-ghost mt-4 w-full border-on-inverse/30 bg-transparent py-2.5 text-on-inverse hover:border-on-inverse/50 hover:bg-on-inverse/10 lg:mt-0 lg:w-auto lg:shrink-0 lg:px-4"
               >
                 Ver detalle
                 <IconArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <div className="flex justify-center gap-1.5 pb-5" aria-hidden>
+            <div className="flex justify-center gap-1.5 pb-4 lg:pb-3" aria-hidden>
               {[0, 1, 2, 3, 4].map((i) => (
                 <button
                   key={i}
