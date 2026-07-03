@@ -40,7 +40,7 @@ const headerNavTextClass =
   "text-[length:var(--text-nav)] font-medium leading-none transition-ui focus-ring";
 
 function navLinkClass(active: boolean) {
-  return `relative whitespace-nowrap px-3 py-2 ${headerNavTextClass} ${
+  return `relative whitespace-nowrap px-2.5 py-2 lg:px-2 xl:px-3 ${headerNavTextClass} ${
     active
       ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-accent"
       : "text-muted-foreground hover:text-foreground"
@@ -48,7 +48,7 @@ function navLinkClass(active: boolean) {
 }
 
 function headerActionLinkClass(active: boolean, accentHover = false) {
-  return `hidden rounded-lg px-3 py-2 ${headerNavTextClass} lg:inline-block ${
+  return `hidden rounded-lg px-2.5 py-2 xl:px-3 ${headerNavTextClass} xl:inline-block ${
     active
       ? "text-foreground"
       : accentHover
@@ -67,14 +67,11 @@ function NavbarSearch() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="hidden min-w-[220px] flex-1 md:block md:max-w-[280px] lg:max-w-[340px] xl:max-w-[380px]"
-    >
+    <form onSubmit={handleSubmit} className="w-full min-w-0">
       <label htmlFor="home-search" className="sr-only">
         Buscar vinilos, artistas, sellos
       </label>
-      <div className="relative">
+      <div className="relative w-full">
         <IconSearch className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <input
           id="home-search"
@@ -83,7 +80,7 @@ function NavbarSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar vinilos, artistas, sellos..."
-          className="input-search py-2.5 pl-11 pr-4"
+          className="input-search w-full py-2.5 pl-11 pr-4"
         />
       </div>
     </form>
@@ -100,7 +97,7 @@ function ProfileChip({ user }: { user: User }) {
     <Link
       href="/profile"
       data-testid="nav-profile"
-      className={`flex max-w-[12rem] items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition sm:max-w-none sm:pr-2.5 ${
+      className={`flex max-w-[10rem] shrink-0 items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition xl:max-w-[11rem] 2xl:max-w-[12rem] ${
         active
           ? "border-accent/35 bg-surface"
           : "border-border/80 bg-surface hover:border-accent/25"
@@ -111,14 +108,14 @@ function ProfileChip({ user }: { user: User }) {
         {initials}
       </span>
       <span className="hidden min-w-0 md:block">
-        <span className="block truncate text-[length:var(--text-nav)] font-semibold leading-tight text-foreground">
+        <span className="block max-w-[5.5rem] truncate text-[length:var(--text-nav)] font-semibold leading-tight text-foreground xl:max-w-[6.5rem] 2xl:max-w-[8rem]">
           {name}
         </span>
-        <span className="block text-[length:var(--text-caption)] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="hidden truncate text-[length:var(--text-caption)] font-medium uppercase tracking-[0.12em] text-muted-foreground 2xl:block">
           Coleccionista
         </span>
       </span>
-      <IconChevronDown className="hidden h-4 w-4 shrink-0 text-muted-foreground md:block" />
+      <IconChevronDown className="hidden h-4 w-4 shrink-0 text-muted-foreground 2xl:block" />
     </Link>
   );
 }
@@ -242,10 +239,10 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-surface/98 backdrop-blur-sm">
       <nav className="mx-auto max-w-[1440px] px-5 py-3.5 sm:px-8 sm:py-4">
-        <div className="flex items-center gap-4 lg:gap-7">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4 lg:gap-4 xl:gap-5">
           <BrandLogo />
 
-          <div className="hidden flex-1 items-center justify-center lg:flex">
+          <div className="hidden shrink-0 items-center lg:flex">
             {CENTER_NAV.map((item) => (
               <Link
                 key={item.label}
@@ -258,9 +255,11 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-2.5 lg:flex-none">
+          <div className="hidden min-w-[240px] flex-1 md:block lg:min-w-[260px]">
             <NavbarSearch />
+          </div>
 
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {hydrated && loggedIn && user && (
               <div className="flex items-center gap-1 sm:gap-1.5">
                 <Link
