@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:visual-polish": "playwright test --config=playwright.visual-polish.config.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:demo-login": "playwright test e2e/demo-daniela-login.spec.ts"
   },
