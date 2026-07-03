@@ -10,8 +10,15 @@ export function normalizeListingStatus(status?: string | null): string {
   return (status ?? "available").toLowerCase();
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  available: "Disponible",
+  reserved: "Reservado",
+  sold: "Vendido",
+};
+
 export function statusLabel(status?: string | null): string {
-  return normalizeListingStatus(status).replace(/_/g, " ");
+  const normalized = normalizeListingStatus(status);
+  return STATUS_LABELS[normalized] ?? normalized.replace(/_/g, " ");
 }
 
 export function displayValue(value: string | number | null | undefined): string {

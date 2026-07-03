@@ -232,35 +232,35 @@ export default function OrderDisputeSection({
           className="mt-5 rounded-xl border border-border bg-surface-muted/40 p-4 sm:p-5"
         >
           <dl className="space-y-3 text-sm">
-            <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
-              <dt className="text-zinc-500">Estado disputa</dt>
+            <div className="flex justify-between gap-4 border-b border-border pb-3">
+              <dt className="text-muted-foreground">Estado disputa</dt>
               <dd
                 data-testid="order-dispute-status"
                 data-dispute-status={dispute.status}
-                className="font-medium text-white"
+                className="font-medium text-foreground"
               >
                 {disputeStatusLabel(dispute.status)}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">Motivo</dt>
+              <dt className="text-muted-foreground">Motivo</dt>
               <dd
                 data-testid="order-dispute-reason-display"
-                className="mt-1 text-zinc-200"
+                className="mt-1 text-foreground"
               >
                 {dispute.reason}
               </dd>
             </div>
-            <div className="flex justify-between gap-4 border-b border-white/5 pb-3">
-              <dt className="text-zinc-500">Abierta por</dt>
-              <dd className="font-medium text-white">
+            <div className="flex justify-between gap-4 border-b border-border pb-3">
+              <dt className="text-muted-foreground">Abierta por</dt>
+              <dd className="font-medium text-foreground">
                 {disputeOpenedByLabel(dispute, order.buyer_id, order.seller_id)}
               </dd>
             </div>
             {dispute.created_at && (
               <div className="flex justify-between gap-4">
-                <dt className="text-zinc-500">Fecha</dt>
-                <dd className="font-mono text-xs text-zinc-300">
+                <dt className="text-muted-foreground">Fecha</dt>
+                <dd className="font-mono text-xs text-muted-foreground">
                   {formatMessageTime(dispute.created_at)}
                 </dd>
               </div>
@@ -270,7 +270,7 @@ export default function OrderDisputeSection({
           {!disputeResolved && (
             <p
               data-testid="order-dispute-funds-held"
-              className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90"
+              className="mt-4 rounded-lg border border-accent/25 bg-accent/10 px-3 py-2 text-xs text-foreground"
             >
               Los fondos permanecen retenidos mientras Melómanos revisa la
               disputa.
@@ -279,10 +279,8 @@ export default function OrderDisputeSection({
 
           {showEvidenceForm && (
           <form onSubmit={handleAddEvidence} className="mt-6 space-y-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-violet-300/90">
-              Agregar evidencia
-            </p>
-            <label className="block text-xs text-zinc-500">
+            <p className="editorial-label">Agregar evidencia</p>
+            <label className="label-field">
               URL del archivo *
               <input
                 data-testid="order-dispute-evidence-url"
@@ -294,7 +292,7 @@ export default function OrderDisputeSection({
                 className={inputClass}
               />
             </label>
-            <label className="block text-xs text-zinc-500">
+            <label className="label-field">
               Tipo *
               <select
                 data-testid="order-dispute-evidence-type"
@@ -307,7 +305,7 @@ export default function OrderDisputeSection({
                 <option value="video">Video</option>
               </select>
             </label>
-            <label className="block text-xs text-zinc-500">
+            <label className="label-field">
               Comentario (opcional)
               <textarea
                 data-testid="order-dispute-evidence-comment"
@@ -322,7 +320,7 @@ export default function OrderDisputeSection({
               type="submit"
               data-testid="order-dispute-evidence-submit"
               disabled={busy}
-              className="rounded-xl border border-violet-500/30 bg-violet-500/15 px-5 py-2.5 text-sm font-semibold text-violet-100 transition hover:bg-violet-500/25 disabled:opacity-50"
+              className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Agregando…" : "Agregar evidencia"}
             </button>
@@ -338,24 +336,24 @@ export default function OrderDisputeSection({
                 <li
                   key={item.id}
                   data-testid={`order-dispute-evidence-${item.id}`}
-                  className="rounded-lg border border-white/10 bg-black/30 px-3 py-3 text-sm"
+                  className="rounded-lg border border-border bg-surface px-3 py-3 text-sm shadow-[var(--shadow-card)]"
                 >
-                  <p className="font-mono text-[10px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     {evidenceTypeLabel(item.evidence_type)}
                   </p>
                   <a
                     href={item.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 block break-all font-medium text-violet-300 hover:text-violet-200"
+                    className="mt-1 block break-all font-medium text-accent transition-colors hover:text-foreground"
                   >
                     {item.file_url}
                   </a>
                   {item.comment?.trim() && (
-                    <p className="mt-2 text-zinc-300">{item.comment}</p>
+                    <p className="mt-2 text-muted-foreground">{item.comment}</p>
                   )}
                   {item.created_at && (
-                    <p className="mt-1 font-mono text-[10px] text-zinc-600">
+                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
                       {formatMessageTime(item.created_at)}
                     </p>
                   )}
@@ -366,12 +364,10 @@ export default function OrderDisputeSection({
 
           <div
             data-testid="order-dispute-admin-section"
-            className="mt-6 border-t border-white/10 pt-5"
+            className="mt-6 border-t border-border pt-5"
           >
-            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-fuchsia-300/90">
-              Admin resolución disputa
-            </p>
-            <label className="mt-3 block text-xs text-zinc-500">
+            <p className="editorial-label">Admin resolución disputa</p>
+            <label className="label-field mt-3">
               Admin key
               <input
                 data-testid="order-dispute-admin-key"
@@ -393,7 +389,7 @@ export default function OrderDisputeSection({
                 data-testid="order-dispute-admin-under-review"
                 onClick={() => handleAdminAction("under-review")}
                 disabled={busy}
-                className="mt-3 w-full rounded-xl border border-violet-500/30 bg-violet-500/15 px-4 py-2.5 text-sm font-semibold text-violet-100 transition hover:bg-violet-500/25 disabled:opacity-50 sm:w-auto"
+                className="btn-ghost mt-3 w-full disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 Marcar en revisión
               </button>
@@ -406,7 +402,7 @@ export default function OrderDisputeSection({
                   data-testid="order-dispute-admin-resolve-buyer"
                   onClick={() => handleAdminAction("resolve-buyer")}
                   disabled={busy}
-                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                  className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Resolver a favor comprador
                 </button>
@@ -415,7 +411,7 @@ export default function OrderDisputeSection({
                   data-testid="order-dispute-admin-resolve-seller"
                   onClick={() => handleAdminAction("resolve-seller")}
                   disabled={busy}
-                  className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-sm font-semibold text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-50"
+                  className="btn-ghost disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Resolver a favor vendedor
                 </button>
@@ -423,7 +419,7 @@ export default function OrderDisputeSection({
             )}
 
             {disputeResolved && (
-              <p className="mt-3 text-sm text-zinc-400">
+              <p className="mt-3 text-sm text-muted-foreground">
                 Disputa cerrada — {disputeStatusLabel(dispute.status)}.
               </p>
             )}
@@ -437,13 +433,13 @@ export default function OrderDisputeSection({
               data-testid="order-dispute-open-toggle"
               onClick={() => setOpenFormVisible(true)}
               disabled={busy}
-              className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-50"
+              className="btn-danger-ghost disabled:cursor-not-allowed disabled:opacity-50"
             >
               Abrir disputa
             </button>
           ) : (
             <form onSubmit={handleOpenDispute} className="space-y-4">
-              <label className="block text-xs text-zinc-500">
+              <label className="label-field">
                 Motivo *
                 <textarea
                   data-testid="order-dispute-reason"
@@ -467,7 +463,7 @@ export default function OrderDisputeSection({
           )}
         </div>
       ) : (
-        <p className="mt-4 text-sm text-zinc-500">
+        <p className="mt-4 text-sm text-muted-foreground">
           No hay disputa activa en este pedido.
         </p>
       )}
@@ -475,7 +471,7 @@ export default function OrderDisputeSection({
       {adminSuccess && (
         <p
           data-testid="order-dispute-admin-success"
-          className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
+          className="mt-4 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success"
           role="status"
         >
           {adminSuccess}
@@ -485,7 +481,7 @@ export default function OrderDisputeSection({
       {error && (
         <p
           data-testid="order-dispute-error"
-          className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200"
+          className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
           role="alert"
         >
           {error}

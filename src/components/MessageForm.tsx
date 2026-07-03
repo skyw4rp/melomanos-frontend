@@ -53,7 +53,7 @@ export default function MessageForm({
         return;
       }
       setStatus("error");
-      setError(err instanceof Error ? err.message : "Failed to send message");
+      setError(err instanceof Error ? err.message : "No se pudo enviar el mensaje");
     }
   }
 
@@ -63,18 +63,16 @@ export default function MessageForm({
       onSubmit={handleSubmit}
       className={
         variant === "inline"
-          ? "rounded-2xl border border-white/10 bg-black/30 p-5"
-          : "mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+          ? "card-surface mt-4 p-5"
+          : "card-surface mt-8 p-6"
       }
     >
-      <h2 className="font-mono text-xs font-semibold uppercase tracking-wider text-violet-200">
-        Mensaje al vendedor
-      </h2>
-      <p className="mt-1 text-sm text-zinc-400">
+      <h2 className="text-sm font-semibold text-foreground">Mensaje al vendedor</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
         Pregunta por condición, envío o disponibilidad del press.
       </p>
 
-      <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         {MESSAGE_SAFETY_HELPER}
       </p>
 
@@ -85,31 +83,31 @@ export default function MessageForm({
         rows={4}
         required
         placeholder="¿Sigue disponible? ¿Haces envíos a regiones?"
-        className="mt-4 w-full resize-y rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
+        className="input-field resize-y"
       />
 
       {status === "blocked" && (
         <div
           data-testid="message-blocked-warning"
-          className="mt-4 rounded-xl border border-amber-500/40 bg-gradient-to-br from-amber-950/40 via-violet-950/30 to-[#0d0a14] px-4 py-4"
+          className="mt-4 rounded-xl border border-amber-600/25 bg-amber-600/10 px-4 py-4"
           role="alert"
         >
-          <p className="font-semibold text-amber-200">{ANTI_LEAK_BLOCKED_TITLE}</p>
-          <p className="mt-2 text-sm leading-relaxed text-amber-100/90">
+          <p className="font-semibold text-amber-900">{ANTI_LEAK_BLOCKED_TITLE}</p>
+          <p className="mt-2 text-sm leading-relaxed text-amber-900/90">
             {ANTI_LEAK_BLOCKED_BODY}
           </p>
         </div>
       )}
 
       {error && status === "error" && (
-        <p className="mt-2 text-sm text-red-400" role="alert">
+        <p className="mt-2 text-sm text-destructive" role="alert">
           {error}
         </p>
       )}
       {status === "success" && (
         <p
           data-testid="message-form-success"
-          className="mt-2 text-sm text-emerald-400"
+          className="mt-2 text-sm text-success"
         >
           Mensaje enviado.
         </p>
@@ -119,7 +117,7 @@ export default function MessageForm({
         type="submit"
         data-testid="message-form-submit"
         disabled={status === "loading"}
-        className="mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-60"
+        className="btn-primary mt-4 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === "loading" ? "Enviando…" : "Enviar mensaje"}
       </button>

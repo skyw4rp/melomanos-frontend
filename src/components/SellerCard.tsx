@@ -55,23 +55,22 @@ export default function SellerCard({ listing, sellerId }: SellerCardProps) {
     : seller.role;
 
   return (
-    <aside className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-950/50 to-[#0d0a14] p-5">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
-        Vendedor
-      </p>
-      <p className="mt-2 text-lg font-semibold text-white">{seller.name}</p>
-      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-violet-400/80">
+    <aside className="card-surface p-5">
+      <p className="editorial-label">Vendedor</p>
+      <p className="mt-2 text-lg font-semibold text-foreground">{seller.name}</p>
+      <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
         {roleLabel}
       </p>
-      <p className="mt-1 text-sm text-zinc-400">{seller.city}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{seller.city}</p>
 
       <SellerReputationPanel
         reputation={reputation}
         loading={loadingReputation && resolvedSellerId != null}
         compact
+        editorial
       />
 
-      <DiggingScorePanel diggingScore={diggingScore} compact />
+      <DiggingScorePanel diggingScore={diggingScore} compact editorial />
     </aside>
   );
 }

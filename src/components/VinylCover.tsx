@@ -13,7 +13,7 @@ interface VinylCoverProps {
 
 const containerClass = (isHero: boolean) =>
   isHero
-    ? "relative w-full overflow-hidden aspect-square max-w-md rounded-2xl border border-white/10 shadow-2xl shadow-black/40 lg:max-w-none"
+    ? "relative w-full overflow-hidden aspect-square max-w-md rounded-2xl border border-border shadow-[var(--shadow-card-hover)] lg:max-w-none"
     : "relative w-full overflow-hidden aspect-square bg-surface-muted";
 
 export default function VinylCover({

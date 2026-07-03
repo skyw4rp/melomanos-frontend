@@ -41,17 +41,14 @@ async function fetchRelated(genre: string, excludeId: number): Promise<Listing[]
 }
 
 const statusStyles: Record<string, string> = {
-  available: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/30",
-  sold: "bg-zinc-500/20 text-zinc-300 ring-zinc-500/30",
-  reserved: "bg-amber-500/20 text-amber-200 ring-amber-400/30",
+  available: "badge-success",
+  sold: "badge-neutral",
+  reserved: "badge-amber",
 };
 
 function statusBadgeClass(status?: string | null): string {
   const safeStatus = normalizeListingStatus(status);
-  return (
-    statusStyles[safeStatus] ??
-    "bg-violet-500/20 text-violet-200 ring-violet-400/30"
-  );
+  return statusStyles[safeStatus] ?? "badge-muted";
 }
 
 export default async function ListingDetailPage({ params }: PageProps) {
@@ -72,7 +69,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
       related = await fetchRelated(listing.genre, listing.id);
     }
   } catch {
-    error = "Could not load this listing.";
+    error = "No se pudo cargar esta publicación.";
   }
 
   if (!error && !listing) {
@@ -87,13 +84,13 @@ export default async function ListingDetailPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
         href="/"
-        className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-violet-300 transition hover:text-violet-200"
+        className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-ui hover:text-accent"
       >
-        ← Crate / Marketplace
+        ← Volver al catálogo
       </Link>
 
       {error && (
-        <p className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+        <p className="mt-8 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4 text-sm text-destructive">
           {error}
         </p>
       )}
@@ -113,47 +110,37 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded bg-violet-500/20 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-violet-200">
-                    {listing.genre}
-                  </span>
+                  <span className="badge-muted">{listing.genre}</span>
                   {listing.subgenre && (
-                    <span className="rounded bg-fuchsia-500/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-fuchsia-200/90">
-                      {listing.subgenre}
-                    </span>
+                    <span className="badge-muted">{listing.subgenre}</span>
                   )}
-                  {typeLabel && (
-                    <span className="rounded border border-fuchsia-500/35 bg-fuchsia-500/20 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-fuchsia-100">
-                      {typeLabel}
-                    </span>
-                  )}
-                  <span
-                    className={`rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset ${statusBadgeClass(listing.status)}`}
-                  >
+                  {typeLabel && <span className="badge-gold">{typeLabel}</span>}
+                  <span className={statusBadgeClass(listing.status)}>
                     {statusLabel(listing.status)}
                   </span>
                 </div>
 
-                <h1 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl">
+                <h1 className="mt-4 text-3xl font-bold leading-tight text-foreground sm:text-4xl">
                   {listing.title}
                 </h1>
-                <p className="mt-2 font-mono text-lg uppercase tracking-wide text-fuchsia-300/95">
+                <p className="mt-2 text-lg font-medium uppercase tracking-wide text-accent">
                   {listing.artist}
                 </p>
 
-                <p className="mt-6 bg-gradient-to-r from-white via-violet-100 to-fuchsia-200 bg-clip-text text-5xl font-black tracking-tight text-transparent sm:text-6xl">
+                <p className="mt-6 text-4xl font-bold tabular-nums tracking-tight text-foreground sm:text-5xl">
                   {formatPriceCLP(listing.price_clp)}
                 </p>
 
-                <dl className="mt-8 divide-y divide-white/5 rounded-2xl border border-white/10 bg-white/[0.02] px-5">
-                  <DetailField label="Label" value={listing.label} />
-                  <DetailField label="Genre" value={listing.genre} />
-                  <DetailField label="Subgenre" value={listing.subgenre} />
-                  <DetailField label="Year" value={listing.year} />
-                  <DetailField label="Listing type" value={typeLabel} />
-                  <DetailField label="Record condition" value={recordGrade} />
-                  <DetailField label="Cover condition" value={coverGrade} />
-                  <DetailField label="City" value={listing.city} />
-                  <DetailField label="Status" value={statusLabel(listing.status)} />
+                <dl className="card-surface mt-8 divide-y divide-border px-5">
+                  <DetailField label="Sello" value={listing.label} />
+                  <DetailField label="Género" value={listing.genre} />
+                  <DetailField label="Subgénero" value={listing.subgenre} />
+                  <DetailField label="Año" value={listing.year} />
+                  <DetailField label="Tipo de publicación" value={typeLabel} />
+                  <DetailField label="Estado del disco" value={recordGrade} />
+                  <DetailField label="Estado de la funda" value={coverGrade} />
+                  <DetailField label="Ciudad" value={listing.city} />
+                  <DetailField label="Estado" value={statusLabel(listing.status)} />
                 </dl>
 
                 <div className="mt-8">
@@ -170,11 +157,9 @@ export default async function ListingDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            <section className="mt-12 rounded-2xl border border-white/10 bg-gradient-to-br from-violet-950/20 to-transparent p-6 sm:p-8">
-              <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
-                Collector notes
-              </h2>
-              <p className="mt-4 leading-relaxed text-zinc-300">
+            <section className="card-surface mt-12 p-6 sm:p-8">
+              <h2 className="editorial-eyebrow">Notas del coleccionista</h2>
+              <p className="mt-4 leading-relaxed text-muted-foreground">
                 {listing.description?.trim() ||
                   "Sin notas del coleccionista. Contacta al vendedor para más detalles sobre este press."}
               </p>
@@ -184,19 +169,17 @@ export default async function ListingDetailPage({ params }: PageProps) {
           </article>
 
           {related.length > 0 && (
-            <section className="mt-14 border-t border-white/10 pt-12">
+            <section className="mt-14 border-t border-border pt-12">
               <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-400/90">
-                    Same genre
-                  </p>
-                  <h2 className="mt-1 text-2xl font-bold text-white">
-                    Related in {listing.genre}
+                  <p className="editorial-label">Mismo género</p>
+                  <h2 className="mt-1 text-2xl font-bold text-foreground">
+                    Relacionados en {listing.genre}
                   </h2>
                 </div>
                 <Link
                   href={`/?genre=${encodeURIComponent(listing.genre)}`}
-                  className="text-xs font-medium uppercase tracking-wide text-violet-300 hover:text-violet-200"
+                  className="text-sm font-semibold text-accent transition-ui hover:text-foreground"
                 >
                   Ver todo →
                 </Link>

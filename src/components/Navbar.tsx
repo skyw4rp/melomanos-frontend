@@ -70,7 +70,7 @@ function NavbarSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar vinilos, artistas, sellos..."
-          className="w-full rounded-full border border-border/80 bg-[#ede8df] py-2 pl-10 pr-14 text-[13px] text-foreground transition-ui placeholder:text-[var(--color-text-placeholder)] focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15"
+          className="input-search py-2 pl-10 pr-14"
         />
         <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-surface/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
           ⌘ K

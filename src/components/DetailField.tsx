@@ -10,11 +10,11 @@ export default function DetailField({ label, value }: DetailFieldProps) {
       : String(value);
 
   return (
-    <div className="border-b border-white/5 py-3 last:border-0">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+    <div className="border-b border-border py-3 last:border-0">
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </dt>
-      <dd className="mt-1 text-sm font-medium text-zinc-100">{shown}</dd>
+      <dd className="mt-1 text-sm font-medium text-foreground">{shown}</dd>
     </div>
   );
 }

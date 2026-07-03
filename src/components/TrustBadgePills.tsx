@@ -2,6 +2,8 @@ import { resolveTrustBadges } from "@/lib/trust-badges";
 
 interface TrustBadgePillsProps {
   badges?: string[] | null;
+  /** @deprecated Always renders on-system editorial styling; kept for call-site compatibility. */
+  editorial?: boolean;
 }
 
 export default function TrustBadgePills({ badges }: TrustBadgePillsProps) {
@@ -10,7 +12,7 @@ export default function TrustBadgePills({ badges }: TrustBadgePillsProps) {
 
   return (
     <div className="mt-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         Insignias
       </p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -18,7 +20,7 @@ export default function TrustBadgePills({ badges }: TrustBadgePillsProps) {
           <li key={badge.key}>
             <span
               title={badge.description}
-              className="inline-block rounded-full border border-violet-400/30 bg-violet-500/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200"
+              className="badge-muted normal-case tracking-normal"
             >
               {badge.label}
             </span>

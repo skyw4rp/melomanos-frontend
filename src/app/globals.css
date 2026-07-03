@@ -6,6 +6,7 @@
   --color-bg-inverse: #0b0b0b;
   --color-bg-inverse-deep: #080808;
   --color-surface-muted: #e4ded3;
+  --color-search-bg: #ede8df;
   --color-text-primary: #0b0b0b;
   --color-text-muted: #5e5950;
   --color-text-placeholder: #8a8479;
@@ -156,6 +157,13 @@ body {
 
   .badge-amber {
     @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-amber-600/10 text-amber-900 ring-amber-600/20;
+  }
+
+  .input-search {
+    @apply w-full rounded-full border border-border/80 bg-[var(--color-search-bg)] py-2 text-[13px] text-foreground placeholder:text-[var(--color-text-placeholder)] focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15;
+    transition-property: color, background-color, border-color, box-shadow, opacity;
+    transition-duration: 180ms;
+    transition-timing-function: ease;
   }
 
   .dropdown-panel {
