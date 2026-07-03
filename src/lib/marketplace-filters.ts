@@ -9,6 +9,15 @@ export type MarketplaceFilterForm = {
   status: string;
 };
 
+export const EMPTY_MARKETPLACE_FILTERS: MarketplaceFilterForm = {
+  search: "",
+  city: "",
+  genre: "",
+  min_price: "",
+  max_price: "",
+  status: "",
+};
+
 /** Map UI filters to API params. Style/subgenre terms route through `search` (not `genre`). */
 export function buildMarketplaceApiFilters(
   form: MarketplaceFilterForm,

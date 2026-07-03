@@ -75,7 +75,7 @@ export default function HomeMetricsBand() {
               Si algo no está bien, te protegemos.
             </p>
             <Link
-              href="#catalogo"
+              href="/explorar"
               className="mt-2 inline-flex text-xs font-semibold text-accent transition-colors duration-200 hover:text-foreground sm:text-[13px]"
             >
               Cómo funciona →

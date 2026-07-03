@@ -1,10 +1,10 @@
-import HomeDiscovery from "@/components/home/HomeDiscovery";
+import CatalogExplore from "@/components/catalog/CatalogExplore";
 
-export default function HomePage() {
+export default function ExplorarPage() {
   return (
     <div className="min-h-full bg-background">
       <div className="mx-auto max-w-[1440px] px-5 py-6 sm:px-8 sm:py-8">
-        <HomeDiscovery />
+        <CatalogExplore />
       </div>
     </div>
   );

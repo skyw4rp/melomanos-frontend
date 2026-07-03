@@ -110,7 +110,7 @@ export default function BrandLogo({
     return (
       <Link
         href={href}
-        className="shrink-0 transition hover:opacity-90"
+        className="shrink-0 outline-none transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         aria-label="Melómanos Market — inicio"
       >
         {content}

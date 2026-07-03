@@ -10,24 +10,22 @@ import {
   IconMapPin,
 } from "@/components/icons";
 import { formatPriceCLP } from "@/lib/format";
-import type { Listing } from "@/types";
 
 export const HERO_TURNTABLE_VISUAL = "/hero-turntable-featured.svg";
 
-interface HomeHeroProps {
-  featuredListing?: Listing | null;
-}
+/** Frozen hero featured-card copy — static on load (no API swap). */
+const HERO_FEATURED = {
+  artist: "Priku",
+  title: "Romanian Minimal EP",
+  city: "Concepción, Chile",
+  price: 10500,
+} as const;
 
-export default function HomeHero({ featuredListing }: HomeHeroProps) {
+export default function HomeHero() {
   const [slideIndex, setSlideIndex] = useState(0);
 
-  const artist = featuredListing?.artist ?? "Priku";
-  const title = featuredListing?.title ?? "Romanian Minimal EP";
-  const city = featuredListing?.city ?? "Concepción, Chile";
-  const price = featuredListing?.price_clp ?? 10500;
-  const detailHref = featuredListing?.id
-    ? `/listings/${featuredListing.id}`
-    : "#catalogo";
+  const { artist, title, city, price } = HERO_FEATURED;
+  const detailHref = "/explorar";
 
   return (
     <section data-testid="home-hero" className="pt-4 pb-0 sm:pt-6">
@@ -53,15 +51,15 @@ export default function HomeHero({ featuredListing }: HomeHeroProps) {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href="#catalogo"
+            <Link
+              href="/explorar"
               data-testid="hero-explore-cta"
               className="btn-primary px-6 py-3"
             >
               <IconDisc className="h-4 w-4" aria-hidden />
               Explorar vinilos
               <IconArrowRight className="h-4 w-4 opacity-90" aria-hidden />
-            </a>
+            </Link>
             <Link
               href="/sell"
               data-testid="hero-sell-cta"

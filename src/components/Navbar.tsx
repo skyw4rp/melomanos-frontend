@@ -14,7 +14,7 @@ import {
 } from "@/components/icons";
 import { AUTH_CHANGED_EVENT } from "@/lib/auth-events";
 import { formatProfileName, getUserInitials } from "@/lib/auth";
-import { dispatchHomeSearch, scrollToCatalog } from "@/lib/home-search";
+import { dispatchHomeSearch, scrollToCatalog, setPendingHomeSearch } from "@/lib/home-search";
 import {
   getConversations,
   getMe,
@@ -26,10 +26,10 @@ import {
 import { MESSAGES_UPDATED_EVENT, totalUnreadCount } from "@/lib/messages";
 import type { User } from "@/types";
 
-const CENTER_NAV: { label: string; href: string; testId?: string; homeActive?: boolean }[] = [
-  { label: "Explorar", href: "/#catalogo", testId: "nav-marketplace", homeActive: true },
-  { label: "Sellos", href: "/#catalogo" },
-  { label: "Artistas", href: "/#catalogo" },
+const CENTER_NAV: { label: string; href: string; testId?: string; exploreActive?: boolean }[] = [
+  { label: "Explorar", href: "/explorar", testId: "nav-marketplace", exploreActive: true },
+  { label: "Sellos", href: "/explorar" },
+  { label: "Artistas", href: "/explorar" },
   { label: "Nuevos ingresos", href: "/#nuevos-ingresos" },
   { label: "Guía del digger", href: "/#guia-digger" },
 ];
@@ -59,11 +59,19 @@ function headerActionLinkClass(active: boolean, accentHover = false) {
 
 function NavbarSearch() {
   const [query, setQuery] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    scrollToCatalog();
-    dispatchHomeSearch(query);
+    const trimmed = query.trim();
+    if (pathname === "/explorar") {
+      dispatchHomeSearch(trimmed);
+      scrollToCatalog();
+      return;
+    }
+    setPendingHomeSearch(trimmed);
+    router.push("/explorar");
   }
 
   return (
@@ -230,7 +238,7 @@ export default function Navbar() {
   }
 
   function isNavItemActive(item: (typeof CENTER_NAV)[number]) {
-    if (item.homeActive) return pathname === "/";
+    if (item.exploreActive) return pathname === "/explorar";
     return false;
   }
 
