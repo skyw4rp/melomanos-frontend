@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { loginDanielaViaUi } from "./helpers/demo-daniela-login";
+import { openAccountMenu } from "./helpers/auth";
 import { DANIELA_DEMO_EMAIL, WEB_BASE_URL } from "./helpers/constants";
 
 /**
@@ -21,6 +22,7 @@ test.describe("Demo Daniela login", () => {
     await loginDanielaViaUi(page);
 
     await expect(page.getByTestId("nav-login")).toHaveCount(0);
+    await openAccountMenu(page);
     await expect(page.getByTestId("nav-orders")).toBeVisible();
     await expect(page.getByTestId("nav-sell")).toBeVisible();
 

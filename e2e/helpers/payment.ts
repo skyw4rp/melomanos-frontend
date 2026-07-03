@@ -25,7 +25,7 @@ async function ensureBuyerOrderDetailPage(
 
   const { loginAsBuyer } = await import("./auth");
   const loggedIn = await page
-    .getByTestId("nav-orders")
+    .getByTestId("nav-account-menu")
     .isVisible({ timeout: 2_000 })
     .catch(() => false);
   if (!loggedIn || page.url().includes("/login")) {

@@ -9,6 +9,22 @@ export async function loginAsSeller(page: Page): Promise<void> {
   await login(page, SELLER_EMAIL, E2E_PASSWORD);
 }
 
+export async function openAccountMenu(page: Page): Promise<void> {
+  const trigger = page.getByTestId("nav-account-menu");
+  await expect(trigger).toBeVisible({ timeout: 20_000 });
+  const dropdown = page.getByTestId("nav-account-dropdown");
+  if (!(await dropdown.isVisible())) {
+    await trigger.click();
+  }
+  await expect(dropdown).toBeVisible({ timeout: 10_000 });
+}
+
+export async function expectLoggedInAccountNav(page: Page): Promise<void> {
+  await openAccountMenu(page);
+  await expect(page.getByTestId("nav-orders")).toBeVisible();
+  await expect(page.getByTestId("nav-sell")).toBeVisible();
+}
+
 export async function login(
   page: Page,
   email: string,
@@ -19,17 +35,18 @@ export async function login(
   await page.getByTestId("login-password").fill(password);
   await page.getByTestId("login-submit").click();
 
-  const ordersLink = page.getByTestId("nav-orders");
+  const accountMenu = page.getByTestId("nav-account-menu");
   const formError = page.locator("form [role='alert']");
 
   try {
-    await expect(ordersLink).toBeVisible({ timeout: 20_000 });
+    await expect(accountMenu).toBeVisible({ timeout: 20_000 });
+    await expectLoggedInAccountNav(page);
   } catch {
     if (await formError.isVisible()) {
       const message = (await formError.textContent())?.trim() || "Login failed";
       throw new Error(message);
     }
-    throw new Error("Login did not complete — Compras y ventas link not visible");
+    throw new Error("Login did not complete — account menu not visible");
   }
 }
 

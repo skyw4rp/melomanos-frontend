@@ -4,6 +4,7 @@ import {
   loginAsBuyer,
   loginAsSeller,
   logoutViaStorage,
+  openAccountMenu,
 } from "./helpers/auth";
 import { loginDanielaViaUi } from "./helpers/demo-daniela-login";
 import { findBuyableListingId } from "./helpers/api";
@@ -56,6 +57,27 @@ test("header search routes from home to explorar", async ({ page }) => {
   await expect(page).toHaveURL(/\/explorar/, { timeout: 10_000 });
 });
 
+test("logged-out header shows public product navigation", async ({ page }) => {
+  await logoutViaStorage(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.getByTestId("nav-product-row")).toBeVisible();
+  await expect(page.getByTestId("nav-marketplace")).toHaveText("Explorar");
+  await expect(page.getByTestId("nav-login")).toBeVisible();
+  await expect(page.getByTestId("nav-account-menu")).toHaveCount(0);
+  await expect(page.getByTestId("nav-messages")).toHaveCount(0);
+});
+
+test("logged-in header keeps public product navigation", async ({ page }) => {
+  await login(page, BUYER_EMAIL, E2E_PASSWORD);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.getByTestId("nav-product-row")).toBeVisible();
+  await expect(page.getByTestId("nav-marketplace")).toHaveText("Explorar");
+  await expect(page.getByTestId("nav-messages")).toBeVisible();
+  await expect(page.getByTestId("nav-favorites")).toBeVisible();
+});
+
 test("explorar listing card opens listing detail", async ({ page }) => {
   await page.goto("/explorar");
   const card = page.getByTestId("listing-card").first();
@@ -102,6 +124,7 @@ test("protected pages redirect to login with next", async ({ page }) => {
 test("login works", async ({ page }) => {
   await logoutViaStorage(page);
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
+  await openAccountMenu(page);
   await expect(page.getByTestId("nav-orders")).toBeVisible();
   await expect(page.getByTestId("nav-sell")).toBeVisible();
 });

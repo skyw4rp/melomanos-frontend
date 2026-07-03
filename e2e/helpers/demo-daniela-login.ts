@@ -3,6 +3,7 @@ import {
   attachBrowserDiagnostics,
   formatBrowserDiagnostics,
 } from "./failure-diagnostics";
+import { expectLoggedInAccountNav } from "./auth";
 import {
   DANIELA_DEMO_EMAIL,
   DANIELA_DEMO_PASSWORD,
@@ -37,9 +38,7 @@ export async function loginDanielaViaUi(page: Page): Promise<void> {
 
     await expect(successMessage).toBeVisible();
 
-    await expect(page.getByTestId("nav-orders")).toBeVisible({
-      timeout: 20_000,
-    });
+    await expectLoggedInAccountNav(page);
 
     const token = await page.evaluate(() => localStorage.getItem("access_token"));
     expect(token).toBeTruthy();
