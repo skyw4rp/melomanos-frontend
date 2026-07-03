@@ -10,7 +10,7 @@ import {
   IconHeart,
   IconMessage,
   IconSearch,
-  ICON_SIZE_MD,
+  ICON_SIZE_NAV,
 } from "@/components/icons";
 import { AUTH_CHANGED_EVENT } from "@/lib/auth-events";
 import { formatProfileName, getUserInitials } from "@/lib/auth";
@@ -36,11 +36,24 @@ const CENTER_NAV: { label: string; href: string; testId?: string; homeActive?: b
 
 const iconBtnClass = "icon-btn";
 
+const headerNavTextClass =
+  "text-[length:var(--text-nav)] font-medium leading-none transition-ui focus-ring";
+
 function navLinkClass(active: boolean) {
-  return `relative whitespace-nowrap px-3 py-2 text-[13px] font-medium transition-ui focus-ring ${
+  return `relative whitespace-nowrap px-3 py-2 ${headerNavTextClass} ${
     active
       ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-accent"
       : "text-muted-foreground hover:text-foreground"
+  }`;
+}
+
+function headerActionLinkClass(active: boolean, accentHover = false) {
+  return `hidden rounded-lg px-3 py-2 ${headerNavTextClass} lg:inline-block ${
+    active
+      ? "text-foreground"
+      : accentHover
+        ? "text-muted-foreground hover:text-accent"
+        : "text-muted-foreground hover:text-foreground"
   }`;
 }
 
@@ -56,13 +69,13 @@ function NavbarSearch() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="hidden min-w-[200px] flex-1 md:block md:max-w-[240px] lg:max-w-[280px] xl:max-w-[300px]"
+      className="hidden min-w-[220px] flex-1 md:block md:max-w-[280px] lg:max-w-[340px] xl:max-w-[380px]"
     >
       <label htmlFor="home-search" className="sr-only">
         Buscar vinilos, artistas, sellos
       </label>
       <div className="relative">
-        <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <IconSearch className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <input
           id="home-search"
           type="search"
@@ -70,11 +83,8 @@ function NavbarSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar vinilos, artistas, sellos..."
-          className="input-search py-2 pl-10 pr-14"
+          className="input-search py-2.5 pl-11 pr-4"
         />
-        <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-surface/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
-          ⌘ K
-        </kbd>
       </div>
     </form>
   );
@@ -97,18 +107,18 @@ function ProfileChip({ user }: { user: User }) {
       }`}
       title={`${name} · Coleccionista`}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
         {initials}
       </span>
       <span className="hidden min-w-0 md:block">
-        <span className="block truncate text-[13px] font-semibold leading-tight text-foreground">
+        <span className="block truncate text-[length:var(--text-nav)] font-semibold leading-tight text-foreground">
           {name}
         </span>
-        <span className="block text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+        <span className="block text-[length:var(--text-caption)] font-medium uppercase tracking-[0.12em] text-muted-foreground">
           Coleccionista
         </span>
       </span>
-      <IconChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground md:block" />
+      <IconChevronDown className="hidden h-4 w-4 shrink-0 text-muted-foreground md:block" />
     </Link>
   );
 }
@@ -125,9 +135,9 @@ function MessagesIconLink({ unread }: { unread: number }) {
       aria-label={unread > 0 ? `Mensajes, ${unread} sin leer` : "Mensajes"}
       className={`${iconBtnClass} ${active ? "bg-surface-muted/80" : ""}`}
     >
-      <IconMessage className={ICON_SIZE_MD} />
+      <IconMessage className={ICON_SIZE_NAV} />
       {unread > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 min-w-[1rem] rounded-full bg-accent px-1 text-center text-[9px] font-bold text-primary-foreground">
+        <span className="absolute -right-0.5 -top-0.5 min-w-[1.125rem] rounded-full bg-accent px-1 text-center text-[length:var(--text-caption)] font-bold text-primary-foreground">
           {unread > 9 ? "9+" : unread}
         </span>
       )}
@@ -146,7 +156,7 @@ function FavoritesIconLink() {
       aria-label="Favoritos"
       className={`${iconBtnClass} ${active ? "bg-surface-muted/80" : ""}`}
     >
-      <IconHeart className={ICON_SIZE_MD} />
+      <IconHeart className={ICON_SIZE_NAV} />
     </Link>
   );
 }
@@ -231,8 +241,8 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-surface/98 backdrop-blur-sm">
-      <nav className="mx-auto max-w-[1440px] px-5 py-3 sm:px-8">
-        <div className="flex items-center gap-4 lg:gap-6">
+      <nav className="mx-auto max-w-[1440px] px-5 py-3.5 sm:px-8 sm:py-4">
+        <div className="flex items-center gap-4 lg:gap-7">
           <BrandLogo />
 
           <div className="hidden flex-1 items-center justify-center lg:flex">
@@ -248,15 +258,15 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2 lg:flex-none">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-2.5 lg:flex-none">
             <NavbarSearch />
 
             {hydrated && loggedIn && user && (
-              <div className="flex items-center gap-0.5 sm:gap-1">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <Link
                   href="/sell"
                   data-testid="nav-sell"
-                  className="hidden rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-accent lg:inline-block"
+                  className={headerActionLinkClass(pathname === "/sell", true)}
                 >
                   Vender vinilo
                 </Link>
@@ -264,7 +274,9 @@ export default function Navbar() {
                 <Link
                   href="/orders"
                   data-testid="nav-orders"
-                  className="hidden rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-foreground lg:inline-block"
+                  className={headerActionLinkClass(
+                    pathname === "/orders" || pathname.startsWith("/orders/")
+                  )}
                 >
                   Compras y ventas
                 </Link>
@@ -281,7 +293,7 @@ export default function Navbar() {
                   type="button"
                   onClick={handleLogout}
                   data-testid="nav-logout"
-                  className="hidden rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-foreground 2xl:inline-block"
+                  className={`hidden rounded-lg px-3 py-2 ${headerNavTextClass} text-muted-foreground hover:text-foreground 2xl:inline-block`}
                 >
                   Salir
                 </button>
@@ -292,7 +304,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 data-testid="nav-login"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+                className={`rounded-lg px-3 py-2 ${headerNavTextClass} text-muted-foreground hover:text-foreground`}
               >
                 Iniciar sesión
               </Link>
@@ -300,13 +312,13 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="mt-2.5 flex gap-2 overflow-x-auto pb-0.5 lg:hidden">
+        <div className="mt-3 flex gap-2.5 overflow-x-auto pb-0.5 lg:hidden">
           {CENTER_NAV.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               {...(item.testId ? { "data-testid": `${item.testId}-mobile` } : {})}
-              className={`shrink-0 px-2 py-1 text-xs font-medium ${
+              className={`shrink-0 px-2.5 py-1.5 text-[length:var(--text-body-sm)] font-medium ${
                 isNavItemActive(item)
                   ? "text-foreground underline decoration-accent decoration-2 underline-offset-4"
                   : "text-muted-foreground"

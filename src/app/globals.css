@@ -45,6 +45,17 @@
 
   --transition-ui: 180ms ease;
   --icon-stroke: 1.5;
+
+  /* UI scale — marketplace-grade legibility */
+  --text-nav: 0.9375rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.8125rem;
+  --text-badge: 0.6875rem;
+  --control-height: 2.75rem;
+  --control-height-compact: 2.5rem;
+  --icon-nav: 1.25rem;
+  --icon-btn-size: 2.5rem;
 }
 
 @theme inline {
@@ -92,31 +103,31 @@ body {
   }
 
   .btn-primary {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:opacity-92 active:opacity-88 disabled:cursor-not-allowed disabled:opacity-55;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-[length:var(--text-nav)] font-semibold text-primary-foreground shadow-sm transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:opacity-92 active:opacity-88 disabled:cursor-not-allowed disabled:opacity-55;
   }
 
   .btn-accent {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-55;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-[length:var(--text-nav)] font-semibold text-primary-foreground shadow-sm transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-55;
   }
 
   .btn-ghost {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-medium text-foreground transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:border-border-strong hover:bg-surface-muted/70 active:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-55;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-6 py-3 text-[length:var(--text-nav)] font-medium text-foreground transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:border-border-strong hover:bg-surface-muted/70 active:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-55;
   }
 
   .btn-danger-ghost {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-surface px-5 py-2.5 text-sm font-medium text-destructive transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:bg-destructive/5 disabled:cursor-not-allowed disabled:opacity-55;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-surface px-6 py-3 text-[length:var(--text-nav)] font-medium text-destructive transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:bg-destructive/5 disabled:cursor-not-allowed disabled:opacity-55;
   }
 
   .icon-btn {
-    @apply relative inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:bg-surface-muted/80;
+    @apply relative inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:bg-surface-muted/80;
   }
 
   .input-field {
-    @apply mt-2 w-full min-h-10 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground shadow-sm transition-colors duration-200 ease-out placeholder:text-[var(--color-text-placeholder)] focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:bg-surface-muted/40 disabled:opacity-60;
+    @apply mt-2 w-full min-h-11 rounded-xl border border-border bg-surface px-4 py-3 text-[length:var(--text-nav)] text-foreground shadow-sm transition-colors duration-200 ease-out placeholder:text-[var(--color-text-placeholder)] focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:bg-surface-muted/40 disabled:opacity-60;
   }
 
   .label-field {
-    @apply block text-sm font-medium text-foreground;
+    @apply block text-[length:var(--text-body-sm)] font-medium text-foreground;
   }
 
   .card-surface {
@@ -128,39 +139,39 @@ body {
   }
 
   .editorial-label {
-    @apply text-xs font-medium uppercase tracking-[var(--tracking-editorial)] text-muted-foreground;
+    @apply text-[length:var(--text-caption)] font-medium uppercase tracking-[var(--tracking-editorial)] text-muted-foreground;
   }
 
   .editorial-eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-accent;
+    @apply text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.2em] text-accent;
   }
 
   .badge-neutral {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-surface-muted/80 text-muted-foreground ring-border;
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-[length:var(--text-badge)] font-semibold uppercase tracking-wide ring-1 ring-inset bg-surface-muted/80 text-muted-foreground ring-border;
   }
 
   .badge-gold {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-accent text-foreground ring-accent/40;
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-[length:var(--text-badge)] font-semibold uppercase tracking-wide ring-1 ring-inset bg-accent text-foreground ring-accent/40;
   }
 
   .badge-success {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-success/10 text-success ring-success/25;
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-[length:var(--text-badge)] font-semibold uppercase tracking-wide ring-1 ring-inset bg-success/10 text-success ring-success/25;
   }
 
   .badge-danger {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-destructive/10 text-destructive ring-destructive/25;
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-[length:var(--text-badge)] font-semibold uppercase tracking-wide ring-1 ring-inset bg-destructive/10 text-destructive ring-destructive/25;
   }
 
   .badge-muted {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-surface-muted text-muted-foreground ring-border;
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-[length:var(--text-badge)] font-semibold uppercase tracking-wide ring-1 ring-inset bg-surface-muted text-muted-foreground ring-border;
   }
 
   .badge-amber {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-amber-600/10 text-amber-900 ring-amber-600/20;
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-[length:var(--text-badge)] font-semibold uppercase tracking-wide ring-1 ring-inset bg-amber-600/10 text-amber-900 ring-amber-600/20;
   }
 
   .input-search {
-    @apply w-full rounded-full border border-border/80 bg-[var(--color-search-bg)] py-2 text-[13px] text-foreground placeholder:text-[var(--color-text-placeholder)] focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15;
+    @apply min-h-11 w-full rounded-full border border-border/80 bg-[var(--color-search-bg)] py-2.5 text-[length:var(--text-nav)] text-foreground placeholder:text-[var(--color-text-placeholder)] focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/15;
     transition-property: color, background-color, border-color, box-shadow, opacity;
     transition-duration: 180ms;
     transition-timing-function: ease;

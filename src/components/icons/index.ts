@@ -5,5 +5,5 @@
 export * from "./HomeIcons";
 
 export const ICON_SIZE_SM = "h-4 w-4";
-export const ICON_SIZE_MD = "h-[18px] w-[18px]";
-export const ICON_SIZE_NAV = "h-5 w-5";
+export const ICON_SIZE_MD = "h-5 w-5";
+export const ICON_SIZE_NAV = "h-[22px] w-[22px]";

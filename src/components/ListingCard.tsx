@@ -102,17 +102,17 @@ export default function ListingCard({ listing }: ListingCardProps) {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <p className="truncate text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <p className="truncate text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           {artist}
         </p>
-        <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-foreground group-hover:text-accent">
+        <h3 className="mt-1.5 line-clamp-2 text-lg font-semibold leading-snug text-foreground group-hover:text-accent sm:text-xl">
           {title}
         </h3>
 
-        <p className="mt-2 text-sm text-muted-foreground">{city}</p>
+        <p className="mt-2.5 text-[length:var(--text-nav)] text-muted-foreground">{city}</p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <div className="mt-3.5 flex flex-wrap items-center gap-2">
           {genre && genre !== "Unknown" && <MetaChip>{genre}</MetaChip>}
           {typeLabel && <MetaChip>{typeLabel}</MetaChip>}
           {recordGrade && <MetaChip>Disco {recordGrade}</MetaChip>}
@@ -126,18 +126,18 @@ export default function ListingCard({ listing }: ListingCardProps) {
           )}
         </div>
 
-        <p className="mt-auto pt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <p className="mt-auto pt-5 text-[1.75rem] font-bold leading-none tracking-tight text-foreground sm:text-3xl">
           {formatPriceCLP(listing.price_clp)}
         </p>
       </div>
 
       <div
-        className={`border-t border-border bg-surface-muted/40 p-3 ${isOwner ? "" : "grid grid-cols-2 gap-2"}`}
+        className={`border-t border-border bg-surface-muted/40 p-4 ${isOwner ? "" : "grid grid-cols-2 gap-3"}`}
       >
         <Link
           href={listingHref}
           data-testid="listing-detail-link"
-          className={`btn-primary py-2.5 text-xs ${isOwner ? "w-full" : ""}`}
+          className={`btn-primary ${isOwner ? "w-full" : ""}`}
         >
           Ver detalle
         </Link>
@@ -147,18 +147,18 @@ export default function ListingCard({ listing }: ListingCardProps) {
             data-testid="listing-favorite-btn"
             onClick={handleFavorite}
             disabled={favState === "loading" || favState === "done"}
-            className="btn-ghost bg-surface py-2.5 text-xs disabled:opacity-60"
+            className="btn-ghost bg-surface disabled:opacity-60"
           >
             {favState === "done" ? (
-              <span className="inline-flex items-center gap-1">
-                <IconHeart className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
+              <span className="inline-flex items-center gap-1.5">
+                <IconHeart className="h-4 w-4 fill-accent text-accent" aria-hidden />
                 Guardado
               </span>
             ) : favState === "loading" ? (
               "…"
             ) : (
-              <span className="inline-flex items-center gap-1">
-                <IconHeart className="h-3.5 w-3.5" aria-hidden />
+              <span className="inline-flex items-center gap-1.5">
+                <IconHeart className="h-4 w-4" aria-hidden />
                 Favorito
               </span>
             )}
@@ -166,7 +166,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         )}
       </div>
       {!isOwner && favState === "error" && (
-        <p className="px-3 pb-2 text-center text-[10px] text-destructive">
+        <p className="px-4 pb-3 text-center text-[length:var(--text-caption)] text-destructive">
           No se pudo guardar
         </p>
       )}

@@ -90,15 +90,15 @@ export default function BrandLogo({
       data-testid="brand-logo"
       className={`group inline-flex items-center gap-3 text-foreground ${className}`}
     >
-      <BrandMark className={compact ? "h-9 w-6" : "h-11 w-8"} />
+      <BrandMark className={compact ? "h-9 w-6" : "h-12 w-9"} />
       <span className="flex flex-col justify-center leading-none">
         <span
-          className={`font-bold tracking-[0.08em] text-foreground ${compact ? "text-[11px]" : "text-[13px] sm:text-sm"}`}
+          className={`font-bold tracking-[0.08em] text-foreground ${compact ? "text-xs" : "text-sm sm:text-[15px]"}`}
         >
           MELÓMANOS
         </span>
         <span
-          className={`mt-1 font-semibold tracking-[0.28em] text-accent ${compact ? "text-[8px]" : "text-[9px] sm:text-[10px]"}`}
+          className={`mt-1 font-semibold tracking-[0.28em] text-accent ${compact ? "text-[9px]" : "text-[10px] sm:text-[11px]"}`}
         >
           MARKET
         </span>

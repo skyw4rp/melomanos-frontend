@@ -88,23 +88,23 @@ export default function ListingDetailActions({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         <button
           type="button"
           onClick={handleFavorite}
           disabled={favState === "loading" || favState === "done"}
-          className="btn-ghost py-3 text-xs font-semibold uppercase tracking-wide disabled:opacity-60"
+          className="btn-ghost font-semibold uppercase tracking-wide disabled:opacity-60"
         >
           {favState === "done" ? (
             <span className="inline-flex items-center gap-1.5">
-              <IconHeart className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
+              <IconHeart className="h-4 w-4 fill-accent text-accent" aria-hidden />
               En favoritos
             </span>
           ) : favState === "loading" ? (
             "…"
           ) : (
             <span className="inline-flex items-center gap-1.5">
-              <IconHeart className="h-3.5 w-3.5" aria-hidden />
+              <IconHeart className="h-4 w-4" aria-hidden />
               Favorito
             </span>
           )}
@@ -117,7 +117,7 @@ export default function ListingDetailActions({
             if (!requireAuth()) return;
             setShowMessage((v) => !v);
           }}
-          className="btn-ghost py-3 text-xs font-semibold uppercase tracking-wide"
+          className="btn-ghost font-semibold uppercase tracking-wide"
         >
           Mensaje
         </button>
@@ -126,7 +126,7 @@ export default function ListingDetailActions({
           type="button"
           onClick={handleBuy}
           disabled={buyState === "loading" || isReserved || isSold}
-          className="btn-primary py-3 text-xs font-semibold uppercase tracking-wide disabled:opacity-50"
+          className="btn-primary font-semibold uppercase tracking-wide disabled:opacity-50"
         >
           {isSold
             ? "Vendido"
@@ -139,10 +139,10 @@ export default function ListingDetailActions({
       </div>
 
       {favState === "error" && (
-        <p className="text-xs text-destructive">No se pudo agregar a favoritos.</p>
+        <p className="text-[length:var(--text-body-sm)] text-destructive">No se pudo agregar a favoritos.</p>
       )}
       {buyState === "error" && (
-        <p className="text-xs text-destructive">{buyError}</p>
+        <p className="text-[length:var(--text-body-sm)] text-destructive">{buyError}</p>
       )}
 
       {showMessage && getToken() && (

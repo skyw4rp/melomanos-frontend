@@ -92,26 +92,26 @@ export default function Marketplace() {
   return (
     <>
       {showHero && (
-        <section className="mb-14 space-y-0">
+        <section className="mb-16 space-y-0">
           <HomeHero featuredListing={featuredListing} />
           <HomeMetricsBand />
           {data && data.items.length > 0 && (
             <HomeNewArrivals listings={data.items} />
           )}
-          <div className="mt-14 grid gap-8 lg:grid-cols-[1fr_minmax(300px,380px)] lg:items-start lg:gap-10">
+          <div className="mt-16 grid gap-8 lg:grid-cols-[1fr_minmax(300px,380px)] lg:items-start lg:gap-10">
             <HomeBenefitsStrip />
             <HomeCommunityCard />
           </div>
         </section>
       )}
 
-      <section id="catalogo" className="scroll-mt-28 border-t border-border pt-10">
-        <div className="mb-6 max-w-2xl">
+      <section id="catalogo" className="scroll-mt-28 border-t border-border pt-12">
+        <div className="mb-7 max-w-2xl">
           <p className="editorial-label">Catálogo completo</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
             Catálogo de vinilos
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-3 text-[length:var(--text-body-sm)] leading-relaxed text-muted-foreground">
             Pressings electrónicos seleccionados por coleccionistas y DJs en Chile.
           </p>
         </div>
@@ -119,14 +119,14 @@ export default function Marketplace() {
         <form
           onSubmit={handleSubmit}
           data-testid="marketplace-filters"
-          className="mb-8 card-surface p-4 sm:p-6"
+          className="mb-8 card-surface p-5 sm:p-7"
         >
-          <h3 className="text-sm font-semibold text-foreground">Refinar búsqueda</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <h3 className="text-[length:var(--text-nav)] font-semibold text-foreground">Refinar búsqueda</h3>
+          <p className="mt-1 text-[length:var(--text-body-sm)] text-muted-foreground">
             Artista, ciudad, estilo/subgénero, precio, disponibilidad.
           </p>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
               <label htmlFor="search" className={labelClass}>
                 Búsqueda
@@ -217,7 +217,7 @@ export default function Marketplace() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-wrap gap-3">
             <button type="submit" className="btn-primary">
               Buscar
             </button>
@@ -246,7 +246,7 @@ export default function Marketplace() {
         )}
 
         {!loading && !error && data && data.items.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:gap-8">
             {data.items.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}

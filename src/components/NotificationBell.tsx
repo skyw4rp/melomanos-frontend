@@ -128,12 +128,12 @@ export default function NotificationBell({ iconOnly = false }: NotificationBellP
         }
         onClick={() => setOpen((prev) => !prev)}
         className={`relative rounded-lg text-muted-foreground transition-ui focus-ring ${
-          iconOnly ? "icon-btn h-9 w-9" : "px-2.5 py-2 text-sm font-medium sm:px-3"
+          iconOnly ? "icon-btn" : "px-3 py-2.5 text-[length:var(--text-nav)] font-medium sm:px-3.5"
         }`}
       >
         <span className="inline-flex items-center gap-1.5">
           {iconOnly ? (
-            <IconBell className="h-5 w-5" />
+            <IconBell className="h-[22px] w-[22px]" />
           ) : (
             <>
               <span aria-hidden className="text-base leading-none">
@@ -145,7 +145,7 @@ export default function NotificationBell({ iconOnly = false }: NotificationBellP
           {unreadCount > 0 && (
             <span
               data-testid="notifications-unread-count"
-              className={`rounded-full bg-accent/15 text-center font-mono text-[10px] font-bold tabular-nums text-accent ring-1 ring-accent/30 ${
+              className={`rounded-full bg-accent/15 text-center font-mono text-[length:var(--text-caption)] font-bold tabular-nums text-accent ring-1 ring-accent/30 ${
                 iconOnly
                   ? "absolute -right-0.5 -top-0.5 min-w-[1rem] px-1 py-0"
                   : "min-w-[1.25rem] px-1.5 py-0.5"
