@@ -27,7 +27,7 @@ test("listing grid shows cover image when cover_image_url is present", async ({
     });
   });
 
-  await page.goto("/");
+  await page.goto("/explorar");
   const catalogCard = page.getByTestId("listing-card").first();
   await expect(
     catalogCard.getByRole("heading", { name: /greyscale transit ep/i }),
@@ -62,7 +62,7 @@ test("listing grid falls back to placeholder without cover_image_url", async ({
     });
   });
 
-  await page.goto("/");
+  await page.goto("/explorar");
   await expect(page.getByTestId("listing-cover-placeholder").first()).toBeVisible({
     timeout: 15_000,
   });

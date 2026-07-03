@@ -5,6 +5,7 @@ import {
   loginAsSeller,
   logoutViaStorage,
 } from "./helpers/auth";
+import { loginDanielaViaUi } from "./helpers/demo-daniela-login";
 import { findBuyableListingId } from "./helpers/api";
 import { BUYER_EMAIL, E2E_PASSWORD, SELLER_EMAIL } from "./helpers/constants";
 import {
@@ -22,7 +23,7 @@ test.describe.configure({ mode: "serial" });
 
 let e2eListingId: number | null = null;
 
-test("homepage loads marketplace", async ({ page }) => {
+test("homepage loads discovery landing", async ({ page }) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: /donde los vinilos cambian de manos/i }),
@@ -30,8 +31,38 @@ test("homepage loads marketplace", async ({ page }) => {
   await expect(page.getByTestId("home-hero")).toBeVisible();
   await expect(page.getByTestId("hero-cover-frame")).toBeVisible();
   await expect(page.getByTestId("trust-strip")).toBeVisible();
+  await expect(page.getByTestId("home-new-arrivals")).toBeVisible();
+  await expect(page.getByTestId("marketplace-filters")).not.toBeVisible();
+  await expect(page.getByTestId("hero-explore-cta")).toBeVisible();
+});
+
+test("explorar page loads catalog", async ({ page }) => {
+  await page.goto("/explorar");
+  await expect(
+    page.getByRole("heading", { name: /catálogo de vinilos/i }),
+  ).toBeVisible();
   await expect(page.getByTestId("marketplace-filters")).toBeVisible();
   await expect(page.getByText("Refinar búsqueda")).toBeVisible();
+  await expect(page.getByTestId("listing-card").first()).toBeVisible({
+    timeout: 15_000,
+  });
+});
+
+test("header search routes from home to explorar", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.getByTestId("home-search").fill("lumen");
+  await page.getByTestId("home-search").press("Enter");
+  await expect(page).toHaveURL(/\/explorar/, { timeout: 10_000 });
+});
+
+test("explorar listing card opens listing detail", async ({ page }) => {
+  await page.goto("/explorar");
+  const card = page.getByTestId("listing-card").first();
+  await expect(card).toBeVisible({ timeout: 15_000 });
+  await card.getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/listings\/\d+/, { timeout: 15_000 });
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 
 test("admin panel loads summary and tables", async ({ page }) => {
@@ -160,23 +191,25 @@ test("orders page shows buying and selling tabs", async ({ page }) => {
 });
 
 test("favorites flow", async ({ page }) => {
-  const listingId = e2eListingId ?? (await findBuyableListingId());
+  const listingId = (await findBuyableListingId()) ?? e2eListingId;
   test.skip(!listingId, "No listing available for favorites E2E");
 
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
   await page.goto(`/listings/${listingId}`);
 
   const favButton = page
-    .locator("div.grid.gap-2")
+    .getByRole("article")
     .first()
-    .getByRole("button", { name: /^favorito$/i });
+    .getByRole("button", { name: /^(favorito|en favoritos)$/i });
+  await expect(favButton).toBeVisible({ timeout: 15_000 });
   const favLabel = (await favButton.textContent()) ?? "";
   if (!favLabel.toLowerCase().includes("favoritos")) {
     await favButton.click();
     await expect(
-      page.locator("div.grid.gap-2").first().getByRole("button", {
-        name: /en favoritos/i,
-      }),
+      page
+        .getByRole("article")
+        .first()
+        .getByRole("button", { name: /en favoritos/i }),
     ).toBeVisible({ timeout: 10_000 });
   }
 
@@ -297,6 +330,31 @@ test("messages page loads", async ({ page }) => {
   await expect(page.getByTestId("messages-page")).toBeVisible();
   await expect(page.getByTestId("messages-page-title")).toHaveText("Mensajes");
   await expect(page.getByTestId("messages-list").getByText("Conversaciones")).toBeVisible();
+});
+
+test("messages reply from inbox thread", async ({ page }) => {
+  await loginDanielaViaUi(page);
+  await page.goto("/messages");
+  await expect(page.getByTestId("messages-page")).toBeVisible();
+
+  const conversation = page.locator('[data-testid^="messages-conversation-"]').first();
+  await expect(conversation).toBeVisible({ timeout: 15_000 });
+  await conversation.click();
+
+  await expect(page.getByTestId("message-thread")).toBeVisible({ timeout: 15_000 });
+  const replyText = `E2E inbox reply ${Math.random().toString(36).slice(2, 10)}`;
+  await page.getByTestId("messages-reply-input").fill(replyText);
+  await page.getByTestId("messages-send-btn").click();
+
+  await expect(page.getByTestId("messages-reply-input")).toHaveValue("", {
+    timeout: 15_000,
+  });
+  await expect(
+    page.getByTestId("message-thread").getByText(replyText, { exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("message-thread").getByText(/^not found$/i)).toHaveCount(
+    0,
+  );
 });
 
 test("buyer can open dispute and add evidence", async ({ page }) => {

@@ -48,13 +48,19 @@ test.describe("WebPay checkout (Phase 5)", () => {
     await enableWebPayCheckoutMode(page);
     const orderId = await createPendingOrderAsBuyer(page);
 
+    await expect(page.getByTestId("order-detail-page")).toBeVisible({
+      timeout: 15_000,
+    });
     await page.goto(`/orders/${orderId}?checkout=success`);
+    await expect(page.getByTestId("order-detail-page")).toBeVisible({
+      timeout: 15_000,
+    });
 
     await expect(page.getByTestId("order-checkout-notice")).toContainText(
       "Pago enviado correctamente.",
       { timeout: 15_000 },
     );
-    await expect(page).toHaveURL(`/orders/${orderId}`);
+    await expect(page).toHaveURL(new RegExp(`/orders/${orderId}$`));
   });
 
   test("displays cancelled message on checkout=cancelled return", async ({
@@ -63,13 +69,19 @@ test.describe("WebPay checkout (Phase 5)", () => {
     await enableWebPayCheckoutMode(page);
     const orderId = await createPendingOrderAsBuyer(page);
 
+    await expect(page.getByTestId("order-detail-page")).toBeVisible({
+      timeout: 15_000,
+    });
     await page.goto(`/orders/${orderId}?checkout=cancelled`);
+    await expect(page.getByTestId("order-detail-page")).toBeVisible({
+      timeout: 15_000,
+    });
 
     await expect(page.getByTestId("order-checkout-notice")).toContainText(
       "Pago cancelado.",
       { timeout: 15_000 },
     );
-    await expect(page).toHaveURL(`/orders/${orderId}`);
+    await expect(page).toHaveURL(new RegExp(`/orders/${orderId}$`));
   });
 
   test("displays checkout error for invalid order state", async ({ page }) => {
