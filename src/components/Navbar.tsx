@@ -128,7 +128,7 @@ function AccountMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((prev) => !prev)}
-        className={`flex max-w-[10rem] shrink-0 items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition xl:max-w-[11rem] 2xl:max-w-[12rem] ${
+        className={`flex shrink-0 items-center gap-2 rounded-full border py-1 pl-1 pr-2.5 transition-ui focus-ring md:pr-3 ${
           profileActive || open
             ? "border-accent/35 bg-surface"
             : "border-border/80 bg-surface hover:border-accent/25"
@@ -138,16 +138,16 @@ function AccountMenu({
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
           {initials}
         </span>
-        <span className="hidden min-w-0 md:block">
-          <span className="block max-w-[5.5rem] truncate text-[length:var(--text-nav)] font-semibold leading-tight text-foreground xl:max-w-[6.5rem] 2xl:max-w-[8rem]">
+        <span className="hidden min-w-0 md:block md:max-w-[7.5rem] lg:max-w-[9.5rem] xl:max-w-none">
+          <span className="block truncate text-[length:var(--text-nav)] font-semibold leading-tight text-foreground xl:overflow-visible xl:whitespace-nowrap">
             {name}
           </span>
-          <span className="hidden truncate text-[length:var(--text-caption)] font-medium uppercase tracking-[0.12em] text-muted-foreground 2xl:block">
+          <span className="hidden text-[length:var(--text-caption)] font-medium uppercase tracking-[0.12em] text-muted-foreground xl:block xl:overflow-visible xl:whitespace-nowrap">
             Coleccionista
           </span>
         </span>
         <IconChevronDown
-          className={`hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform 2xl:block ${
+          className={`hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform xl:block ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -366,7 +366,7 @@ export default function Navbar() {
 
             <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:col-start-3">
               {hydrated && loggedIn && user && (
-                <div className="flex items-center gap-1 sm:gap-1.5">
+                <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
                   <NotificationBell iconOnly />
                   <MessagesIconLink unread={unreadMessages} />
                   <FavoritesIconLink />
@@ -385,8 +385,10 @@ export default function Navbar() {
               )}
             </div>
 
-            <div className="col-span-2 row-start-2 min-w-0 md:col-span-1 md:col-start-2 md:row-start-1">
-              <NavbarSearch />
+            <div className="col-span-2 row-start-2 min-w-0 md:col-span-1 md:col-start-2 md:row-start-1 md:px-2 lg:px-4">
+              <div className="mx-auto w-full max-w-md lg:max-w-lg xl:max-w-xl">
+                <NavbarSearch />
+              </div>
             </div>
           </div>
         </nav>
