@@ -9,11 +9,30 @@ export function useListingsQuery(filters: ListingsFilters) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const {
+    skip,
+    limit,
+    search,
+    city,
+    genre,
+    min_price,
+    max_price,
+    status,
+  } = filters;
+
+  // Value-stable object — inline `{ skip: 0, limit: 20 }` must not retrigger fetch every render.
   const stableFilters = useMemo(
-    () => filters,
-    // Value-stable key — inline `{ skip: 0, limit: 20 }` must not retrigger fetch every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(filters)],
+    () => ({
+      skip,
+      limit,
+      search,
+      city,
+      genre,
+      min_price,
+      max_price,
+      status,
+    }),
+    [skip, limit, search, city, genre, min_price, max_price, status],
   );
 
   const loadListings = useCallback(async (next: ListingsFilters) => {
