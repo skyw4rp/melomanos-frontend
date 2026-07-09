@@ -267,11 +267,11 @@ export default function ProfilePage() {
       className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10"
     >
       <Link
-        href="/"
+        href="/explorar"
         data-testid="profile-back-link"
         className="text-sm font-medium text-muted-foreground transition hover:text-accent"
       >
-        ← Volver al catálogo
+        ← Volver a Explorar
       </Link>
 
       {error && (
@@ -280,9 +280,10 @@ export default function ProfilePage() {
         </p>
       )}
 
+      {/* 1. Primary — identity */}
       <header
         data-testid="profile-header"
-        className={`mt-6 flex flex-col gap-6 ${cardClass} p-6 sm:flex-row sm:items-center sm:p-8`}
+        className={`mt-5 flex flex-col gap-5 ${cardClass} p-5 sm:flex-row sm:items-center sm:p-7`}
       >
         <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-border bg-surface-muted text-3xl font-bold text-foreground ring-2 ring-accent/30">
           {initials}
@@ -307,15 +308,16 @@ export default function ProfilePage() {
         </Link>
       </header>
 
+      {/* Secondary — compact activity snapshot */}
       <div
         data-testid="profile-stats"
-        className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+        className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5"
       >
-        <StatCard label="Publicaciones activas" value={stats.activeListings} />
+        <StatCard label="Activas" value={stats.activeListings} />
         <StatCard label="Ventas" value={stats.salesCount} />
         <StatCard label="Compras" value={stats.purchasesCount} />
         <StatCard label="Favoritos" value={stats.favoritesCount} />
-        <StatCard label="Mensajes sin leer" value={stats.unreadMessages} />
+        <StatCard label="Sin leer" value={stats.unreadMessages} />
       </div>
 
       {subscription && (
@@ -324,162 +326,189 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {reputation ? (
-        <section
-          data-testid="profile-reputation-section"
-          className={`mt-8 ${cardClass} p-6 sm:p-8`}
-        >
-          <h2 className="text-sm font-semibold text-foreground">Reputación Melómanos</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Tu reputación crece según tus compras, ventas y comportamiento dentro de
-            la comunidad.
-          </p>
-          <p className="mt-4 inline-block rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent ring-1 ring-accent/30">
-            {trustLevelLabel(reputation.trust_level)}
-          </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className={statCellClass}>
-              <p className="text-xs font-medium text-muted-foreground">Calificación</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">
-                {formatAverageRating(reputation.average_rating)}
-              </p>
-            </div>
-            <div className={statCellClass}>
-              <p className="text-xs font-medium text-muted-foreground">
-                Ventas completadas
-              </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
-                {reputation.completed_sales}
-              </p>
-            </div>
-            <div className={statCellClass}>
-              <p className="text-xs font-medium text-muted-foreground">
-                Intercambios protegidos
-              </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
-                {reputation.protected_trades}
-              </p>
-            </div>
-            <div className={statCellClass}>
-              <p className="text-xs font-medium text-muted-foreground">Reseñas</p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
-                {reputation.total_reviews}
-              </p>
-            </div>
-          </div>
-          {reputation.disputed_orders > 0 && (
-            <p className="mt-4 text-sm text-destructive">
-              Disputas registradas: {reputation.disputed_orders}
-            </p>
-          )}
-          <TrustBadgesPanel badges={reputation.badges} editorial />
-        </section>
-      ) : (
-        !loading && (
+      {/* 2. Trust — Reputación primary, Digging secondary */}
+      <div
+        data-testid="profile-trust-block"
+        className="mt-8 space-y-0 border-t border-border/70 pt-7"
+      >
+        <p className="editorial-label text-accent">Confianza en el marketplace</p>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Reputación de vendedor e historial de reseñas, más tu Digging Score como
+          progreso digger.
+        </p>
+
+        {reputation ? (
           <section
             data-testid="profile-reputation-section"
-            className={`mt-8 ${cardClass} p-6 sm:p-8`}
+            className={`mt-5 ${cardClass} p-5 sm:p-7`}
           >
-            <h2 className="text-sm font-semibold text-foreground">Reputación Melómanos</h2>
-            <p className="mt-3 text-sm font-medium text-foreground">
-              Aún no tienes reseñas
+            <h2 className="text-base font-semibold text-foreground">
+              Reputación Melómanos
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Basada en reseñas, ventas completadas e intercambios protegidos.
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Cuando completes ventas o compras, tu reputación aparecerá aquí.
+            <p className="mt-4 inline-block rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent ring-1 ring-accent/30">
+              {trustLevelLabel(reputation.trust_level)}
             </p>
-          </section>
-        )
-      )}
-
-      <DiggingScorePanel
-        diggingScore={diggingScore}
-        showFallback={diggingScoreUnavailable}
-        editorial
-      />
-
-      <SellerShippingProfileSection />
-
-      <div className="mt-10 flex flex-wrap gap-1 border-b border-border">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
-              activeTab === tab.id
-                ? "border-accent text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab.label}
-            {tab.id === "messages" && stats.unreadMessages > 0 && (
-              <span className="ml-1.5 rounded-full bg-accent/15 px-1.5 text-[10px] font-bold text-accent ring-1 ring-accent/30">
-                {stats.unreadMessages}
-              </span>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className={statCellClass}>
+                <p className="text-xs font-medium text-muted-foreground">Calificación</p>
+                <p className="mt-2 text-2xl font-bold text-foreground">
+                  {formatAverageRating(reputation.average_rating)}
+                </p>
+              </div>
+              <div className={statCellClass}>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Ventas completadas
+                </p>
+                <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
+                  {reputation.completed_sales}
+                </p>
+              </div>
+              <div className={statCellClass}>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Intercambios protegidos
+                </p>
+                <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
+                  {reputation.protected_trades}
+                </p>
+              </div>
+              <div className={statCellClass}>
+                <p className="text-xs font-medium text-muted-foreground">Reseñas</p>
+                <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
+                  {reputation.total_reviews}
+                </p>
+              </div>
+            </div>
+            {reputation.disputed_orders > 0 && (
+              <p className="mt-4 text-sm text-destructive">
+                Disputas registradas: {reputation.disputed_orders}
+              </p>
             )}
-          </button>
-        ))}
+            <TrustBadgesPanel badges={reputation.badges} editorial />
+          </section>
+        ) : (
+          !loading && (
+            <section
+              data-testid="profile-reputation-section"
+              className={`mt-5 ${cardClass} p-5 sm:p-7`}
+            >
+              <h2 className="text-base font-semibold text-foreground">
+                Reputación Melómanos
+              </h2>
+              <p className="mt-3 text-sm font-medium text-foreground">
+                Aún no tienes reseñas
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Cuando completes ventas o compras, tu reputación aparecerá aquí.
+              </p>
+            </section>
+          )
+        )}
+
+        <DiggingScorePanel
+          diggingScore={diggingScore}
+          showFallback={diggingScoreUnavailable}
+          editorial
+        />
       </div>
 
-      <section className={`mt-0 ${cardClass} rounded-t-none border-t-0 p-4 sm:p-6`}>
-        {loading ? (
-          <p className="py-12 text-center text-sm text-muted-foreground">Cargando…</p>
-        ) : (
-          <>
-            {activeTab === "sales" &&
-              (safeSales.length === 0 ? (
-                <EmptyState message="Aún no tienes ventas publicadas." />
-              ) : (
-                <ul className="space-y-3">
-                  {safeSales.map((listing) => (
-                    <li key={listing.id}>
-                      <ListingRow listing={listing} />
-                    </li>
-                  ))}
-                </ul>
-              ))}
+      {/* 3. Activity hub */}
+      <div
+        data-testid="profile-activity"
+        className="mt-8 border-t border-border/70 pt-7"
+      >
+        <p className="editorial-label text-accent">Tu actividad</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Vista rápida de ventas, compras, favoritos y mensajes.
+        </p>
 
-            {activeTab === "purchases" &&
-              (safePurchases.length === 0 ? (
-                <EmptyState message="Aún no tienes compras." />
-              ) : (
-                <ul className="space-y-3">
-                  {safePurchases.map((listing) => (
-                    <li key={listing.id}>
-                      <ListingRow listing={listing} />
-                    </li>
-                  ))}
-                </ul>
-              ))}
+        <div className="mt-5 flex flex-wrap gap-1 border-b border-border">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+                activeTab === tab.id
+                  ? "border-accent text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+              {tab.id === "messages" && stats.unreadMessages > 0 && (
+                <span className="ml-1.5 rounded-full bg-accent/15 px-1.5 text-[10px] font-bold text-accent ring-1 ring-accent/30">
+                  {stats.unreadMessages}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
 
-            {activeTab === "favorites" &&
-              (safeFavorites.length === 0 ? (
-                <EmptyState message="Aún no tienes favoritos." />
-              ) : (
-                <ul className="space-y-3">
-                  {safeFavorites.map((listing) => (
-                    <li key={listing.id}>
-                      <ListingRow listing={listing} />
-                    </li>
-                  ))}
-                </ul>
-              ))}
+        <section className={`${cardClass} rounded-t-none border-t-0 p-4 sm:p-6`}>
+          {loading ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">Cargando…</p>
+          ) : (
+            <>
+              {activeTab === "sales" &&
+                (safeSales.length === 0 ? (
+                  <EmptyState message="Aún no tienes ventas publicadas." />
+                ) : (
+                  <ul className="space-y-3">
+                    {safeSales.map((listing) => (
+                      <li key={listing.id}>
+                        <ListingRow listing={listing} />
+                      </li>
+                    ))}
+                  </ul>
+                ))}
 
-            {activeTab === "messages" &&
-              (safeConversations.length === 0 ? (
-                <EmptyState message="Aún no tienes mensajes." />
-              ) : (
-                <ul className="space-y-3">
-                  {safeConversations.map((conversation) => (
-                    <li key={conversation.id}>
-                      <ConversationRow conversation={conversation} />
-                    </li>
-                  ))}
-                </ul>
-              ))}
-          </>
-        )}
-      </section>
+              {activeTab === "purchases" &&
+                (safePurchases.length === 0 ? (
+                  <EmptyState message="Aún no tienes compras." />
+                ) : (
+                  <ul className="space-y-3">
+                    {safePurchases.map((listing) => (
+                      <li key={listing.id}>
+                        <ListingRow listing={listing} />
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+
+              {activeTab === "favorites" &&
+                (safeFavorites.length === 0 ? (
+                  <EmptyState message="Aún no tienes favoritos." />
+                ) : (
+                  <ul className="space-y-3">
+                    {safeFavorites.map((listing) => (
+                      <li key={listing.id}>
+                        <ListingRow listing={listing} />
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+
+              {activeTab === "messages" &&
+                (safeConversations.length === 0 ? (
+                  <EmptyState message="Aún no tienes mensajes." />
+                ) : (
+                  <ul className="space-y-3">
+                    {safeConversations.map((conversation) => (
+                      <li key={conversation.id}>
+                        <ConversationRow conversation={conversation} />
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+            </>
+          )}
+        </section>
+      </div>
+
+      {/* 4. Tertiary — shipping collapsed */}
+      <SellerShippingProfileSection />
 
       <button
         type="button"

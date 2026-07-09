@@ -287,6 +287,15 @@ test("seller can update shipping profile", async ({ page }) => {
     timeout: 15_000,
   });
 
+  const shippingDetails = page.getByTestId("shipping-profile-details");
+  await expect(shippingDetails).toBeVisible();
+  if (!(await shippingDetails.getAttribute("open"))) {
+    await shippingDetails.locator("summary").click();
+  }
+  await expect(page.getByTestId("shipping-profile-form")).toBeVisible({
+    timeout: 10_000,
+  });
+
   await page.getByTestId("shipping-profile-origin-city").fill("Santiago");
   await page.getByTestId("shipping-profile-dispatch-hours").fill("24");
   await page.getByTestId("shipping-profile-courier-Chilexpress").check();

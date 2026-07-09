@@ -27,7 +27,7 @@ export default function SubscriptionCard({
     return (
       <section
         data-testid="profile-subscription-card"
-        className="mt-8 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
+        className="mt-5 rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6"
       >
         <p className="text-xs font-medium uppercase tracking-[0.06em] text-muted-foreground">
           Tu plan

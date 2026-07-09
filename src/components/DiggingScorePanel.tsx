@@ -54,15 +54,19 @@ export default function DiggingScorePanel({
         className={
           compact
             ? "mt-4 border-t border-border pt-4"
-            : "mt-8 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
+            : "mt-5 rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6"
         }
       >
-        <p className="text-sm font-semibold text-foreground">Reputación Melómanos</p>
+        <p className="text-sm font-semibold text-foreground">
+          {compact ? "Reputación Melómanos" : "Digging Score"}
+        </p>
         <p
           data-testid="digging-score-fallback"
           className="mt-3 text-sm text-muted-foreground"
         >
-          Cuando completes ventas o compras, tu reputación aparecerá aquí.
+          {compact
+            ? "Cuando completes ventas o compras, tu reputación aparecerá aquí."
+            : "Cuando completes ventas o compras, tu Digging Score aparecerá aquí."}
         </p>
       </section>
     );
@@ -104,18 +108,18 @@ export default function DiggingScorePanel({
   return (
     <section
       data-testid="digging-score-panel"
-      className="mt-8 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
+      className="mt-5 rounded-2xl border border-border/80 bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6"
     >
-      <p className="text-sm font-semibold text-foreground">Reputación Melómanos</p>
+      <p className="editorial-label text-accent">Progreso digger</p>
+      <p className="mt-1 text-sm font-semibold text-foreground">Digging Score</p>
       <p className="mt-2 text-sm text-muted-foreground">
-        Tu reputación crece según tus compras, ventas y comportamiento dentro de la
-        comunidad.
+        Tu avance como digger en Melómanos — distinto de tu reputación de vendedor.
       </p>
 
-      <div className="mt-6 flex flex-wrap items-end gap-4">
+      <div className="mt-5 flex flex-wrap items-end gap-4">
         <p
           data-testid="digging-score-value"
-          className="text-5xl font-bold tabular-nums tracking-tight text-foreground"
+          className="text-4xl font-bold tabular-nums tracking-tight text-foreground sm:text-5xl"
         >
           {formatDiggingScore(diggingScore.score)}
         </p>
@@ -138,18 +142,23 @@ export default function DiggingScorePanel({
         </p>
       )}
 
-      <dl className="mt-6 space-y-0 rounded-xl border border-border bg-surface-muted/30 px-4">
-        <BreakdownRow label="Ventas completadas" value={breakdown.completed_sales} />
-        <BreakdownRow label="Compras completadas" value={breakdown.completed_purchases} />
-        <BreakdownRow label="Reseñas recibidas" value={breakdown.reviews_received} />
-        <BreakdownRow label="Reseñas escritas" value={breakdown.reviews_written} />
-        <BreakdownRow label="Publicaciones activas" value={breakdown.active_listings} />
-        <BreakdownRow
-          label="Intercambios protegidos"
-          value={breakdown.protected_trades}
-        />
-        <BreakdownRow label="Disputas" value={breakdown.disputes} />
-      </dl>
+      <details className="mt-5 rounded-xl border border-border bg-surface-muted/20">
+        <summary className="cursor-pointer list-none px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground marker:content-none [&::-webkit-details-marker]:hidden">
+          Desglose del score
+        </summary>
+        <dl className="space-y-0 border-t border-border px-4 pb-2">
+          <BreakdownRow label="Ventas completadas" value={breakdown.completed_sales} />
+          <BreakdownRow label="Compras completadas" value={breakdown.completed_purchases} />
+          <BreakdownRow label="Reseñas recibidas" value={breakdown.reviews_received} />
+          <BreakdownRow label="Reseñas escritas" value={breakdown.reviews_written} />
+          <BreakdownRow label="Publicaciones activas" value={breakdown.active_listings} />
+          <BreakdownRow
+            label="Intercambios protegidos"
+            value={breakdown.protected_trades}
+          />
+          <BreakdownRow label="Disputas" value={breakdown.disputes} />
+        </dl>
+      </details>
     </section>
   );
 }

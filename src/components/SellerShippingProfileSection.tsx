@@ -104,20 +104,35 @@ export default function SellerShippingProfileSection() {
   return (
     <section
       data-testid="shipping-profile-section"
-      className="mt-8 card-surface p-6 sm:p-8"
+      className="mt-8 rounded-2xl border border-border/70 bg-surface-muted/20"
     >
-      <p className="text-sm font-semibold text-foreground">Perfil de despacho</p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Configura cómo envías tus vinilos para que los compradores sepan qué esperar.
-      </p>
+      <details data-testid="shipping-profile-details" className="group">
+        <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-4 marker:content-none sm:px-6 [&::-webkit-details-marker]:hidden">
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-foreground">
+              Perfil de despacho
+            </span>
+            <span className="mt-1 block text-sm text-muted-foreground">
+              Configuración de envío para vendedores — opcional, expandir para editar.
+            </span>
+          </span>
+          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-accent group-open:hidden">
+            Editar
+          </span>
+          <span className="hidden shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground group-open:inline">
+            Cerrar
+          </span>
+        </summary>
 
       {loading ? (
-        <p className="mt-6 text-sm text-muted-foreground">Cargando perfil de despacho…</p>
+        <p className="border-t border-border px-5 py-6 text-sm text-muted-foreground sm:px-6">
+          Cargando perfil de despacho…
+        </p>
       ) : (
         <form
           data-testid="shipping-profile-form"
           onSubmit={handleSubmit}
-          className="mt-6 space-y-5"
+          className="space-y-5 border-t border-border px-5 py-6 sm:px-6"
         >
           <label className={labelClass}>
             Ciudad origen
@@ -223,6 +238,7 @@ export default function SellerShippingProfileSection() {
           </button>
         </form>
       )}
+      </details>
     </section>
   );
 }
