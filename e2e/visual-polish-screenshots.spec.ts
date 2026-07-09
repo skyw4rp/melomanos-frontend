@@ -97,6 +97,26 @@ test("capture full-site visual polish screenshots", async ({ page }) => {
     filenameStem: "login",
   });
 
+  await captureSurfaceBothViewports({
+    page,
+    runDir,
+    manifest,
+    subfolder: "explorar",
+    surface: "explorar-logged-out",
+    route: "/explorar",
+    auth: "logged-out",
+    filenameStem: "logged-out",
+    prepare: async () => {
+      await page.goto("/explorar");
+      await expect(page.getByTestId("marketplace-filters")).toBeVisible({
+        timeout: 15_000,
+      });
+      await expect(page.getByTestId("listing-card").first()).toBeVisible({
+        timeout: 15_000,
+      });
+    },
+  });
+
   if (listingId != null) {
     const listingRoute = `/listings/${listingId}`;
     await captureSurfaceBothViewports({
