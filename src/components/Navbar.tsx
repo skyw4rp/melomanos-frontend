@@ -361,10 +361,14 @@ export default function Navbar() {
           className="mx-auto max-w-[1440px] px-5 py-3 sm:px-8 sm:py-3.5"
           aria-label="Utilidades"
         >
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-3 sm:gap-x-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-rows-1 md:gap-y-0">
-            <BrandLogo />
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-3 sm:gap-x-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-rows-1 md:gap-x-4 md:gap-y-0 lg:gap-x-5">
+            <BrandLogo className="col-start-1 row-start-1 shrink-0 md:col-start-1 md:row-start-1" />
 
-            <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:col-start-3">
+            <div className="col-span-2 row-start-2 min-w-0 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:w-full md:max-w-[720px] md:justify-self-start lg:max-w-[760px] xl:max-w-[820px]">
+              <NavbarSearch />
+            </div>
+
+            <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:col-start-3 md:row-start-1 md:justify-self-end">
               {hydrated && loggedIn && user && (
                 <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
                   <NotificationBell iconOnly />
@@ -383,12 +387,6 @@ export default function Navbar() {
                   Iniciar sesión
                 </Link>
               )}
-            </div>
-
-            <div className="col-span-2 row-start-2 min-w-0 md:col-span-1 md:col-start-2 md:row-start-1 md:px-2 lg:px-4">
-              <div className="mx-auto w-full max-w-md lg:max-w-lg xl:max-w-xl">
-                <NavbarSearch />
-              </div>
             </div>
           </div>
         </nav>
