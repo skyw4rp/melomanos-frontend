@@ -43,7 +43,7 @@ const headerNavTextClass =
   "text-[length:var(--text-nav)] font-medium leading-none transition-ui focus-ring";
 
 function navLinkClass(active: boolean) {
-  return `relative shrink-0 whitespace-nowrap px-2.5 py-2 lg:px-3 ${headerNavTextClass} ${
+  return `relative flex shrink-0 snap-start items-center whitespace-nowrap px-3 py-2.5 min-h-11 lg:min-h-0 lg:px-3 lg:py-2 ${headerNavTextClass} ${
     active
       ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-accent"
       : "text-muted-foreground hover:text-foreground"
@@ -358,17 +358,17 @@ export default function Navbar() {
       {/* Row 1 — utility */}
       <div className="border-b border-border/50">
         <nav
-          className="mx-auto max-w-[1440px] px-5 py-3 sm:px-8 sm:py-3.5"
+          className="mx-auto max-w-[1440px] px-4 py-2.5 sm:px-5 sm:py-3 md:px-8 md:py-3.5"
           aria-label="Utilidades"
         >
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-3 sm:gap-x-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-rows-1 md:gap-x-4 md:gap-y-0 lg:gap-x-5">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto] items-center gap-x-2.5 gap-y-2.5 sm:gap-x-4 sm:gap-y-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-rows-1 md:gap-x-4 md:gap-y-0 lg:gap-x-5">
             <BrandLogo className="col-start-1 row-start-1 shrink-0 md:col-start-1 md:row-start-1" />
 
             <div className="col-span-2 row-start-2 min-w-0 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:w-full md:max-w-[720px] md:justify-self-start lg:max-w-[760px] xl:max-w-[820px]">
               <NavbarSearch />
             </div>
 
-            <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:col-start-3 md:row-start-1 md:justify-self-end">
+            <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-1 sm:gap-1.5 md:col-start-3 md:row-start-1 md:justify-self-end">
               {hydrated && loggedIn && user && (
                 <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
                   <NotificationBell iconOnly />
@@ -382,7 +382,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   data-testid="nav-login"
-                  className={`rounded-lg px-3 py-2 ${headerNavTextClass} text-muted-foreground hover:text-foreground`}
+                  className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 ${headerNavTextClass} text-muted-foreground hover:text-foreground`}
                 >
                   Iniciar sesión
                 </Link>
@@ -394,11 +394,11 @@ export default function Navbar() {
 
       {/* Row 2 — product navigation */}
       <nav
-        className="mx-auto max-w-[1440px] px-5 sm:px-8"
+        className="mx-auto max-w-[1440px] px-4 sm:px-5 md:px-8"
         aria-label="Navegación del marketplace"
         data-testid="nav-product-row"
       >
-        <div className="flex gap-1 overflow-x-auto py-2.5 lg:gap-2 lg:py-3">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-0.5 overflow-x-auto overscroll-x-contain px-4 py-2 [scrollbar-width:none] sm:-mx-5 sm:gap-1 sm:px-5 lg:mx-0 lg:gap-2 lg:overflow-visible lg:px-0 lg:py-3 [&::-webkit-scrollbar]:hidden">
           <ProductNavRow />
         </div>
       </nav>

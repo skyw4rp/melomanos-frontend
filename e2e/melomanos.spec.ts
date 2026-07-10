@@ -78,6 +78,16 @@ test("logged-in header keeps public product navigation", async ({ page }) => {
   await expect(page.getByTestId("nav-favorites")).toBeVisible();
 });
 
+test("mobile header shows product navigation and search", async ({ page }) => {
+  await logoutViaStorage(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByTestId("home-search")).toBeVisible();
+  await expect(page.getByTestId("nav-product-row")).toBeVisible();
+  await expect(page.getByTestId("nav-marketplace")).toHaveText("Explorar");
+  await expect(page.getByTestId("nav-login")).toBeVisible();
+});
+
 test("explorar listing card opens listing detail", async ({ page }) => {
   await page.goto("/explorar");
   const card = page.getByTestId("listing-card").first();
