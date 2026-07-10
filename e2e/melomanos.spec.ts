@@ -371,6 +371,7 @@ test("messages page loads", async ({ page }) => {
   await page.goto("/messages");
   await expect(page.getByTestId("messages-page")).toBeVisible();
   await expect(page.getByTestId("messages-page-title")).toHaveText("Mensajes");
+  await expect(page.getByTestId("messages-back-link")).toHaveAttribute("href", "/explorar");
   await expect(page.getByTestId("messages-list").getByText("Conversaciones")).toBeVisible();
 });
 

@@ -273,11 +273,11 @@ export default function MessagesPage() {
       className="mx-auto flex max-w-6xl flex-col px-4 py-8 sm:px-6 sm:py-10"
     >
       <Link
-        href="/"
+        href="/explorar"
         data-testid="messages-back-link"
         className="text-sm font-medium text-muted-foreground transition hover:text-accent"
       >
-        ← Volver al catálogo
+        ← Volver a Explorar
       </Link>
 
       <header className="mt-4 shrink-0">
