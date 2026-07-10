@@ -88,12 +88,27 @@ export default function ListingDetailActions({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-3">
+        <button
+          type="button"
+          onClick={handleBuy}
+          disabled={buyState === "loading" || isReserved || isSold}
+          className="btn-primary order-1 py-2.5 text-sm font-semibold uppercase tracking-wide disabled:opacity-50 sm:order-3"
+        >
+          {isSold
+            ? "Vendido"
+            : isReserved
+              ? "Reservado"
+              : buyState === "loading"
+                ? "…"
+                : "Comprar"}
+        </button>
+
         <button
           type="button"
           onClick={handleFavorite}
           disabled={favState === "loading" || favState === "done"}
-          className="btn-ghost font-semibold uppercase tracking-wide disabled:opacity-60"
+          className="btn-ghost order-2 py-2.5 text-sm font-semibold uppercase tracking-wide disabled:opacity-60 sm:order-1"
         >
           {favState === "done" ? (
             <span className="inline-flex items-center gap-1.5">
@@ -117,24 +132,9 @@ export default function ListingDetailActions({
             if (!requireAuth()) return;
             setShowMessage((v) => !v);
           }}
-          className="btn-ghost font-semibold uppercase tracking-wide"
+          className="btn-ghost order-3 py-2.5 text-sm font-semibold uppercase tracking-wide sm:order-2"
         >
           Mensaje
-        </button>
-
-        <button
-          type="button"
-          onClick={handleBuy}
-          disabled={buyState === "loading" || isReserved || isSold}
-          className="btn-primary font-semibold uppercase tracking-wide disabled:opacity-50"
-        >
-          {isSold
-            ? "Vendido"
-            : isReserved
-              ? "Reservado"
-              : buyState === "loading"
-                ? "…"
-                : "Comprar"}
         </button>
       </div>
 

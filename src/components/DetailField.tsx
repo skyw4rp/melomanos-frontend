@@ -10,7 +10,7 @@ export default function DetailField({ label, value }: DetailFieldProps) {
       : String(value);
 
   return (
-    <div className="border-b border-border py-3.5 last:border-0">
+    <div className="border-b border-border py-3 last:border-0">
       <dt className="text-[length:var(--text-caption)] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </dt>

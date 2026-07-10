@@ -79,14 +79,17 @@ export default async function ListingDetailPage({ params }: PageProps) {
   const typeLabel = listing ? listingTypeLabel(listing.listing_type) : null;
   const recordGrade = listing ? listingRecordCondition(listing) : undefined;
   const coverGrade = listing ? listingCoverCondition(listing) : undefined;
+  const gradeLine = [recordGrade && `Disco ${recordGrade}`, coverGrade && `Cover ${coverGrade}`]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
-        href="/"
+        href="/explorar"
         className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-ui hover:text-accent"
       >
-        ← Volver al catálogo
+        ← Volver a Explorar
       </Link>
 
       {error && (
@@ -120,30 +123,30 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   </span>
                 </div>
 
-                <h1 className="mt-4 text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+                <p className="editorial-label mt-4 truncate">{listing.artist}</p>
+                <h1 className="mt-1 text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                   {listing.title}
                 </h1>
-                <p className="mt-2 text-lg font-medium uppercase tracking-wide text-accent">
-                  {listing.artist}
-                </p>
 
-                <p className="mt-6 text-4xl font-bold tabular-nums tracking-tight text-foreground sm:text-5xl">
-                  {formatPriceCLP(listing.price_clp)}
-                </p>
+                <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                  <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground sm:text-[1.75rem]">
+                    {formatPriceCLP(listing.price_clp)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{listing.city}</p>
+                </div>
 
-                <dl className="card-surface mt-8 divide-y divide-border px-5">
-                  <DetailField label="Sello" value={listing.label} />
-                  <DetailField label="Género" value={listing.genre} />
-                  <DetailField label="Subgénero" value={listing.subgenre} />
-                  <DetailField label="Año" value={listing.year} />
-                  <DetailField label="Tipo de publicación" value={typeLabel} />
-                  <DetailField label="Estado del disco" value={recordGrade} />
-                  <DetailField label="Estado de la funda" value={coverGrade} />
-                  <DetailField label="Ciudad" value={listing.city} />
-                  <DetailField label="Estado" value={statusLabel(listing.status)} />
-                </dl>
+                {gradeLine && (
+                  <p className="mt-3 text-sm font-medium text-foreground">
+                    <span className="text-muted-foreground">Condición: </span>
+                    {gradeLine}
+                  </p>
+                )}
 
-                <div className="mt-8">
+                <div className="mt-6">
+                  <SellerCard listing={listing} sellerId={listing.seller_id} />
+                </div>
+
+                <div className="mt-6">
                   <ListingDetailActions
                     listingId={listing.id}
                     status={listing.status}
@@ -151,15 +154,25 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   />
                 </div>
 
-                <div className="mt-8">
-                  <SellerCard listing={listing} sellerId={listing.seller_id} />
-                </div>
+                <details className="mt-6 rounded-2xl border border-border/80 bg-surface shadow-[var(--shadow-card)]">
+                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
+                    Ficha del press
+                    <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                      Sello, año y datos del catálogo
+                    </span>
+                  </summary>
+                  <dl className="divide-y divide-border border-t border-border px-5 pb-2">
+                    <DetailField label="Sello" value={listing.label} />
+                    <DetailField label="Año" value={listing.year} />
+                    <DetailField label="Tipo de publicación" value={typeLabel} />
+                  </dl>
+                </details>
               </div>
             </div>
 
-            <section className="card-surface mt-12 p-6 sm:p-8">
+            <section className="card-surface mt-10 p-5 sm:p-6">
               <h2 className="editorial-eyebrow">Notas del coleccionista</h2>
-              <p className="mt-4 leading-relaxed text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {listing.description?.trim() ||
                   "Sin notas del coleccionista. Contacta al vendedor para más detalles sobre este press."}
               </p>
@@ -169,16 +182,16 @@ export default async function ListingDetailPage({ params }: PageProps) {
           </article>
 
           {related.length > 0 && (
-            <section className="mt-14 border-t border-border pt-12">
-              <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+            <section className="mt-12 border-t border-border pt-10 sm:mt-14 sm:pt-12">
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-3 sm:mb-8">
                 <div>
                   <p className="editorial-label">Mismo género</p>
-                  <h2 className="mt-1 text-2xl font-bold text-foreground">
+                  <h2 className="mt-1 text-xl font-bold text-foreground sm:text-2xl">
                     Relacionados en {listing.genre}
                   </h2>
                 </div>
                 <Link
-                  href={`/?genre=${encodeURIComponent(listing.genre)}`}
+                  href={`/explorar?genre=${encodeURIComponent(listing.genre)}`}
                   className="text-sm font-semibold text-accent transition-ui hover:text-foreground"
                 >
                   Ver todo →

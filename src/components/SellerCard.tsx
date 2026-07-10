@@ -55,9 +55,12 @@ export default function SellerCard({ listing, sellerId }: SellerCardProps) {
     : seller.role;
 
   return (
-    <aside className="card-surface p-5">
+    <aside
+      data-testid="listing-seller-card"
+      className="rounded-2xl border border-border/80 bg-surface p-4 shadow-[var(--shadow-card)] sm:p-5"
+    >
       <p className="editorial-label">Vendedor</p>
-      <p className="mt-2 text-lg font-semibold text-foreground">{seller.name}</p>
+      <p className="mt-1.5 text-lg font-semibold text-foreground">{seller.name}</p>
       <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
         {roleLabel}
       </p>
