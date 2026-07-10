@@ -38,7 +38,7 @@ function MetaChip({
   className?: string;
 }) {
   return (
-    <span className={`badge-muted ${className}`}>
+    <span className={`badge-muted px-2 py-0.5 text-[10px] ${className}`}>
       {children}
     </span>
   );
@@ -58,6 +58,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const typeLabel = listingTypeLabel(listing.listing_type);
   const recordGrade = listingRecordCondition(listing);
   const coverGrade = listingCoverCondition(listing);
+  const gradeLine = [recordGrade && `Disco ${recordGrade}`, coverGrade && `Cover ${coverGrade}`]
+    .filter(Boolean)
+    .join(" · ");
 
   const [favState, setFavState] = useState<"idle" | "loading" | "done" | "error">(
     "idle",
@@ -86,7 +89,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
   return (
     <article
       data-testid="listing-card"
-      className="group flex h-full flex-col overflow-hidden card-surface card-surface-hover"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-[var(--shadow-card)] transition-ui hover:border-border hover:shadow-[var(--shadow-card-hover)]"
     >
       <div className="relative">
         <VinylCover
@@ -96,48 +99,49 @@ export default function ListingCard({ listing }: ListingCardProps) {
           size="card"
         />
         <span
-          className={`absolute right-3 top-3 ${statusClass(listing.status)}`}
+          className={`absolute right-2.5 top-2.5 text-[10px] ${statusClass(listing.status)}`}
         >
           {statusLabel(safeStatus)}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <p className="truncate text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          {artist}
-        </p>
-        <h3 className="mt-1.5 line-clamp-2 text-lg font-semibold leading-snug text-foreground group-hover:text-accent sm:text-xl">
-          {title}
+      <div className="flex flex-1 flex-col px-4 pb-4 pt-4 sm:px-5 sm:pt-5">
+        <p className="editorial-label truncate">{artist}</p>
+        <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-foreground group-hover:text-accent sm:text-lg">
+          <Link href={listingHref} className="focus-ring rounded-sm">
+            {title}
+          </Link>
         </h3>
 
-        <p className="mt-2.5 text-[length:var(--text-nav)] text-muted-foreground">{city}</p>
-
-        <div className="mt-3.5 flex flex-wrap items-center gap-2">
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           {genre && genre !== "Unknown" && <MetaChip>{genre}</MetaChip>}
           {typeLabel && <MetaChip>{typeLabel}</MetaChip>}
-          {recordGrade && <MetaChip>Disco {recordGrade}</MetaChip>}
-          {coverGrade && (
-            <MetaChip className="opacity-80">Cover {coverGrade}</MetaChip>
-          )}
           {isOwner && (
-            <span className="badge-gold normal-case tracking-normal">
+            <span className="badge-gold px-2 py-0.5 text-[10px] normal-case tracking-normal">
               Tu publicación
             </span>
           )}
         </div>
 
-        <p className="mt-auto pt-5 text-[1.75rem] font-bold leading-none tracking-tight text-foreground sm:text-3xl">
-          {formatPriceCLP(listing.price_clp)}
-        </p>
+        {gradeLine && (
+          <p className="mt-2 text-[11px] leading-snug text-muted-foreground">{gradeLine}</p>
+        )}
+
+        <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+          <p className="min-w-0 truncate text-sm text-muted-foreground">{city}</p>
+          <p className="shrink-0 text-right text-2xl font-bold tabular-nums leading-none tracking-tight text-foreground sm:text-[1.65rem]">
+            {formatPriceCLP(listing.price_clp)}
+          </p>
+        </div>
       </div>
 
       <div
-        className={`border-t border-border bg-surface-muted/40 p-4 ${isOwner ? "" : "grid grid-cols-2 gap-3"}`}
+        className={`border-t border-border/80 bg-surface-muted/25 p-3.5 ${isOwner ? "" : "grid grid-cols-2 gap-2.5"}`}
       >
         <Link
           href={listingHref}
           data-testid="listing-detail-link"
-          className={`btn-primary ${isOwner ? "w-full" : ""}`}
+          className={`btn-primary py-2.5 text-sm ${isOwner ? "w-full" : ""}`}
         >
           Ver detalle
         </Link>
@@ -147,7 +151,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
             data-testid="listing-favorite-btn"
             onClick={handleFavorite}
             disabled={favState === "loading" || favState === "done"}
-            className="btn-ghost bg-surface disabled:opacity-60"
+            className="btn-ghost bg-surface py-2.5 text-sm disabled:opacity-60"
           >
             {favState === "done" ? (
               <span className="inline-flex items-center gap-1.5">
