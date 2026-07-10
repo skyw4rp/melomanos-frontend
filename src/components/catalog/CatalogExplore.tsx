@@ -1,6 +1,7 @@
 "use client";
 
 import ListingCard from "@/components/ListingCard";
+import EditorialEmptyState from "@/components/EditorialEmptyState";
 import { useCatalogListings } from "@/hooks/useCatalogListings";
 
 const labelClass = "label-field mb-0";
@@ -173,9 +174,12 @@ export default function CatalogExplore() {
           )}
 
           {!loading && !error && data && data.items.length === 0 && (
-            <p className="rounded-2xl border border-border bg-surface px-6 py-10 text-center text-sm text-muted-foreground">
-              Sin resultados para estos filtros. Prueba ampliar la búsqueda.
-            </p>
+            <EditorialEmptyState
+              testId="catalog-empty-state"
+              eyebrow="Catálogo"
+              title="Sin resultados para estos filtros"
+              description="Prueba ampliar la búsqueda o usa Limpiar en el panel de filtros."
+            />
           )}
 
           {!loading && !error && data && data.items.length > 0 && (

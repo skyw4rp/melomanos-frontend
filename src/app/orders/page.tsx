@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import EditorialEmptyState from "@/components/EditorialEmptyState";
 import { usePathname, useRouter } from "next/navigation";
 import { getBuyingOrders, getSellingOrders, getToken } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
@@ -97,24 +98,21 @@ function OrdersEmptyState({ tab }: { tab: TabId }) {
   const isBuying = tab === "buying";
 
   return (
-    <div
-      data-testid={isBuying ? "orders-empty-purchases" : "orders-empty-sales"}
-      className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center shadow-[var(--shadow-card)]"
-    >
-      <p className="text-base font-semibold text-foreground">
-        {isBuying ? "Aún no tienes compras" : "Aún no tienes ventas"}
-      </p>
-      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-        {isBuying
-          ? "Cuando compres un vinilo, aparecerá aquí el seguimiento de tu pedido."
-          : "Cuando alguien compre una de tus publicaciones, aparecerá aquí."}
-      </p>
-      {isBuying && (
-        <Link href="/" className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm">
-          Explorar catálogo
-        </Link>
-      )}
-    </div>
+    <EditorialEmptyState
+      testId={isBuying ? "orders-empty-purchases" : "orders-empty-sales"}
+      eyebrow={isBuying ? "Compras" : "Ventas"}
+      title={isBuying ? "Aún no tienes compras" : "Aún no tienes ventas"}
+      description={
+        isBuying
+          ? "Cuando compres un vinilo con Compra Segura, el seguimiento de tu pedido aparecerá aquí."
+          : "Cuando alguien compre una de tus publicaciones, el pedido y el envío aparecerán aquí."
+      }
+      action={
+        isBuying
+          ? { href: "/explorar", label: "Explorar catálogo" }
+          : { href: "/sell", label: "Publicar un vinilo" }
+      }
+    />
   );
 }
 

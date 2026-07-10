@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import EditorialEmptyState from "@/components/EditorialEmptyState";
 import MessageBubble from "@/components/MessageBubble";
 import {
   deleteMessage,
@@ -45,18 +46,14 @@ function conversationPreview(conv: Conversation): string {
 
 function ConversationsEmptyState() {
   return (
-    <div
-      data-testid="messages-inbox-empty"
-      className="mx-4 my-6 rounded-2xl border border-dashed border-border bg-surface-muted/30 px-6 py-10 text-center"
-    >
-      <p className="text-base font-semibold text-foreground">Aún no tienes mensajes</p>
-      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-        Cuando converses con un comprador o vendedor, tus mensajes aparecerán aquí.
-      </p>
-      <Link href="/" className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm">
-        Explorar catálogo
-      </Link>
-    </div>
+    <EditorialEmptyState
+      testId="messages-inbox-empty"
+      eyebrow="Bandeja"
+      title="Aún no tienes mensajes"
+      description="Cuando converses con un comprador o vendedor sobre un pressing, tus hilos aparecerán aquí."
+      action={{ href: "/explorar", label: "Explorar catálogo" }}
+      className="mx-4 my-6"
+    />
   );
 }
 
@@ -393,17 +390,13 @@ export default function MessagesPage() {
           }`}
         >
           {!selectedListingId && (
-            <div
-              data-testid="message-empty-state"
-              className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center"
-            >
-              <p className="text-base font-semibold text-foreground">
-                Selecciona una conversación
-              </p>
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                Elige una conversación para revisar mensajes sobre una publicación.
-              </p>
-            </div>
+            <EditorialEmptyState
+              testId="message-empty-state"
+              eyebrow="Conversación"
+              title="Selecciona una conversación"
+              description="Elige un hilo de la bandeja para revisar mensajes sobre una publicación."
+              className="m-6 flex-1 border-dashed"
+            />
           )}
 
           {selectedListingId && selectedConversation && user && (
@@ -448,14 +441,12 @@ export default function MessagesPage() {
                 )}
 
                 {!loadingThread && messages.length === 0 && !threadError && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-sm font-medium text-foreground">
-                      Aún no hay mensajes
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Envía el primer mensaje sobre esta publicación.
-                    </p>
-                  </div>
+                  <EditorialEmptyState
+                    eyebrow="Hilo"
+                    title="Aún no hay mensajes"
+                    description="Envía el primer mensaje sobre esta publicación."
+                    className="border-dashed"
+                  />
                 )}
 
                 {!loadingThread &&

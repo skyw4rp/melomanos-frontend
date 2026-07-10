@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import EditorialEmptyState from "@/components/EditorialEmptyState";
 import ListingCard from "@/components/ListingCard";
 import { getMyFavorites, getToken } from "@/lib/api";
 import { handleAuthRedirect, redirectToLogin } from "@/lib/auth-session";
@@ -28,10 +29,10 @@ function FavoriteFallbackCard({
         #{favoriteId} · publicación {listingId}
       </p>
       <Link
-        href="/"
+        href="/explorar"
         className="mt-auto pt-6 text-sm font-medium text-accent hover:underline"
       >
-        Volver al catálogo →
+        Ir a Explorar →
       </Link>
     </div>
   );
@@ -100,20 +101,14 @@ export default function FavoritesPage() {
       )}
 
       {!error && entries.length === 0 && (
-        <div
-          data-testid="favorites-empty-state"
-          className="mt-8 rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center shadow-[var(--shadow-card)]"
-        >
-          <p className="text-base font-semibold text-foreground">
-            Aún no tienes favoritos
-          </p>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Guarda vinilos para volver a revisarlos cuando quieras.
-          </p>
-          <Link href="/" className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm">
-            Explorar catálogo
-          </Link>
-        </div>
+        <EditorialEmptyState
+          testId="favorites-empty-state"
+          eyebrow="Tu colección"
+          title="Aún no tienes favoritos"
+          description="Guarda vinilos mientras exploras para volver a revisarlos cuando quieras."
+          action={{ href: "/explorar", label: "Explorar catálogo" }}
+          className="mt-8"
+        />
       )}
 
       {!error && entries.length > 0 && (
