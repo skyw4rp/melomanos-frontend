@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+> **Operational authority:** The technical commands below are references only. Before any code, test, build, server, E2E, or deployment action, read and parse the exact canonical JSON authority block in `../workspace/PROJECT_STATUS.md`. Run a command only when it authorizes the exact `READY` mission and action class; otherwise stop. A queue, roadmap, token, report, decision, or gate PASS never supplies authority.
+
 ## Getting Started
 
 First, run the development server:
