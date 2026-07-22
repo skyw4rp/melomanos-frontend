@@ -198,13 +198,17 @@ test("used listing requires video URL", async ({ page }) => {
   await expect(page).toHaveURL(/\/sell$/);
 });
 
-test("listing detail buy button creates order", async ({ page }) => {
+test("listing detail purchase confirmation creates an order", async ({ page }) => {
   const listingId = e2eListingId ?? (await findBuyableListingId());
   test.skip(!listingId, "No buyable listing available for E2E");
 
   await login(page, BUYER_EMAIL, E2E_PASSWORD);
   await page.goto(`/listings/${listingId}`);
   await page.getByRole("button", { name: /^comprar$/i }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/listings/${listingId}$`));
+  await expect(page.getByText(/pedido #/i)).toHaveCount(0);
+  await page.getByRole("button", { name: /^confirmar compra$/i }).click();
   await page.waitForURL(/\/orders\/\d+/, { timeout: 20_000 });
   await expect(page.getByText(/pedido #/i)).toBeVisible();
 });

@@ -150,6 +150,8 @@ export default async function ListingDetailPage({ params }: PageProps) {
                     listingId={listing.id}
                     status={listing.status}
                     sellerId={listing.seller_id}
+                    listingTitle={listing.title}
+                    priceClp={listing.price_clp}
                   />
                 </div>
 
