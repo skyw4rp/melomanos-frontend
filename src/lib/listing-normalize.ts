@@ -19,15 +19,15 @@ export function resolveSellerDisplay(listing: Listing): SellerDisplay {
 
   if (listing.seller_id != null) {
     return {
-      name: `Seller #${listing.seller_id}`,
-      role: "Collector",
+      name: `Vendedor #${listing.seller_id}`,
+      role: "Coleccionista",
       city: listing.city?.trim() || "—",
     };
   }
 
   return {
-    name: "Unknown seller",
-    role: "Collector",
+    name: "Vendedor no informado",
+    role: "Coleccionista",
     city: listing.city?.trim() || "—",
   };
 }

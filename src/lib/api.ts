@@ -408,6 +408,13 @@ export async function createOrderFromListing(listingId: number): Promise<Order> 
   return handleResponse<Order>(res);
 }
 
+export async function reserveListing(listingId: number): Promise<Listing> {
+  const res = await authFetch(`${API_BASE}/listings/${listingId}/reserve`, {
+    method: "POST",
+  });
+  return handleResponse<Listing>(res);
+}
+
 export async function getBuyingOrders(): Promise<Order[]> {
   const res = await authFetch(`${API_BASE}/orders/me/buying`, { cache: "no-store" });
   const data = await handleResponse<Order[] | { items?: Order[] }>(res);

@@ -13,7 +13,6 @@ import {
   listingRecordCondition,
   listingTypeLabel,
 } from "@/lib/listing-grading";
-import { normalizeListing } from "@/lib/listing-normalize";
 import type { Listing, ListingsResponse } from "@/types";
 
 interface PageProps {
@@ -24,8 +23,7 @@ async function fetchListing(id: string): Promise<Listing | null> {
   const res = await fetch(`${API_BASE}/listings/${id}`, { cache: "no-store" });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error("Failed to load listing");
-  const data = (await res.json()) as Listing;
-  return normalizeListing(data);
+  return (await res.json()) as Listing;
 }
 
 async function fetchRelated(genre: string, excludeId: number): Promise<Listing[]> {
@@ -65,7 +63,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
   try {
     listing = await fetchListing(id);
-    if (listing) {
+    if (listing?.genre?.trim()) {
       related = await fetchRelated(listing.genre, listing.id);
     }
   } catch {
@@ -113,7 +111,9 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="badge-muted">{listing.genre}</span>
+                  {listing.genre?.trim() && (
+                    <span className="badge-muted">{listing.genre}</span>
+                  )}
                   {listing.subgenre && (
                     <span className="badge-muted">{listing.subgenre}</span>
                   )}
@@ -132,7 +132,9 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground sm:text-[1.75rem]">
                     {formatPriceCLP(listing.price_clp)}
                   </p>
-                  <p className="text-sm text-muted-foreground">{listing.city}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {listing.city?.trim() || "Ubicación no informada"}
+                  </p>
                 </div>
 
                 {gradeLine && (
@@ -142,16 +144,17 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   </p>
                 )}
 
-                <div className="mt-6">
-                  <SellerCard listing={listing} sellerId={listing.seller_id} />
-                </div>
-
-                <div className="mt-6">
+                <div className="card-surface mt-6 p-4 sm:p-5">
+                  <p className="editorial-label">Acciones de compra</p>
                   <ListingDetailActions
                     listingId={listing.id}
                     status={listing.status}
                     sellerId={listing.seller_id}
                   />
+                </div>
+
+                <div className="mt-6">
+                  <SellerCard listing={listing} sellerId={listing.seller_id} />
                 </div>
 
                 <details className="mt-6 rounded-2xl border border-border/80 bg-surface shadow-[var(--shadow-card)]">
@@ -171,17 +174,17 @@ export default async function ListingDetailPage({ params }: PageProps) {
             </div>
 
             <section className="card-surface mt-10 p-5 sm:p-6">
-              <h2 className="editorial-eyebrow">Notas del coleccionista</h2>
+              <h2 className="editorial-eyebrow">Descripción del vendedor</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {listing.description?.trim() ||
-                  "Sin notas del coleccionista. Contacta al vendedor para más detalles sobre este press."}
+                  "El vendedor no agregó una descripción para este vinilo."}
               </p>
             </section>
 
             <ListingVideoSection videoUrl={listing.video_url} />
           </article>
 
-          {related.length > 0 && (
+          {listing.genre?.trim() && related.length > 0 && (
             <section className="mt-12 border-t border-border pt-10 sm:mt-14 sm:pt-12">
               <div className="mb-6 flex flex-wrap items-end justify-between gap-3 sm:mb-8">
                 <div>
