@@ -42,12 +42,12 @@ Backend CORS must allow the frontend origin — default includes `http://localho
 ## Local demo stack (Daniela UX review)
 
 ```powershell
-cd C:\melomanos\backend
+cd C:\developments\apps\melomanos\backend
 $env:MELOMANOS_DEMO_MODE="1"
 py -m app.demo reset --factory --force
 py -m app.demo seed --size medium
 
-cd C:\melomanos\workspace
+cd C:\developments\apps\melomanos\workspace
 py run_melomanos.py --auto-migrate --kill-stale --no-wait
 ```
 
@@ -107,7 +107,7 @@ Optional env overrides:
 Full placeholder lifecycle tests require the backend in `webpay_placeholder` mode:
 
 ```powershell
-cd C:\melomanos\workspace
+cd C:\developments\apps\melomanos\workspace
 py run_melomanos.py --kill-stale --e2e-webpay --no-wait
 ```
 
