@@ -52,6 +52,7 @@ test.describe("WebPay placeholder full lifecycle (Phase 6)", () => {
     await loginAsBuyer(page);
     await page.goto(`/listings/${listingId}`);
     await page.getByRole("button", { name: /^comprar$/i }).click();
+    await page.getByRole("button", { name: /^confirmar compra$/i }).click();
     await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
     const orderId = orderIdFromUrl(page.url());
@@ -132,6 +133,7 @@ test.describe("WebPay placeholder full lifecycle (Phase 6)", () => {
     await loginAsBuyer(page);
     await page.goto(`/listings/${listingId}`);
     await page.getByRole("button", { name: /^comprar$/i }).click();
+    await page.getByRole("button", { name: /^confirmar compra$/i }).click();
     await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
     const orderId = orderIdFromUrl(page.url());
@@ -163,6 +165,7 @@ test.describe("Dual-mode payment helper", () => {
     await loginAsBuyer(page);
     await page.goto(`/listings/${listingId}`);
     await page.getByRole("button", { name: /^comprar$/i }).click();
+    await page.getByRole("button", { name: /^confirmar compra$/i }).click();
     await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
     const orderId = orderIdFromUrl(page.url());

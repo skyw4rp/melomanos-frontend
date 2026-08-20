@@ -237,7 +237,7 @@ test("favorites flow", async ({ page }) => {
   const favButton = page
     .getByRole("article")
     .first()
-    .getByRole("button", { name: /^(favorito|en favoritos)$/i });
+    .getByRole("button", { name: /^(favorito|guardar|en favoritos)$/i });
   await expect(favButton).toBeVisible({ timeout: 15_000 });
   const favLabel = (await favButton.textContent()) ?? "";
   if (!favLabel.toLowerCase().includes("favoritos")) {
@@ -424,6 +424,7 @@ test("buyer can open dispute and add evidence", async ({ page }) => {
   await loginAsBuyer(page);
   await page.goto(`/listings/${listingId}`);
   await page.getByRole("button", { name: /^comprar$/i }).click();
+  await page.getByRole("button", { name: /^confirmar compra$/i }).click();
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   const orderId = orderIdFromUrl(page.url());
@@ -495,6 +496,7 @@ test("admin can resolve dispute for buyer", async ({ page }) => {
   await loginAsBuyer(page);
   await page.goto(`/listings/${listingId}`);
   await page.getByRole("button", { name: /^comprar$/i }).click();
+  await page.getByRole("button", { name: /^confirmar compra$/i }).click();
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   const orderId = orderIdFromUrl(page.url());
@@ -573,6 +575,7 @@ test("full order lifecycle with tracking and review", async ({ page }) => {
   await loginAsBuyer(page);
   await page.goto(`/listings/${listingId}`);
   await page.getByRole("button", { name: /^comprar$/i }).click();
+  await page.getByRole("button", { name: /^confirmar compra$/i }).click();
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   const orderId = orderIdFromUrl(page.url());

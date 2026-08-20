@@ -185,6 +185,7 @@ export async function createPendingOrderAsBuyer(page: Page): Promise<number> {
   await loginAsBuyer(page);
   await page.goto(`/listings/${listingId}`);
   await page.getByRole("button", { name: /^comprar$/i }).click();
+  await page.getByRole("button", { name: /^confirmar compra$/i }).click();
   await page.waitForURL(/\/orders\/\d+/, { timeout: 25_000 });
 
   return orderIdFromUrl(page.url());
