@@ -355,3 +355,5 @@ export interface ListingCreate {
   description?: string;
   city: string;
 }
+
+export type ListingUpdate = Partial<ListingCreate>;

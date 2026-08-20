@@ -16,6 +16,7 @@ import type {
   OrderDispute,
   Listing,
   ListingCreate,
+  ListingUpdate,
   ListingsResponse,
   LoginResponse,
   Message,
@@ -269,6 +270,18 @@ export async function getListing(id: number | string): Promise<Listing> {
 export async function createListing(data: ListingCreate): Promise<Listing> {
   const res = await authFetch(`${API_BASE}/listings`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Listing>(res);
+}
+
+export async function updateListing(
+  id: number | string,
+  data: ListingUpdate,
+): Promise<Listing> {
+  const res = await authFetch(`${API_BASE}/listings/${id}`, {
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });

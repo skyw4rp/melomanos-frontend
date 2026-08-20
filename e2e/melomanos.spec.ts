@@ -198,6 +198,31 @@ test("used listing requires video URL", async ({ page }) => {
   await expect(page).toHaveURL(/\/sell$/);
 });
 
+test("seller can edit an existing listing", async ({ page }) => {
+  await loginAsSeller(page);
+  const stamp = Date.now();
+  const listingId = await createListingViaUi(page, {
+    title: `E2E Edit ${stamp}`,
+    listingType: "new",
+    recordCondition: "NM",
+    coverCondition: "NM",
+  });
+
+  await page.goto(`/listings/${listingId}`);
+  await page.getByTestId("listing-edit-link").click();
+  await page.waitForURL(new RegExp(`/listings/${listingId}/edit$`));
+  await expect(page.getByTestId("edit-listing-form")).toBeVisible();
+
+  await expect(page.getByTestId("edit-title")).toHaveValue(`E2E Edit ${stamp}`);
+  await page.getByTestId("edit-price").fill("55000");
+  await page.getByTestId("edit-description").fill("Actualizado via E2E");
+  await page.getByTestId("edit-submit").click();
+
+  await page.waitForURL(new RegExp(`/listings/${listingId}$`), { timeout: 15_000 });
+  await expect(page.getByText(/55[.,]000/)).toBeVisible();
+  await expect(page.getByText("Actualizado via E2E")).toBeVisible();
+});
+
 test("listing detail purchase confirmation creates an order", async ({ page }) => {
   const listingId = e2eListingId ?? (await findBuyableListingId());
   test.skip(!listingId, "No buyable listing available for E2E");

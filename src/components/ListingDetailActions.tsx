@@ -138,9 +138,20 @@ export default function ListingDetailActions({
         <p className="mt-2 text-sm text-muted-foreground">
           Cuando un comprador confirme la compra, se creará un pedido y la publicación quedará reservada para esa transacción.
         </p>
-        <Link href="/orders" className="mt-4 inline-flex text-sm font-semibold text-accent transition-ui hover:text-foreground">
-          Ver pedidos →
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-4">
+          {!isSold && (
+            <Link
+              href={`/listings/${listingId}/edit`}
+              data-testid="listing-edit-link"
+              className="inline-flex text-sm font-semibold text-accent transition-ui hover:text-foreground"
+            >
+              Editar publicación →
+            </Link>
+          )}
+          <Link href="/orders" className="inline-flex text-sm font-semibold text-accent transition-ui hover:text-foreground">
+            Ver pedidos →
+          </Link>
+        </div>
       </div>
     );
   }
