@@ -24,7 +24,11 @@ interface SubscriptionResponse {
 
 export function setSellerProPlanInDatabase(): void {
   const scriptPath = path.join(process.cwd(), "e2e", "scripts", "set_seller_pro.py");
-  execSync(`py "${scriptPath}"`, {
+  const pythonBin =
+    process.platform === "win32"
+      ? path.join(BACKEND_ROOT, "venv", "Scripts", "python.exe")
+      : path.join(BACKEND_ROOT, "venv", "bin", "python");
+  execSync(`"${pythonBin}" "${scriptPath}"`, {
     cwd: BACKEND_ROOT,
     env: {
       ...process.env,

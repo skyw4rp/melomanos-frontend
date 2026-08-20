@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { loginAsBuyer, loginAsSeller, logoutViaStorage } from "./helpers/auth";
+import { API_BASE } from "./helpers/constants";
 import { openSellingOrderFromList } from "./helpers/order";
 import {
   createPendingOrderAsBuyer,
@@ -37,7 +38,8 @@ test.describe("WebPay checkout (Phase 5)", () => {
     await createPendingOrderAsBuyer(page);
 
     await page.getByTestId("order-checkout-webpay").click();
-    await page.waitForURL(/127\.0\.0\.1:8000\/payments\/(simulate|webpay)\//, {
+    const apiOrigin = API_BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    await page.waitForURL(new RegExp(`${apiOrigin}/payments/(simulate|webpay)/`), {
       timeout: 20_000,
     });
   });

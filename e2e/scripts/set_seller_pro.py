@@ -12,13 +12,26 @@ if str(BACKEND_ROOT) not in sys.path:
 
 from sqlalchemy import text  # noqa: E402
 
+from app.core.config import settings  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
+from app.demo.safety import DemoSafetyError, assert_demo_tooling_allowed  # noqa: E402
 
 EMAIL = os.environ.get("E2E_SELLER_EMAIL", "seller@example.com")
 PLAN = os.environ.get("E2E_SELLER_PLAN", "pro")
 
 
 def main() -> None:
+    if "DATABASE_URL" not in os.environ:
+        raise SystemExit(
+            "Refusing to run: DATABASE_URL is not set in this process's environment. "
+            "This script must be pointed explicitly at the intended (e.g. isolated E2E) "
+            "database - it will not silently fall back to .env.local's default."
+        )
+    try:
+        assert_demo_tooling_allowed(database_url=settings.DATABASE_URL)
+    except DemoSafetyError as exc:
+        raise SystemExit(f"Refusing to run: {exc}") from exc
+
     with SessionLocal() as db:
         result = db.execute(
             text("UPDATE users SET plan_type = :plan WHERE email = :email"),
