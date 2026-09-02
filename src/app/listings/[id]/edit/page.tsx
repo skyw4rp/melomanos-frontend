@@ -26,6 +26,7 @@ const emptyForm = {
   record_condition: "",
   cover_condition: "",
   video_url: "",
+  cover_image_url: "",
   price_clp: "",
   description: "",
   city: "",
@@ -46,6 +47,7 @@ function formFromListing(listing: Listing): FormState {
     record_condition: listing.record_condition ?? "",
     cover_condition: listing.cover_condition ?? "",
     video_url: listing.video_url ?? "",
+    cover_image_url: listing.cover_image_url ?? "",
     price_clp: listing.price_clp != null ? String(listing.price_clp) : "",
     description: listing.description ?? "",
     city: listing.city ?? "",
@@ -70,8 +72,18 @@ function buildPayload(form: FormState): ListingUpdate {
       form.listing_type === "used"
         ? form.video_url.trim() || undefined
         : form.video_url.trim() || null,
+    cover_image_url: form.cover_image_url.trim() || undefined,
     description: form.description.trim() || undefined,
   };
+}
+
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function validate(form: FormState): FieldErrors {
@@ -96,6 +108,9 @@ function validate(form: FormState): FieldErrors {
     } catch {
       errors.video_url = "Ingresa una URL de video válida";
     }
+  }
+  if (form.cover_image_url.trim() && !isValidHttpUrl(form.cover_image_url.trim())) {
+    errors.cover_image_url = "Ingresa una URL http o https válida";
   }
   return errors;
 }
@@ -348,6 +363,30 @@ export default function EditListingPage() {
                 className={`${inputClass} ${fieldErrors.year ? "border-destructive/50" : ""}`}
               />
               <FieldError message={fieldErrors.year} />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="cover_image_url" className={labelClass}>
+                Imagen del disco
+              </label>
+              <input
+                id="cover_image_url"
+                data-testid="edit-cover-image-url"
+                type="url"
+                value={form.cover_image_url}
+                onChange={(e) => updateField("cover_image_url", e.target.value)}
+                disabled={fieldsDisabled}
+                placeholder="https://…"
+                className={`${inputClass} ${fieldErrors.cover_image_url ? "border-destructive/50" : ""}`}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Enlace a una imagen del disco (JPG, PNG)
+              </p>
+              {fieldErrors.cover_image_url && (
+                <p data-testid="edit-cover-image-error" className="mt-1 text-xs text-destructive">
+                  {fieldErrors.cover_image_url}
+                </p>
+              )}
             </div>
           </div>
         </section>

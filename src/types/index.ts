@@ -351,6 +351,7 @@ export interface ListingCreate {
   cover_condition?: string;
   listing_type?: string;
   video_url?: string | null;
+  cover_image_url?: string | null;
   price_clp: number;
   description?: string;
   city: string;
